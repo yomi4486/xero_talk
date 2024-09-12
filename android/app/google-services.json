@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "163114823018",
+    "project_id": "xero-talk",
+    "storage_bucket": "xero-talk.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:163114823018:android:b705edce38159b2cafc913",
+        "android_client_info": {
+          "package_name": "com.example.xero_talk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "163114823018-qr93qqaflbhptq2eogas8ffhrlqnvaut.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDM2fMOE_47nmYy0QS6w9eSfNDOqMGp8Y4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "163114823018-qr93qqaflbhptq2eogas8ffhrlqnvaut.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "163114823018-3il6afhdv5l1nlj88l6b76ls44ik17e6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.xenfo.xerotalk"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
