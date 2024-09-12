@@ -8,7 +8,7 @@ class AccountStartup extends StatelessWidget{
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        DecoratedBox(
+        child: DecoratedBox(
           decoration: const BoxDecoration(color: Color.fromARGB(255, 22, 22, 22)),
           child:SizedBox(
             width:MediaQuery.of(context).size.width,
