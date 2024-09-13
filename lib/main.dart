@@ -56,13 +56,13 @@ class _LoginPageState extends State<MyHomePage> {
         print("loggin OK ,1"); // 新規ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AccountStartup("はじめまして！",userCredential)),
+          MaterialPageRoute(builder: (context) => AccountStartup(userCredential)),
         );
       } else {
         print("loggin OK ,2"); //既存ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AccountStartup("おかえりなさい！",userCredential)),
+          MaterialPageRoute(builder: (context) => AccountStartup(userCredential)),
         );
       }
     } on FirebaseException catch (e) {
