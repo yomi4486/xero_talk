@@ -64,24 +64,47 @@ class AccountStartup extends StatelessWidget{
                         child:Container(
                           width: MediaQuery.of(context).size.width *0.6,
                           margin:const EdgeInsets.only(left: 10),
-                          child: TextField(
-                            controller: TextEditingController(text: "${userCredential.user!.displayName}"),
-                            style:const TextStyle(                            
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontSize: 16,
-                            ),
-                            decoration: const InputDecoration(
-                              hintText: '',
-                              labelText:'ニックネーム',
-                              labelStyle: TextStyle(
-                                color: Color.fromARGB(255, 255, 255, 255),
-                                fontSize: 16,
+                          child: Column(
+                            children: [
+                              TextField(
+                                controller: TextEditingController(text: "${userCredential.user!.displayName}"),
+                                style:const TextStyle(                            
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                                  fontSize: 16,
+                                ),
+                                decoration: const InputDecoration(
+                                  hintText: '',
+                                  labelText:'ニックネーム',
+                                  labelStyle: TextStyle(
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    fontSize: 16,
+                                  ),
+                                  hintStyle: TextStyle(
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    fontSize: 16,
+                                  )
+                                ),
                               ),
-                              hintStyle: TextStyle(
-                                color: Color.fromARGB(255, 255, 255, 255),
-                                fontSize: 16,
+                              TextField(
+                                controller: TextEditingController(text: "${userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '')}"),
+                                style:const TextStyle(                            
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                                  fontSize: 16,
+                                ),
+                                decoration: const InputDecoration(
+                                  hintText: '',
+                                  labelText:'ユーザーID',
+                                  labelStyle: TextStyle(
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    fontSize: 16,
+                                  ),
+                                  hintStyle: TextStyle(
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    fontSize: 16,
+                                  )
+                                ),
                               )
-                            ),
+                            ]
                           )
                         )
                       ),
