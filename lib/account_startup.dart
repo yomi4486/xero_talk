@@ -31,14 +31,36 @@ class AccountStartup extends StatelessWidget{
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(2000000),
-                        child: Image.network(
-                            "${userCredential.user!.photoURL}",
-                            width: MediaQuery.of(context).size.width *0.2,
-                        ),
+                      Column(
+                        children: [
+                          ClipRRect( // アイコン表示（角丸）
+                            borderRadius: BorderRadius.circular(2000000),
+                              child:Image.network(
+                                "${userCredential.user!.photoURL}",
+                                width: MediaQuery.of(context).size.width *0.2,
+                              ),
+                          ),
+                          ElevatedButton.icon( // アイコン変更ボタン
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(255, 231, 231, 231),
+                              foregroundColor: Colors.black,
+                              minimumSize: const Size(0, 0),
+                              maximumSize: Size.fromWidth(MediaQuery.of(context).size.width *0.2,)
+                            ),
+                            onPressed: () {},
+                            label: const Text(
+                              '変更',
+                              style:(
+                                TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 15
+                                )
+                              )
+                            ),
+                          ),
+                        ], 
                       ),
-                      SizedBox(
+                      SizedBox( // ニックネーム設定フォーム
                         child:Container(
                           width: MediaQuery.of(context).size.width *0.6,
                           margin:const EdgeInsets.only(left: 10),
