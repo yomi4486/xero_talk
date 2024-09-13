@@ -18,6 +18,13 @@ class AccountStartup extends StatelessWidget{
         backgroundColor: const Color.fromARGB(255, 40, 40, 40),
         
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+        },
+        backgroundColor: const Color.fromARGB(255, 85, 128, 203),
+        child: const Icon(Icons.arrow_forward_ios_sharp,color: Color.fromARGB(200, 255, 255, 255),)
+      ),
+      
       backgroundColor: defaultColor,
       body: SafeArea(
         child: DecoratedBox(
@@ -149,7 +156,8 @@ class AccountStartup extends StatelessWidget{
             ] //childlen 画面全体
           )
         ),
-      )
+      ),
+
     );
   }
 }
