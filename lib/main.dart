@@ -119,13 +119,14 @@ class _LoginPageState extends State<MyHomePage> {
 
                   },
                   icon: const ImageIcon(
-                    AssetImage("assets/images/google_logo.png")
+                    AssetImage("assets/images/google_logo.png"),
+                    color: Color.fromARGB(255, 22, 22, 22),
                   ),
                   label: const Text(
                     'Googleでログイン',
                     style:(
                       TextStyle(
-                        color: Colors.black,
+                        color: Color.fromARGB(255, 22, 22, 22),
                         fontSize: 16
                       )
                     )
