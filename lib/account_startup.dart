@@ -125,7 +125,6 @@ class AccountStartup extends StatelessWidget{
               ),
               SizedBox(
                 child:Container(
-                  
                   margin: const EdgeInsets.only(left: 30,right: 30),
                   child: const TextField(
                     keyboardType: TextInputType.multiline,
