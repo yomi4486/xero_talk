@@ -6,7 +6,9 @@ class chatMain extends StatelessWidget{
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop:() async => false,
+      child:Scaffold(
       bottomNavigationBar: BottomNavigationBar(
         unselectedLabelStyle: const TextStyle(color: Color.fromARGB(255, 200, 200, 200)),
         unselectedItemColor: const Color.fromARGB(255, 200, 200, 200),
@@ -188,11 +190,10 @@ class chatMain extends StatelessWidget{
                 ),
               ),
             ),
-            
           ]
           )
         ],
       )
-    );
+    ));
   }
 }

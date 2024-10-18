@@ -1,11 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:xero_talk/chat_main.dart';
+
 class AccountStartup extends StatelessWidget{
   AccountStartup(this.userCredential);
   UserCredential userCredential;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   @override
   Widget build(BuildContext context) {
+    String name =  "${userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '')}";
+    String displayName= "${userCredential.user!.displayName}";
+    String discription="";
     return Scaffold(
       appBar:AppBar(
         automaticallyImplyLeading: false,
@@ -20,6 +26,28 @@ class AccountStartup extends StatelessWidget{
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+
+          var profile = userCredential.additionalUserInfo?.profile;
+          // ドキュメント作成
+          FirebaseFirestore.instance
+              .collection('user_account') // コレクションID
+              .doc('${profile?["sub"]}') // ドキュメントID
+              .set(
+                {
+                  'discription': discription,
+                  'display_name': displayName,
+                  'name':name, 
+                }
+              )
+              .then((value){
+                print("ok!!!");
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => chatMain(userCredential))
+                );
+              })
+              .catchError((err){
+                print(err);
+              });
         },
         backgroundColor: const Color.fromARGB(255, 85, 128, 203),
         child: const Icon(Icons.arrow_forward_ios_sharp,color: Color.fromARGB(200, 255, 255, 255),)
@@ -76,7 +104,7 @@ class AccountStartup extends StatelessWidget{
                               child: Column(
                                 children: [
                                   TextField(
-                                    controller: TextEditingController(text: "${userCredential.user!.displayName}"),
+                                    controller: TextEditingController(text: displayName),
                                     style:const TextStyle(                            
                                       color: Color.fromARGB(255, 255, 255, 255),
                                       fontSize: 16,
@@ -92,10 +120,11 @@ class AccountStartup extends StatelessWidget{
                                         color: Color.fromARGB(255, 255, 255, 255),
                                         fontSize: 16,
                                       )
+                                      
                                     ),
                                   ),
                                   TextField(
-                                    controller: TextEditingController(text: "${userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '')}"),
+                                    controller: TextEditingController(text: name),
                                     style:const TextStyle(                            
                                       color: Color.fromARGB(255, 255, 255, 255),
                                       fontSize: 16,
@@ -112,6 +141,9 @@ class AccountStartup extends StatelessWidget{
                                         fontSize: 16,
                                       )
                                     ),
+                                    onChanged: (text){
+                                      name = text;
+                                    },
                                   )
                                 ]
                               )
@@ -126,14 +158,14 @@ class AccountStartup extends StatelessWidget{
               SizedBox(
                 child:Container(
                   margin: const EdgeInsets.only(left: 30,right: 30),
-                  child: const TextField(
+                  child: TextField(
                     keyboardType: TextInputType.multiline,
                     maxLines: null,
-                    style:TextStyle(                            
+                    style:const TextStyle(                            
                       color: Color.fromARGB(255, 255, 255, 255),
                       fontSize: 16,
                     ),
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       hintText: '',
                       labelText:'自己紹介',
@@ -147,8 +179,11 @@ class AccountStartup extends StatelessWidget{
                       ),
                       filled: true,
                       fillColor: Color.fromARGB(16, 255, 255, 255),
-
+                      
                     ),
+                    onChanged: (text){
+                      discription = text;
+                    },
                   ),
                 )
               )
@@ -156,7 +191,6 @@ class AccountStartup extends StatelessWidget{
           )
         ),
       ),
-
     );
   }
 }
