@@ -5,7 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:xero_talk/account_startup.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:xero_talk/chat_main.dart';
+import 'package:xero_talk/home.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -75,7 +75,7 @@ class _LoginPageState extends State<MyHomePage> {
         print("loggin OK ,2"); //既存ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => chatMain(userCredential)),
+          MaterialPageRoute(builder: (context) => chatHome(userCredential)),
         );
       }
     } on FirebaseException catch (e) {

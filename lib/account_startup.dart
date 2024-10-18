@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:xero_talk/chat_main.dart';
+import 'package:xero_talk/home.dart';
 
 class AccountStartup extends StatelessWidget{
   AccountStartup(this.userCredential);
@@ -42,7 +42,7 @@ class AccountStartup extends StatelessWidget{
               .then((value){
                 print("ok!!!");
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => chatMain(userCredential))
+                  MaterialPageRoute(builder: (context) => chatHome(userCredential))
                 );
               })
               .catchError((err){
