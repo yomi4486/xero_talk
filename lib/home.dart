@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-class chatMain extends StatelessWidget{
-  chatMain(this.userCredential);
+class chatHome extends StatelessWidget{
+  chatHome(this.userCredential);
   UserCredential userCredential;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   @override
