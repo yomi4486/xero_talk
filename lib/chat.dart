@@ -8,41 +8,55 @@ class chat extends StatelessWidget{
   Widget build(BuildContext context) {
     return Scaffold(
       bottomSheet: BottomAppBar(
-        height: MediaQuery.of(context).size.height*0.1,
+        height: MediaQuery.of(context).size.height*0.12,
         notchMargin:4.0,
         color:const Color.fromARGB(255, 40, 40, 40),
-        child:SizedBox(
+        child:Container(
+          margin: EdgeInsets.only(bottom:20),
           width: MediaQuery.of(context).size.width,
-          child:Column(
+          child:Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              TextField(
-
-                keyboardType: TextInputType.multiline,
-                maxLines: null,
-                style: const TextStyle(                            
+              SizedBox(
+                width: MediaQuery.of(context).size.width*0.75,
+                child:TextField(
+                  onTapOutside:(_)=>FocusScope.of(context).unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  style: const TextStyle(                            
+                    color: Color.fromARGB(255, 255, 255, 255),
+                    fontSize: 16,
+                  ),
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    hintText: '',
+                    labelText:'yomi4486にメッセージを送信',
+                    labelStyle: const TextStyle(
+                      color: Color.fromARGB(255, 255, 255, 255),
+                      fontSize: 16,
+                    ),
+                    hintStyle: const TextStyle(
+                      color: Color.fromARGB(255, 255, 255, 255),
+                      fontSize: 16,
+                    ),
+                    filled: false,
+                    fillColor: const Color.fromARGB(16, 255, 255, 255),
+                  ),
+                  onChanged: (text){
+                    // kuarngvuanoiawfiofeawiofjna
+                  },
+                ),
+              ),
+              IconButton(
+                style:ButtonStyle(backgroundColor:MaterialStateProperty.all<Color>(Color.fromARGB(255, 140, 206, 74))),
+                onPressed: (){},
+                icon: const ImageIcon(
+                  AssetImage("assets/images/send.png"),
                   color: Color.fromARGB(255, 255, 255, 255),
-                  fontSize: 16,
-                ),
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  hintText: '',
-                  labelText:'yomi4486にメッセージを送信',
-                  labelStyle: const TextStyle(
-                    color: Color.fromARGB(255, 255, 255, 255),
-                    fontSize: 16,
-                  ),
-                  hintStyle: const TextStyle(
-                    color: Color.fromARGB(255, 255, 255, 255),
-                    fontSize: 16,
-                  ),
-                  filled: false,
-                  fillColor: const Color.fromARGB(16, 255, 255, 255),
-                ),
-                onChanged: (text){
 
-                },
+                )
               ),
             ],
           )
@@ -58,13 +72,28 @@ class chat extends StatelessWidget{
         ),
         backgroundColor: const Color.fromARGB(255, 40, 40, 40),
         leading: Container(
-          margin: EdgeInsets.only(left:20),
+          margin: EdgeInsets.only(left:7),
           child:Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children:[
               SizedBox(
-                height: 36,
-                width: 36,
+                child: ClipRRect( // アイコン表示（角丸）
+                    borderRadius: BorderRadius.circular(30),
+                    child:Container(
+                      color:const Color.fromARGB(0, 255, 255, 255),
+                      child:IconButton(
+                        onPressed: (){},
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: Color.fromARGB(128, 255, 255, 255)
+                        )
+                      )
+                    ),
+                ),
+              ),
+              SizedBox(
+                height: 34,
+                width: 34,
                 child:ClipRRect( // アイコン表示（角丸）
                 borderRadius: BorderRadius.circular(2000000),
                 child:Image.network(
