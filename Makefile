@@ -7,5 +7,5 @@ release:
 
 push %:
 	git add .
-	git commit -m "${@:hello-%=%}"
+	git commit -m "${@:push-%=%}"
 	git push
