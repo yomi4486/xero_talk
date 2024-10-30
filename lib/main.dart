@@ -6,9 +6,18 @@ import 'package:xero_talk/account_startup.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/home.dart';
+import 'dart:io';
+class MyHttpOverrides extends HttpOverrides{ // これがないとWSS通信ができない
+  @override
+  HttpClient createHttpClient(SecurityContext? context){
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
+  }
+}
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
 
@@ -52,19 +61,18 @@ class _LoginPageState extends State<MyHomePage> {
         idToken: googleAuth?.idToken,
       );
       //作成したcredentialを元にfirebaseAuthで認証を行う
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-      String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-      String content = "how are you?";
-      try{
-        final response = await http.post(
-          Uri.parse('http://0.0.0.0:9000/send_message?content=$content&token=$token&channel_id=dm'),
-          headers: {"Content-Type": "application/json"},
-        );
-        print(response.body);
-      }catch(e){
-        print(e);
-      }
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      // String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      // String content = "how are you?";
+      // try{
+      //   final response = await http.post(
+      //     Uri.parse('http://0.0.0.0:9000/send_message?content=$content&token=$token&channel_id=dm'),
+      //     headers: {"Content-Type": "application/json"},
+      //   );
+      //   print(response.body);
+      // }catch(e){
+      //   print(e);
+      // }
       if (userCredential.additionalUserInfo!.isNewUser) {
         print("loggin OK ,1"); // 新規ユーザーの場合
         Navigator.push(
