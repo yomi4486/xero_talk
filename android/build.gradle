@@ -3,11 +3,20 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        jcenter()
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
+}
+
+plugins {
+  id 'com.android.application'
+
+  // Add the Google services Gradle plugin
+  id 'com.google.gms.google-services' version '4.3.15' apply false
+  // ...
 }
 
 allprojects {
@@ -25,6 +34,3 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-tasks.register("clean", Delete) {
-    delete rootProject.buildDir
-}
