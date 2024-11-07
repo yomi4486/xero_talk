@@ -1,11 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
+import 'package:xero_talk/home.dart';
 import 'package:xero_talk/notify.dart';
 
-class chatHome extends StatelessWidget{
-  chatHome(this.userCredential);
+class accountPage extends StatelessWidget{
+  accountPage(this.userCredential);
   UserCredential userCredential;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   @override
@@ -15,18 +15,19 @@ class chatHome extends StatelessWidget{
       child:Scaffold(
       bottomNavigationBar: BottomNavigationBar(
         enableFeedback:false,
+        currentIndex:2,
         onTap: (value) {
           print(value);
-          if(value == 1){
+          if(value == 0){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>notifyPage(userCredential),
+              pageBuilder: (_, __, ___)=>chatHome(userCredential),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }
             ));
-          }else if(value == 2){
+          }else if(value==1){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>accountPage(userCredential),
+              pageBuilder: (_, __, ___)=>notifyPage(userCredential),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }
@@ -48,8 +49,8 @@ class chatHome extends StatelessWidget{
             label: '通知',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person,color: Color.fromARGB(255, 200, 200, 200),),
-            label:'アカウント',
+            icon: Icon(Icons.person,),
+            label:'アカウント' ,
             
           ),
         ],
@@ -58,7 +59,7 @@ class chatHome extends StatelessWidget{
       appBar:AppBar(
         centerTitle: false,
         automaticallyImplyLeading: false,
-        title: const Text('メッセージ',style: TextStyle(fontWeight: FontWeight.bold,)),
+        title: const Text("アカウント",style: TextStyle(fontWeight: FontWeight.bold,)),
         titleTextStyle: const TextStyle(
           color:Color.fromARGB(255, 255, 255, 255),
           fontSize: 20
@@ -91,7 +92,7 @@ class chatHome extends StatelessWidget{
                       SizedBox(
                         width:MediaQuery.of(context).size.width,
                         child: Container(
-                          margin: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.25,top: 30,right: 30,bottom: 30),
+                          margin:const EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
                           child:Column(
                             children:[
                               Row(
@@ -102,11 +103,6 @@ class chatHome extends StatelessWidget{
                                       GestureDetector(
                                         onTap: () {
                                           print("onTap called.");
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => chat(userCredential)),
-                                          );
-
                                         },
                                         child:Container(
                                           decoration: const BoxDecoration(color:Color.fromARGB(0, 255, 255, 255)),
@@ -126,7 +122,7 @@ class chatHome extends StatelessWidget{
                                                   mainAxisAlignment: MainAxisAlignment.start,
                                                   children:[
                                                     SizedBox(
-                                                        child:Text("yomi4486",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
+                                                        child:Text("yomi4486があなたをメンションしました",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
                                                     ),
                                                     // SizedBox(
                                                     //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
@@ -175,55 +171,6 @@ class chatHome extends StatelessWidget{
                       ),
                     ] //childlen 画面全体
                   )
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(color: Color.fromARGB(255, 68, 68, 68)),
-                  
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.2,
-                    height: MediaQuery.of(context).size.height,
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.all(12),
-                          child:ClipRRect( // アイコン表示（角丸）
-                            borderRadius: BorderRadius.circular(2000000),
-                            child:Container(
-                              color:const Color.fromARGB(255, 140, 206, 74),
-                              child:Image.asset(
-                                "assets/images/chat.png",
-                                width: MediaQuery.of(context).size.width *0.15,
-                              )
-                            ),
-                          )
-                        ),
-                        Container(
-                          margin: const EdgeInsets.all(12),
-                          child:ClipRRect( // アイコン表示（角丸）
-                            borderRadius: BorderRadius.circular(2000000),
-                            child:Image.asset(
-                              "assets/images/logo.png",
-                              width: MediaQuery.of(context).size.width *0.15,
-                            ),
-                          )
-                        ),
-                        Container(
-                          margin: const EdgeInsets.all(12),
-                          child:ClipRRect( // アイコン表示（角丸）
-                            borderRadius: BorderRadius.circular(2000000),
-                            child:Image.asset(
-                              "assets/images/logo.png",
-                              width: MediaQuery.of(context).size.width *0.15,
-                            ),
-                          )
-                        ),
-                      ],
-                    )
-                  ),
-                ),
               ),
             ]
           )

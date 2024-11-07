@@ -26,7 +26,6 @@ class AccountStartup extends StatelessWidget{
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-
           var profile = userCredential.additionalUserInfo?.profile;
           // ドキュメント作成
           FirebaseFirestore.instance
