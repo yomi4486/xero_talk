@@ -14,7 +14,6 @@ class chat extends StatelessWidget{
   final WebSocketChannel channel = WebSocketChannel.connect(
     Uri.parse('wss://localhost:8765'), // WebSocketサーバーのURL
   );
-
   @override
   String? chat_text = "";
   
@@ -117,7 +116,10 @@ class chat extends StatelessWidget{
                     child:Container(
                       color:const Color.fromARGB(0, 255, 255, 255),
                       child:IconButton(
-                        onPressed: (){Navigator.of(context).pop();},
+                        onPressed: ()async{
+                          Navigator.of(context).pop();
+                          await channel.sink.close(1000);
+                        },
                         icon: const Icon(
                           Icons.arrow_back,
                           color: Color.fromARGB(128, 255, 255, 255)

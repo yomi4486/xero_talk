@@ -1,5 +1,6 @@
 NAMES = *
 android:
+	cd android
 	flutter build appbundle
 
 release:
