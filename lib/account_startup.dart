@@ -119,7 +119,6 @@ class AccountStartup extends StatelessWidget{
                                         color: Color.fromARGB(255, 255, 255, 255),
                                         fontSize: 16,
                                       )
-                                      
                                     ),
                                   ),
                                   TextField(
