@@ -150,7 +150,6 @@ class chat extends StatelessWidget{
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 16,bottom:10),
-
             child:Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -188,17 +187,15 @@ class chat extends StatelessWidget{
           )
         ],
       ),
-
-      
       backgroundColor: defaultColor,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children:[
-          Stack(clipBehavior: Clip.none,
-          
-          children:[
-            DecoratedBox(
-              decoration: const BoxDecoration(color: Color.fromARGB(255, 22, 22, 22)),
+          Stack(
+            clipBehavior: Clip.none,
+            children:[
+              DecoratedBox(
+                decoration: const BoxDecoration(color: Color.fromARGB(255, 22, 22, 22)),
                 child:Column( 
                   children: [
                     SizedBox(
@@ -289,8 +286,8 @@ class chat extends StatelessWidget{
                     ),
                   ] //childlen 画面全体
                 )
-            ),
-          ]
+              ),
+            ] 
           )
         ],
       )
