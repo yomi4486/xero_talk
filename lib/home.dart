@@ -16,7 +16,6 @@ class chatHome extends StatelessWidget{
       bottomNavigationBar: BottomNavigationBar(
         enableFeedback:false,
         onTap: (value) {
-          print(value);
           if(value == 1){
             Navigator.push(context, PageRouteBuilder(
               pageBuilder: (_, __, ___)=>notifyPage(userCredential),
