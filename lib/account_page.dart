@@ -39,7 +39,6 @@ class accountPage extends StatelessWidget{
               enableFeedback:false,
               currentIndex:2,
               onTap: (value) {
-                print(value);
                 if(value == 0){
                   Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (_, __, ___)=>chatHome(userCredential),
