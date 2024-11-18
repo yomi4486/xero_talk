@@ -11,14 +11,21 @@ class chat extends StatelessWidget{
   chat(this.userCredential);
   UserCredential userCredential;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
-  final WebSocketChannel channel = WebSocketChannel.connect(
-    Uri.parse('wss://localhost:8765'), // WebSocketサーバーのURL
-  );
+
   @override
   String? chat_text = "";
+
   
   final fieldText = TextEditingController();
   Widget build(BuildContext context) {
+    Future<String> getToken() async {
+      String token = await FirebaseAuth.instance.currentUser?.getIdToken() ?? "";
+      return token;
+    }
+    Future<String> token = getToken();
+    final WebSocketChannel channel = WebSocketChannel.connect(
+      Uri.parse('wss://localhost:8000/send_message?token=$token'), // WebSocketサーバーのURL
+    );
     return Scaffold(
       bottomSheet: BottomAppBar(
         height: MediaQuery.of(context).size.height*0.12,
@@ -73,13 +80,14 @@ class chat extends StatelessWidget{
 
 
                   void sendMessage(chatText) async {
-                    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-                    final response = await http.post(
-                      Uri.parse('https://localhost:9000/send_message?content=$chatText&token=$token&channel_id=dm'),
-                      headers: {"Content-Type": "application/json"},
-                    );
-                    print(chat_text);
-                    print(response.body);
+                    // String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+                    // final response = await http.post(
+                    //   Uri.parse('https://localhost:9000/send_message?content=$chatText&token=$token&channel_id=dm'),
+                    //   headers: {"Content-Type": "application/json"},
+                    // );
+                    channel.sink.add(chatText);
+                    // print(chat_text);
+                    // print(response.body);
                   }
 
                   sendMessage(chat_text);
@@ -118,7 +126,7 @@ class chat extends StatelessWidget{
                       child:IconButton(
                         onPressed: ()async{
                           Navigator.of(context).pop();
-                          await channel.sink.close(1000);
+                          // await channel.sink.close(1000);
                         },
                         icon: const Icon(
                           Icons.arrow_back,
@@ -241,7 +249,7 @@ class chat extends StatelessWidget{
                                             } else {
                                               displayName = "Loading...(2)";
                                             }
-                                            final chatWidget = 
+                                            final chatWidget =
                                             Container(
                                               margin: const EdgeInsets.only(bottom:10,top: 10),
                                               child: Row(
@@ -262,7 +270,6 @@ class chat extends StatelessWidget{
                                                           child:Text(displayName,style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
                                                         ),
                                                         SizedBox(
-                                                          
                                                           child:Text('${content["content"]}',style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
                                                         )
                                                       ]
