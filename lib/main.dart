@@ -153,7 +153,7 @@ class _LoginPageState extends State<MyHomePage> {
                     )
                   ),
                 ),
-              )         
+              ) 
             ],
           ),
         )

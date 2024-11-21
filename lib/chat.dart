@@ -22,9 +22,12 @@ class chat extends StatelessWidget{
       String token = await FirebaseAuth.instance.currentUser?.getIdToken() ?? "";
       return token;
     }
-    Future<String> token = getToken();
+    
+    String token="";
+    getToken().then((value){token = value;});
+    print(token);
     final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('wss://localhost:8000/send_message?token=$token'), // WebSocketサーバーのURL
+      Uri.parse('wss://localhost:8000/send_message?token=$token')
     );
     return Scaffold(
       bottomSheet: BottomAppBar(
@@ -73,19 +76,14 @@ class chat extends StatelessWidget{
               IconButton(
                 style:ButtonStyle(backgroundColor:MaterialStateProperty.all<Color>(Color.fromARGB(255, 140, 206, 74))),
                 onPressed: (){
-                  if(chat_text!.isNotEmpty){
-                    print(chat_text);
-                    channel.sink.add(chat_text);
-                  }
-
-
                   void sendMessage(chatText) async {
-                    // String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+                    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
                     // final response = await http.post(
                     //   Uri.parse('https://localhost:9000/send_message?content=$chatText&token=$token&channel_id=dm'),
                     //   headers: {"Content-Type": "application/json"},
                     // );
-                    channel.sink.add(chatText);
+                    final send_body = {"token":"$token","content":"$chatText"};
+                    channel.sink.add(convert.json.encode(send_body));
                     // print(chat_text);
                     // print(response.body);
                   }
@@ -220,14 +218,13 @@ class chat extends StatelessWidget{
                                     StreamBuilder(
                                       stream: channel.stream,
                                       builder: (context,snapshot) {
-                                        print(snapshot.data);
+                                        
                                         var displayName="Loading...";
                                         var profile = userCredential.additionalUserInfo?.profile;
                                         var content = {};
                                         
                                         try{
                                           content = convert.json.decode(snapshot.data);
-                                          print(content);
                                         }catch(e){
                                           print("JSON decode error!: $e");
                                           return Container();
