@@ -7,17 +7,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
 
 class chat extends StatelessWidget{
-  
-  chat(this.userCredential);
+  chat({Key? key, required this.userCredential, required this.channelId}) : super(key: key);
   UserCredential userCredential;
+  String channelId;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
 
   @override
   String? chat_text = "";
 
-  
+
   final fieldText = TextEditingController();
   Widget build(BuildContext context) {
+    print(channelId);
     Future<String> getToken() async {
       String token = await FirebaseAuth.instance.currentUser?.getIdToken() ?? "";
       return token;
@@ -27,7 +28,7 @@ class chat extends StatelessWidget{
     getToken().then((value){token = value;});
     print(token);
     final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('wss://localhost:8000/send_message?token=$token')
+      Uri.parse('wss://localhost:8000/send_message')
     );
     return Scaffold(
       bottomSheet: BottomAppBar(
@@ -82,8 +83,8 @@ class chat extends StatelessWidget{
                     //   Uri.parse('https://localhost:9000/send_message?content=$chatText&token=$token&channel_id=dm'),
                     //   headers: {"Content-Type": "application/json"},
                     // );
-                    final send_body = {"token":"$token","content":"$chatText"};
-                    channel.sink.add(convert.json.encode(send_body));
+                    final sendBody = {"token":"$token","content":"$chatText","channel":channelId};
+                    channel.sink.add(convert.json.encode(sendBody));
                     // print(chat_text);
                     // print(response.body);
                   }
