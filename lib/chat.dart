@@ -5,6 +5,7 @@ import 'package:web_socket_channel/status.dart' as status;
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
+import 'package:xero_talk/widgets/message_card.dart';
 
 class chat extends StatelessWidget{
   chat({Key? key, required this.userCredential, required this.channelId}) : super(key: key);
@@ -18,15 +19,6 @@ class chat extends StatelessWidget{
 
   final fieldText = TextEditingController();
   Widget build(BuildContext context) {
-    print(channelId);
-    Future<String> getToken() async {
-      String token = await FirebaseAuth.instance.currentUser?.getIdToken() ?? "";
-      return token;
-    }
-    
-    String token="";
-    getToken().then((value){token = value;});
-    print(token);
     final WebSocketChannel channel = WebSocketChannel.connect(
       Uri.parse('wss://localhost:8000/send_message')
     );
@@ -78,6 +70,7 @@ class chat extends StatelessWidget{
                 style:ButtonStyle(backgroundColor:MaterialStateProperty.all<Color>(Color.fromARGB(255, 140, 206, 74))),
                 onPressed: (){
                   void sendMessage(chatText) async {
+                    print("called: sendMessage");
                     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
                     // final response = await http.post(
                     //   Uri.parse('https://localhost:9000/send_message?content=$chatText&token=$token&channel_id=dm'),
@@ -214,79 +207,17 @@ class chat extends StatelessWidget{
                             Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                Column(
-                                  children: <Widget>[
-                                    StreamBuilder(
-                                      stream: channel.stream,
-                                      builder: (context,snapshot) {
-                                        
-                                        var displayName="Loading...";
-                                        var profile = userCredential.additionalUserInfo?.profile;
-                                        var content = {};
-                                        
-                                        try{
-                                          content = convert.json.decode(snapshot.data);
-                                        }catch(e){
-                                          print("JSON decode error!: $e");
-                                          return Container();
-                                        }
-                                        // ドキュメント作成
-                                        final a =FirebaseFirestore.instance
-                                            .collection('user_account') // コレクションID
-                                            .doc('${content["author"]}'); // ドキュメントID
-                                        return FutureBuilder(
-                                          future: a.get(),
-                                          builder: (context, AsyncSnapshot<DocumentSnapshot> docSnapshot) {
-                                            if (docSnapshot.connectionState == ConnectionState.waiting) {
-                                              displayName = "Loading...(0)";
-                                            } else if (docSnapshot.hasError) {
-                                              displayName = "LoadError(1)";
-                                            } else if (docSnapshot.hasData) { // successful
-                                              displayName = (docSnapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No description";
-                                              print("data: ${docSnapshot.data?.data()}");
-                                            } else {
-                                              displayName = "Loading...(2)";
-                                            }
-                                            final chatWidget =
-                                            Container(
-                                              margin: const EdgeInsets.only(bottom:10,top: 10),
-                                              child: Row(
-                                                children: [
-                                                  ClipRRect( // アイコン表示（角丸）
-                                                    borderRadius: BorderRadius.circular(2000000),
-                                                      child:Image.network(
-                                                        "${userCredential.user!.photoURL}",
-                                                        width: MediaQuery.of(context).size.height *0.05,
-                                                      ),
-                                                  ),
-                                                  Container(
-                                                    margin: const EdgeInsets.only(left:10),
-                                                    child: Column(
-                                                      mainAxisAlignment: MainAxisAlignment.start,
-                                                      children:[
-                                                        SizedBox(
-                                                          child:Text(displayName,style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
-                                                        ),
-                                                        SizedBox(
-                                                          child:Text('${content["content"]}',style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
-                                                        )
-                                                      ]
-                                                    )
-                                                  )
-                                                ],
-                                              ),
-                                            );
-                                            return chatWidget;
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
+                                SingleChildScrollView(
+                                  child: AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 800),
+                                    reverseDuration: const Duration(milliseconds: 800),
+                                    child:MessageCard(stream: channel, userCredential: userCredential)
+                                  ),
+                                )
                               ],
                             ),
                           ]
-                        )
+                        ),
                       ),
                     ),
                   ] //childlen 画面全体
