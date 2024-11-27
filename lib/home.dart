@@ -142,7 +142,7 @@ class chatHome extends StatelessWidget{
                                           print("onTap called.");
                                           Navigator.push(
                                             context,
-                                            MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelId: "106017943896753291176")),
+                                            MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelId: "112905252227299870586")),
                                           );
 
                                         },
@@ -164,7 +164,7 @@ class chatHome extends StatelessWidget{
                                                   mainAxisAlignment: MainAxisAlignment.start,
                                                   children:[
                                                     SizedBox(
-                                                        child:Text("another_user",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
+                                                        child:Text("太郎",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
                                                     ),
                                                     // SizedBox(
                                                     //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
