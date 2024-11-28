@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:web_socket_channel/status.dart' as status;
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/message_card.dart';
@@ -12,13 +11,12 @@ class chat extends StatelessWidget{
   UserCredential userCredential;
   String channelId;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+  String? chatText = "";
+  final fieldText = TextEditingController();
 
   @override
-  String? chat_text = "";
-
-
-  final fieldText = TextEditingController();
   Widget build(BuildContext context) {
+
     final WebSocketChannel channel = WebSocketChannel.connect(
       Uri.parse('wss://localhost:8000/send_message')
     );
@@ -62,34 +60,27 @@ class chat extends StatelessWidget{
                     fillColor: const Color.fromARGB(16, 255, 255, 255),
                   ),
                   onChanged: (text){
-                    chat_text = text;
+                    chatText = text;
                   },
                 ),
               ),
               IconButton(
-                style:ButtonStyle(backgroundColor:MaterialStateProperty.all<Color>(Color.fromARGB(255, 140, 206, 74))),
-                onPressed: (){
-                  void sendMessage(chatText) async {
-                    print("called: sendMessage");
-                    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-                    // final response = await http.post(
-                    //   Uri.parse('https://localhost:9000/send_message?content=$chatText&token=$token&channel_id=dm'),
-                    //   headers: {"Content-Type": "application/json"},
-                    // );
-                    final sendBody = {"token":"$token","content":"$chatText","channel":channelId};
-                    channel.sink.add(convert.json.encode(sendBody));
-                    // print(chat_text);
-                    // print(response.body);
+                style:ButtonStyle(backgroundColor:MaterialStateProperty.all<Color>(const Color.fromARGB(255, 140, 206, 74))),
+                onPressed: () async {
+                  void sendMessage(String? text) async {
+                    if(text!.isNotEmpty){
+                      String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+                      final sendBody = {"token":"$token","content":text,"channel":channelId};
+                      channel.sink.add(convert.json.encode(sendBody));
+                    }
                   }
-
-                  sendMessage(chat_text);
-                  chat_text = "";
+                  sendMessage(chatText);
+                  chatText = "";
                   fieldText.clear();
                 },
                 icon: const ImageIcon(
                   AssetImage("assets/images/send.png"),
                   color: Color.fromARGB(255, 255, 255, 255),
-
                 )
               ),
             ],
@@ -106,7 +97,7 @@ class chat extends StatelessWidget{
         ),
         backgroundColor: const Color.fromARGB(255, 40, 40, 40),
         leading: Container(
-          margin: EdgeInsets.only(left:7),
+          margin: const EdgeInsets.only(left:7),
           child:Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children:[
@@ -141,7 +132,7 @@ class chat extends StatelessWidget{
               ),
               Container(
                 width: 200,
-                margin:EdgeInsets.only(left:10),
+                margin:const EdgeInsets.only(left:10),
                 child:const Text('yomi4486',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color:Color.fromARGB(200, 255, 255, 255)),),
               )
             ]
