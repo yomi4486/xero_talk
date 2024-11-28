@@ -13,13 +13,11 @@ class chat extends StatelessWidget{
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   String? chatText = "";
   final fieldText = TextEditingController();
-
+  final WebSocketChannel channel = WebSocketChannel.connect(
+    Uri.parse('wss://localhost:8000/send_message')
+  );
   @override
   Widget build(BuildContext context) {
-
-    final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('wss://localhost:8000/send_message')
-    );
     return Scaffold(
       bottomSheet: BottomAppBar(
         height: MediaQuery.of(context).size.height*0.12,
@@ -109,7 +107,7 @@ class chat extends StatelessWidget{
                       child:IconButton(
                         onPressed: ()async{
                           Navigator.of(context).pop();
-                          // await channel.sink.close(1000);
+                          await channel.sink.close(1000);
                         },
                         icon: const Icon(
                           Icons.arrow_back,
