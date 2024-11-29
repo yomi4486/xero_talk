@@ -7,17 +7,19 @@ import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/message_card.dart';
 
 class chat extends StatelessWidget{
-  chat({Key? key, required this.userCredential, required this.channelId}) : super(key: key);
+  chat({Key? key, required this.userCredential, required this.channelInfo}) : super(key: key);
   UserCredential userCredential;
-  String channelId;
+  Map channelInfo;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   String? chatText = "";
   final fieldText = TextEditingController();
   final WebSocketChannel channel = WebSocketChannel.connect(
     Uri.parse('wss://localhost:8000/send_message')
   );
+  
   @override
   Widget build(BuildContext context) {
+    final String displayName = channelInfo["displayName"];
     return Scaffold(
       bottomSheet: BottomAppBar(
         height: MediaQuery.of(context).size.height*0.12,
@@ -44,7 +46,7 @@ class chat extends StatelessWidget{
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    hintText: 'yomi4486にメッセージを送信',
+                    hintText: '$displayNameにメッセージを送信',
                     // labelText:'yomi4486にメッセージを送信',
                     labelStyle: const TextStyle(
                       color: Color.fromARGB(255, 255, 255, 255),
@@ -68,6 +70,7 @@ class chat extends StatelessWidget{
                   void sendMessage(String? text) async {
                     if(text!.isNotEmpty){
                       String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+                      final channelId = channelInfo["channelId"];
                       final sendBody = {"token":"$token","content":text,"channel":channelId};
                       channel.sink.add(convert.json.encode(sendBody));
                     }
@@ -131,7 +134,7 @@ class chat extends StatelessWidget{
               Container(
                 width: 200,
                 margin:const EdgeInsets.only(left:10),
-                child:const Text('yomi4486',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color:Color.fromARGB(200, 255, 255, 255)),),
+                child:Text(displayName,style: TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color:Color.fromARGB(200, 255, 255, 255)),),
               )
             ]
           ),
@@ -192,19 +195,15 @@ class chat extends StatelessWidget{
                       child: Container(
                         margin: const EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
                         child:Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children:[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                SingleChildScrollView(
-                                  child: AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 800),
-                                    reverseDuration: const Duration(milliseconds: 800),
-                                    child:MessageCard(stream: channel, userCredential: userCredential)
-                                  ),
-                                )
-                              ],
-                            ),
+                            SingleChildScrollView(
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 800),
+                                reverseDuration: const Duration(milliseconds: 800),
+                                child:MessageCard(stream: channel, userCredential: userCredential)
+                              ),
+                            )
                           ]
                         ),
                       ),
