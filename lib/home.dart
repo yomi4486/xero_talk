@@ -90,128 +90,97 @@ class chatHome extends StatelessWidget{
                       SizedBox(
                         width:MediaQuery.of(context).size.width,
                         child: Container(
-                          margin: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.25,top: 30,right: 30,bottom: 30),
+                          margin: EdgeInsets.only(
+                            left:MediaQuery.of(context).size.width * 0.25 > 120 ? 120 : MediaQuery.of(context).size.width * 0.25,
+                            top: 30,
+                            right: 30,
+                            bottom: 30
+                          ),
                           child:Column(
-                            children:[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Column(
-                                    children: [
-                                      GestureDetector(
-                                        onTap: () {
-                                          print("onTap called.");
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelId: "106017943896753291176")),
-                                          );
+                            mainAxisAlignment:MainAxisAlignment.start,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  print("onTap called.");
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"106017943896753291176","displayName":"yomi4486","name":"yomi4486"})),
+                                  );
 
-                                        },
-                                        child:Container(
-                                          decoration: const BoxDecoration(color:Color.fromARGB(0, 255, 255, 255)),
-                                          margin: const EdgeInsets.only(bottom:10),
-                                          child: Row(
-                                            children:[
-                                              ClipRRect( // アイコン表示（角丸）
-                                                borderRadius: BorderRadius.circular(2000000),
-                                                  child:Image.network(
-                                                    "${userCredential.user!.photoURL}",
-                                                    width: MediaQuery.of(context).size.height *0.05,
-                                                  ),
-                                              ),
-                                              Container(
-                                                margin: const EdgeInsets.only(left:10),
-                                                child:const Column(
-                                                  mainAxisAlignment: MainAxisAlignment.start,
-                                                  children:[
-                                                    SizedBox(
-                                                        child:Text("yomi4486",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
-                                                    ),
-                                                    // SizedBox(
-                                                    //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
-                                                    // )
-                                                  ]
-                                                )
-                                              )
-                                            ]
+                                },
+                                child:Container(
+                                  decoration: const BoxDecoration(color:Color.fromARGB(0, 255, 255, 255)),
+                                  margin: const EdgeInsets.only(bottom:10),
+                                  child: Row(
+                                    children:[
+                                      ClipRRect( // アイコン表示（角丸）
+                                        borderRadius: BorderRadius.circular(2000000),
+                                          child:Image.network(
+                                            "${userCredential.user!.photoURL}",
+                                            width: MediaQuery.of(context).size.height *0.05,
                                           ),
-                                        ),
                                       ),
-                                      GestureDetector(
-                                        onTap: () {
-                                          print("onTap called.");
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelId: "112905252227299870586")),
-                                          );
-
-                                        },
-                                        child:Container(
-                                          decoration: const BoxDecoration(color:Color.fromARGB(0, 255, 255, 255)),
-                                          margin: const EdgeInsets.only(bottom:10),
-                                          child: Row(
-                                            children:[
-                                              ClipRRect( // アイコン表示（角丸）
-                                                borderRadius: BorderRadius.circular(2000000),
-                                                  child:Image.network(
-                                                    "${userCredential.user!.photoURL}",
-                                                    width: MediaQuery.of(context).size.height *0.05,
-                                                  ),
-                                              ),
-                                              Container(
-                                                margin: const EdgeInsets.only(left:10),
-                                                child:const Column(
-                                                  mainAxisAlignment: MainAxisAlignment.start,
-                                                  children:[
-                                                    SizedBox(
-                                                        child:Text("太郎",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
-                                                    ),
-                                                    // SizedBox(
-                                                    //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
-                                                    // )
-                                                  ]
-                                                )
-                                              )
-                                            ]
-                                          ),
-                                        ),
-                                      ),
-                                      // Container(margin: const EdgeInsets.only(bottom:10,top: 10),
-                                      //   child: Row(
-                                      //     children: [
-                                      //       ClipRRect( // アイコン表示（角丸）
-                                      //         borderRadius: BorderRadius.circular(2000000),
-                                      //           child:Image.network(
-                                      //             "${userCredential.user!.photoURL}",
-                                      //             width: MediaQuery.of(context).size.height *0.05,
-                                      //           ),
-                                      //       ),
-                                      //       Container(
-                                      //         margin: const EdgeInsets.only(left:10),
-                                      //         child:const Column(
-                                      //           mainAxisAlignment: MainAxisAlignment.start,
-                                      //           children:[
-                                      //             SizedBox(
-                                      //               child:Text("yomi4486",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
-                                      //             ),
-                                      //             // SizedBox(
-                                      //             //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
-                                      //             // )
-                                      //           ]
-                                      //         )
-                                      //       )
-                                      //     ],
-                                      //   ),
-                                      // ),
-                                    ],                             
+                                      Container(
+                                        margin: const EdgeInsets.only(left:10),
+                                        child:const Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          children:[
+                                            SizedBox(
+                                                child:Text("yomi4486",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
+                                            ),
+                                            // SizedBox(
+                                            //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
+                                            // )
+                                          ]
+                                        )
+                                      )
+                                    ]
                                   ),
-                                ],
+                                ),
                               ),
-                            ]
-                          )
-                        ),
+                              GestureDetector(
+                                onTap: () {
+                                  print("onTap called.");
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo: const {"channelId":"112905252227299870586","displayName":"太郎","name":"ta"})),
+                                  );
+                                },
+                                child:Container(
+                                  decoration: const BoxDecoration(color:Color.fromARGB(0, 255, 255, 255)),
+                                  margin: const EdgeInsets.only(bottom:10),
+                                  child: Row(
+                                    children:[
+                                      ClipRRect( // アイコン表示（角丸）
+                                        borderRadius: BorderRadius.circular(2000000),
+                                          child:Image.network(
+                                            "${userCredential.user!.photoURL}",
+                                            width: MediaQuery.of(context).size.height *0.05,
+                                          ),
+                                      ),
+                                      Container(
+                                        margin: const EdgeInsets.only(left:10),
+                                        child:const Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          children:[
+                                            SizedBox(
+                                                child:Text("太郎",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
+                                            ),
+                                            // SizedBox(
+                                            //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
+                                            // )
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],                             
+                          ),
+                        )
                       ),
-                    ] //childlen 画面全体
+                    ],
                   )
               ),
               Positioned(
@@ -219,54 +188,59 @@ class chatHome extends StatelessWidget{
                 left: 0,
                 child: DecoratedBox(
                   decoration: const BoxDecoration(color: Color.fromARGB(255, 68, 68, 68)),
-                  
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.2,
-                    height: MediaQuery.of(context).size.height,
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.all(12),
-                          child:ClipRRect( // アイコン表示（角丸）
-                            borderRadius: BorderRadius.circular(2000000),
-                            child:Container(
-                              color:const Color.fromARGB(255, 140, 206, 74),
-                              child:Image.asset(
-                                "assets/images/chat.png",
-                                width: MediaQuery.of(context).size.width *0.15,
+                    child:ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: 95.0,
+                      ),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.2,
+                        height: MediaQuery.of(context).size.height,
+                        child: Column(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.all(12),
+                              child:ClipRRect( // アイコン表示（角丸）
+                                borderRadius: BorderRadius.circular(2000000),
+                                child:Container(
+                                  color:const Color.fromARGB(255, 140, 206, 74),
+                                  child:Image.asset(
+                                    "assets/images/chat.png",
+                                    width: MediaQuery.of(context).size.width *0.15,
+                                  )
+                                ),
                               )
                             ),
-                          )
-                        ),
-                        Container(
-                          margin: const EdgeInsets.all(12),
-                          child:ClipRRect( // アイコン表示（角丸）
-                            borderRadius: BorderRadius.circular(2000000),
-                            child:Image.asset(
-                              "assets/images/logo.png",
-                              width: MediaQuery.of(context).size.width *0.15,
+                            Container(
+                              margin: const EdgeInsets.all(12),
+                              child:ClipRRect( // アイコン表示（角丸）
+                                borderRadius: BorderRadius.circular(2000000),
+                                child:Image.asset(
+                                  "assets/images/logo.png",
+                                  width: MediaQuery.of(context).size.width *0.15,
+                                ),
+                              )
                             ),
-                          )
-                        ),
-                        Container(
-                          margin: const EdgeInsets.all(12),
-                          child:ClipRRect( // アイコン表示（角丸）
-                            borderRadius: BorderRadius.circular(2000000),
-                            child:Image.asset(
-                              "assets/images/logo.png",
-                              width: MediaQuery.of(context).size.width *0.15,
+                            Container(
+                              margin: const EdgeInsets.all(12),
+                              child:ClipRRect( // アイコン表示（角丸）
+                                borderRadius: BorderRadius.circular(2000000),
+                                child:Image.asset(
+                                  "assets/images/logo.png",
+                                  width: MediaQuery.of(context).size.width *0.15,
+                                ),
+                              )
                             ),
-                          )
-                        ),
-                      ],
-                    )
+                          ],
+                        )
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ]
-          )
-        ],
+              ]
+            )
+          ],
+        )
       )
-    ));
+    );
   }
 }
