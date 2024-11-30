@@ -14,12 +14,22 @@ class chat extends StatelessWidget{
   String? chatText = "";
   final fieldText = TextEditingController();
   final WebSocketChannel channel = WebSocketChannel.connect(
-    Uri.parse('wss://localhost:8000/send_message')
+    Uri.parse('wss://localhost:8000/v1')
   );
-  
+  bool login = false;
   @override
   Widget build(BuildContext context) {
     final String displayName = channelInfo["displayName"];
+    void chatLogin() async {
+      String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      final sendBody = {"type":"login","token":token};
+      channel.sink.add(convert.json.encode(sendBody));
+    }
+    if (!login) {
+      chatLogin();
+      login=true;
+    }
+
     return Scaffold(
       bottomSheet: BottomAppBar(
         height: MediaQuery.of(context).size.height*0.12,
@@ -71,7 +81,7 @@ class chat extends StatelessWidget{
                     if(text!.isNotEmpty){
                       String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
                       final channelId = channelInfo["channelId"];
-                      final sendBody = {"token":"$token","content":text,"channel":channelId};
+                      final sendBody = {"type":"send_message","token":"$token","content":text,"channel":channelId};
                       channel.sink.add(convert.json.encode(sendBody));
                     }
                   }
