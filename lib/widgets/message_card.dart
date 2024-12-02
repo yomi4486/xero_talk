@@ -37,9 +37,11 @@ class MessageCard extends StatelessWidget {
                 return const Column();
               } else if (docSnapshot.hasData) { // successful
                 displayName = (docSnapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No Name";
+                final String message_content = content["content"];
                 final chatWidget = Container(
                   margin: const EdgeInsets.only(bottom:10,top: 10),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       ClipRRect( // アイコン表示（角丸）
                         borderRadius: BorderRadius.circular(2000000),
@@ -51,14 +53,26 @@ class MessageCard extends StatelessWidget {
                       Container(
                         margin: const EdgeInsets.only(left:10),
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children:[
-                            SizedBox(
-                              child:Text(displayName,style:const TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
-                            ),
-                            SizedBox(
-                              child:Text('${content["content"]}',style: const TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
-                            )
+                            Text( // 名前
+                              displayName,
+                              style:const TextStyle(
+                                color:Color.fromARGB(200, 255, 255, 255),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16
+                              ),textAlign: TextAlign.left,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),    
+                            Text( // メッセージの内容
+                              message_content,
+                              style: const TextStyle(
+                                color:Color.fromARGB(200, 255, 255, 255)
+                              ),
+                              textAlign: TextAlign.left,
+                            ), 
                           ]
                         )
                       )
