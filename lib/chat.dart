@@ -7,28 +7,16 @@ import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/message_card.dart';
 
 class chat extends StatelessWidget{
-  chat({Key? key, required this.userCredential, required this.channelInfo}) : super(key: key);
+  chat({Key? key, required this.userCredential, required this.channelInfo,required this.channel}) : super(key: key);
   UserCredential userCredential;
   Map channelInfo;
+  WebSocketChannel channel;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   String? chatText = "";
   final fieldText = TextEditingController();
-  final WebSocketChannel channel = WebSocketChannel.connect(
-    Uri.parse('wss://localhost:8000/v1')
-  );
-  bool login = false;
   @override
   Widget build(BuildContext context) {
     final String displayName = channelInfo["displayName"];
-    void chatLogin() async {
-      String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-      final sendBody = {"type":"login","token":token};
-      channel.sink.add(convert.json.encode(sendBody));
-    }
-    if (!login) {
-      chatLogin();
-      login=true;
-    }
 
     return Scaffold(
       bottomSheet: BottomAppBar(
