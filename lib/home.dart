@@ -4,11 +4,12 @@ import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-
 class chatHome extends StatelessWidget{
-  chatHome(this.userCredential);
+  chatHome({Key? key, required this.userCredential,required this.channel}) : super(key: key);
+  WebSocketChannel channel;
   UserCredential userCredential;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -19,14 +20,14 @@ class chatHome extends StatelessWidget{
         onTap: (value) {
           if(value == 1){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>notifyPage(userCredential),
+              pageBuilder: (_, __, ___)=>notifyPage(userCredential:userCredential,channel: channel,),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }
             ));
           }else if(value == 2){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>accountPage(userCredential),
+              pageBuilder: (_, __, ___)=>accountPage(userCredential:userCredential,channel: channel,),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }
@@ -102,10 +103,6 @@ class chatHome extends StatelessWidget{
                             children: [
                               GestureDetector(
                                 onTap: () async {
-                                  String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-                                  final WebSocketChannel channel = WebSocketChannel.connect(
-                                    Uri.parse('wss://localhost:8000/v1?token=$token')
-                                  );
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"106017943896753291176","displayName":"yomi4486","name":"yomi4486"},channel: channel)),
@@ -144,13 +141,10 @@ class chatHome extends StatelessWidget{
                               ),
                               GestureDetector(
                                 onTap: () async{
-                                  String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-                                  final WebSocketChannel channel = WebSocketChannel.connect(
-                                    Uri.parse('wss://localhost:8000/v1?token=$token')
-                                  );
                                   print("onTap called.");
                                   Navigator.push(
                                     context,
+                                    
                                     MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"112905252227299870586","displayName":"太郎","name":"ta"},channel:channel)),
                                   );
                                 },
