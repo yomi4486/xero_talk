@@ -4,10 +4,12 @@ import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/home.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class accountPage extends StatelessWidget{
-  accountPage(this.userCredential);
+  accountPage({Key? key, required this.userCredential,required this.channel}) : super(key: key);
   UserCredential userCredential;
+  WebSocketChannel channel;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   var description = "";
   var displayName = "";
@@ -41,14 +43,14 @@ class accountPage extends StatelessWidget{
               onTap: (value) {
                 if(value == 0){
                   Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (_, __, ___)=>chatHome(userCredential),
+                    pageBuilder: (_, __, ___)=>chatHome(userCredential:userCredential,channel: channel,),
                         transitionsBuilder: (context, animation, secondaryAnimation, child){
                           return FadeTransition(opacity: animation, child: child,);
                     }
                   ));
                 }else if(value==1){
                   Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (_, __, ___)=>notifyPage(userCredential),
+                    pageBuilder: (_, __, ___)=>notifyPage(userCredential:userCredential,channel:channel),
                         transitionsBuilder: (context, animation, secondaryAnimation, child){
                           return FadeTransition(opacity: animation, child: child,);
                     }
