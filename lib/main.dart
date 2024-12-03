@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:xero_talk/account_startup.dart';
 // import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:xero_talk/home.dart';
 import 'dart:io';
 class MyHttpOverrides extends HttpOverrides{ // これがないとWSS通信ができない
@@ -49,6 +50,13 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<MyHomePage> {
+  Future<WebSocketChannel> getSession() async{
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    final WebSocketChannel channel = WebSocketChannel.connect(
+      Uri.parse('wss://localhost:8000/v1?token=$token')
+    );
+    return Future<WebSocketChannel>.value(channel);
+  }
   void signInWithGoogle() async {
     try {
       //Google認証フローを起動する
@@ -73,17 +81,19 @@ class _LoginPageState extends State<MyHomePage> {
       // }catch(e){
       //   print(e);
       // }
+      WebSocketChannel channel = await getSession();
       if (userCredential.additionalUserInfo!.isNewUser) {
         print("loggin OK ,1"); // 新規ユーザーの場合
         Navigator.push(
+
           context,
-          MaterialPageRoute(builder: (context) => AccountStartup(userCredential)),
+          MaterialPageRoute(builder: (context) => AccountStartup(userCredential:userCredential,channel: channel,)),
         );
       } else {
         print("loggin OK ,2"); //既存ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => chatHome(userCredential)),
+          MaterialPageRoute(builder: (context) => chatHome(userCredential: userCredential,channel:channel)),
         );
       }
     } on FirebaseException catch (e) {

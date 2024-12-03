@@ -15,6 +15,7 @@ class chat extends StatelessWidget{
   String? chatText = "";
   final fieldText = TextEditingController();
   @override
+  
   Widget build(BuildContext context) {
     final String displayName = channelInfo["displayName"];
 
@@ -67,9 +68,8 @@ class chat extends StatelessWidget{
                 onPressed: () async {
                   void sendMessage(String? text) async {
                     if(text!.isNotEmpty){
-                      String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
                       final channelId = channelInfo["channelId"];
-                      final sendBody = {"type":"send_message","token":"$token","content":text,"channel":channelId};
+                      final sendBody = {"type":"send_message","content":text,"channel":channelId};
                       channel.sink.add(convert.json.encode(sendBody));
                     }
                   }
@@ -106,9 +106,8 @@ class chat extends StatelessWidget{
                     child:Container(
                       color:const Color.fromARGB(0, 255, 255, 255),
                       child:IconButton(
-                        onPressed: ()async{
+                        onPressed: (){
                           Navigator.of(context).pop();
-                          await channel.sink.close(1000);
                         },
                         icon: const Icon(
                           Icons.arrow_back,
@@ -214,5 +213,5 @@ class chat extends StatelessWidget{
         ],
       )
     );
-  }  
+  }
 }
