@@ -2,10 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/home.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class AccountStartup extends StatelessWidget{
-  AccountStartup(this.userCredential);
+  AccountStartup({Key? key, required this.userCredential,required this.channel}) : super(key: key);
   UserCredential userCredential;
+  WebSocketChannel channel;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   @override
   Widget build(BuildContext context) {
@@ -41,7 +43,7 @@ class AccountStartup extends StatelessWidget{
               .then((value){
                 print("ok!!!");
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => chatHome(userCredential))
+                  MaterialPageRoute(builder: (context) => chatHome(userCredential:userCredential,channel:channel,))
                 );
               })
               .catchError((err){
