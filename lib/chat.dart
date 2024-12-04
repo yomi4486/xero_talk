@@ -6,17 +6,37 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/message_card.dart';
 
-class chat extends StatelessWidget{
-  chat({Key? key, required this.userCredential, required this.channelInfo,required this.channel}) : super(key: key);
+class chat extends StatefulWidget {
+  const chat({Key? key, required this.userCredential, required this.channelInfo,required this.channel}) : super(key: key);
+  final UserCredential userCredential;
+  final Map channelInfo;
+  final WebSocketChannel channel;
+  @override
+  
+  State<chat> createState(){
+    return _chat(userCredential: userCredential,channelInfo: channelInfo,channel: channel);
+  }
+}
+
+
+class _chat extends State<chat>{
+  
+  _chat({required this.userCredential, required this.channelInfo,required this.channel});
   UserCredential userCredential;
   Map channelInfo;
   WebSocketChannel channel;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   String? chatText = "";
   final fieldText = TextEditingController();
+
   @override
-  
+  void dispose() {
+    fieldText.dispose();
+    super.dispose();
+  }
+  @override
   Widget build(BuildContext context) {
+    
     final String displayName = channelInfo["displayName"];
 
     return Scaffold(
