@@ -4,6 +4,7 @@ import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:xero_talk/widgets/flash_modal.dart';
 class chatHome extends StatelessWidget{
   chatHome({Key? key, required this.userCredential,required this.channel}) : super(key: key);
   WebSocketChannel channel;
@@ -12,6 +13,7 @@ class chatHome extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
+    
     return WillPopScope(
       onWillPop:() async => false,
       child:Scaffold(
@@ -178,6 +180,7 @@ class chatHome extends StatelessWidget{
                                   ),
                                 ),
                               ),
+                              InfoSnack(userCredential: userCredential,title:"yomi4486",datail: "こんにちは！",)
                             ],                             
                           ),
                         )
