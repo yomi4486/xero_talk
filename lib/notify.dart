@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xero_talk/account_page.dart';
@@ -7,7 +9,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class notifyPage extends StatelessWidget{
   notifyPage({Key? key, required this.userCredential,required this.channel}) : super(key: key);
-  WebSocketChannel channel;
+  WebSocket channel;
   UserCredential userCredential;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   @override
