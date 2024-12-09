@@ -50,12 +50,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<MyHomePage> {
-  Future<WebSocketChannel> getSession() async{
+  Future<WebSocket> getSession() async{
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-    final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('wss://localhost:8000/v1?token=$token')
+    final WebSocket channel = await WebSocket.connect(
+      'wss://localhost:8000/v1?token=$token'
     );
-    return Future<WebSocketChannel>.value(channel);
+    return channel;
   }
   void signInWithGoogle() async {
     try {
@@ -81,7 +81,7 @@ class _LoginPageState extends State<MyHomePage> {
       // }catch(e){
       //   print(e);
       // }
-      WebSocketChannel channel = await getSession();
+      WebSocket channel = await getSession();
       if (userCredential.additionalUserInfo!.isNewUser) {
         print("loggin OK ,1"); // 新規ユーザーの場合
         Navigator.push(
