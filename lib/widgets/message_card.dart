@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -8,7 +9,7 @@ import 'dart:convert' as convert;
 // import 'package:rxdart/rxdart.dart';
 List<Widget> returnWidget=[];
 class MessageCard extends StatefulWidget {
-  final WebSocketChannel stream;
+  final WebSocket stream;
   final UserCredential userCredential;
   MessageCard({Key? key, required this.stream, required this.userCredential}) : super(key: key);
 
@@ -23,7 +24,7 @@ class _MessageCardState extends State<MessageCard> {
   void initState() {
     super.initState();
     _streamController = StreamController<dynamic>.broadcast();
-    subscription = widget.stream.stream.listen((data) { _streamController.add(data); });
+    subscription = widget.stream.listen((data) { _streamController.add(data); });
   }
 
   @override

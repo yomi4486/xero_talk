@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xero_talk/chat.dart';
@@ -9,7 +11,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class accountPage extends StatelessWidget{
   accountPage({Key? key, required this.userCredential,required this.channel}) : super(key: key);
   UserCredential userCredential;
-  WebSocketChannel channel;
+  WebSocket channel;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   var description = "";
   var displayName = "";
