@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 // import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
@@ -10,7 +10,7 @@ class chat extends StatefulWidget {
   const chat({Key? key, required this.userCredential, required this.channelInfo,required this.channel}) : super(key: key);
   final UserCredential userCredential;
   final Map channelInfo;
-  final WebSocketChannel channel;
+  final WebSocket channel;
   @override
   
   State<chat> createState(){
@@ -18,13 +18,12 @@ class chat extends StatefulWidget {
   }
 }
 
-
 class _chat extends State<chat>{
   
   _chat({required this.userCredential, required this.channelInfo,required this.channel});
   UserCredential userCredential;
   Map channelInfo;
-  WebSocketChannel channel;
+  WebSocket channel;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   String? chatText = "";
   final fieldText = TextEditingController();
@@ -90,7 +89,7 @@ class _chat extends State<chat>{
                     if(text!.isNotEmpty){
                       final channelId = channelInfo["channelId"];
                       final sendBody = {"type":"send_message","content":text,"channel":channelId};
-                      channel.sink.add(convert.json.encode(sendBody));
+                      channel.add(convert.json.encode(sendBody));
                     }
                   }
                   sendMessage(chatText);
