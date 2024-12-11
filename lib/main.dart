@@ -3,9 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:xero_talk/account_startup.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:xero_talk/home.dart';
 import 'dart:io';
 class MyHttpOverrides extends HttpOverrides{ // これがないとWSS通信ができない
@@ -25,7 +22,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -70,17 +66,6 @@ class _LoginPageState extends State<MyHomePage> {
       );
       //作成したcredentialを元にfirebaseAuthで認証を行う
       UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-      // String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-      // String content = "how are you?";
-      // try{
-      //   final response = await http.post(
-      //     Uri.parse('http://0.0.0.0:9000/send_message?content=$content&token=$token&channel_id=dm'),
-      //     headers: {"Content-Type": "application/json"},
-      //   );
-      //   print(response.body);
-      // }catch(e){
-      //   print(e);
-      // }
       WebSocket channel = await getSession();
       if (userCredential.additionalUserInfo!.isNewUser) {
         print("loggin OK ,1"); // 新規ユーザーの場合
