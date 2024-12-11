@@ -6,7 +6,6 @@ import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/home.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class accountPage extends StatelessWidget{
   accountPage({Key? key, required this.userCredential,required this.channel}) : super(key: key);
