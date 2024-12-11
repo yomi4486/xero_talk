@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 class chatHome extends StatelessWidget{
   chatHome({Key? key, required this.userCredential,required this.channel}) : super(key: key);
   WebSocket channel;

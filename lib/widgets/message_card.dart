@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
@@ -61,7 +60,7 @@ class _MessageCardState extends State<MessageCard> {
               return const Column();
             } else if (docSnapshot.hasData) {
               displayName = (docSnapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No Name";
-              final String message_content = content["content"];
+              final String messageContent = content["content"];
               final chatWidget = Container(
                 margin: const EdgeInsets.only(bottom: 10, top: 10),
                 child: Row(
@@ -92,7 +91,7 @@ class _MessageCardState extends State<MessageCard> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            message_content,
+                            messageContent,
                             style: const TextStyle(
                               color: Color.fromARGB(200, 255, 255, 255),
                             ),
