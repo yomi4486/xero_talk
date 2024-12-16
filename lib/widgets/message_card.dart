@@ -19,18 +19,20 @@ class MessageCard extends StatefulWidget {
 class _MessageCardState extends State<MessageCard> {
   late StreamController<dynamic> _streamController;
   late StreamSubscription subscription;
+
   @override
   void initState() {
     super.initState();
     _streamController = StreamController<dynamic>.broadcast();
-    subscription = widget.stream.listen((data) { _streamController.add(data); });
+    subscription = widget.stream.asBroadcastStream().listen((data) {
+      _streamController.add(data); 
+    });
   }
 
   @override
   void dispose() {
     subscription.cancel();
     _streamController.close();
-    
     super.dispose();
   }
 
@@ -48,8 +50,8 @@ class _MessageCardState extends State<MessageCard> {
           return Container();
         }
         final a = FirebaseFirestore.instance
-            .collection('user_account')
-            .doc('${content["author"]}');
+          .collection('user_account')
+          .doc('${content["author"]}');
         return FutureBuilder(
           future: a.get(),
           builder: (context, AsyncSnapshot<DocumentSnapshot> docSnapshot) {
@@ -82,7 +84,7 @@ class _MessageCardState extends State<MessageCard> {
                           Text(
                             displayName,
                             style: const TextStyle(
-                              color: Color.fromARGB(200, 255, 255, 255),
+                              color: Color.fromARGB(200, 55, 55, 55),
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
@@ -93,7 +95,7 @@ class _MessageCardState extends State<MessageCard> {
                           Text(
                             messageContent,
                             style: const TextStyle(
-                              color: Color.fromARGB(200, 255, 255, 255),
+                              color: Color.fromARGB(200, 55, 55, 55),
                             ),
                             textAlign: TextAlign.left,
                           ),
