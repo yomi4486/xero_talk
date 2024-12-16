@@ -75,7 +75,7 @@ class _chat extends State<chat>{
                       fontSize: 16,
                     ),
                     filled: false,
-                    fillColor: const Color.fromARGB(16, 255, 255, 255),
+                    fillColor: const Color.fromARGB(16, 255, 255, 255)
                   ),
                   onChanged: (text){
                     chatText = text;
@@ -120,10 +120,10 @@ class _chat extends State<chat>{
             mainAxisAlignment: MainAxisAlignment.start,
             children:[
               SizedBox(
-                child: ClipRRect( // アイコン表示（角丸）
-                    borderRadius: BorderRadius.circular(30),
-                    child:Container(
-                      color:const Color.fromARGB(0, 255, 255, 255),
+                child: Row(
+                  children:[
+                    ClipRRect( // アイコン表示（角丸）
+                      borderRadius: BorderRadius.circular(30),
                       child:IconButton(
                         onPressed: (){
                           Navigator.of(context).pop();
@@ -134,18 +134,20 @@ class _chat extends State<chat>{
                         )
                       )
                     ),
-                ),
-              ),
-              SizedBox(
-                height: 34,
-                width: 34,
-                child:ClipRRect( // アイコン表示（角丸）
-                borderRadius: BorderRadius.circular(2000000),
-                child:Image.network(
-                  "${userCredential.user!.photoURL}",
-                  fit:BoxFit.contain
-                ),
-                ),
+                    Container(
+                      height: 34,
+                      width: 34,
+                      margin:const EdgeInsets.only(left:5),
+                      child:ClipRRect( // アイコン表示（角丸）
+                      borderRadius: BorderRadius.circular(2000000),
+                      child:Image.network(
+                        "${userCredential.user!.photoURL}",
+                        fit:BoxFit.contain
+                      ),
+                      ),
+                    ),
+                  ],
+                )
               ),
               Container(
                 width: 200,
@@ -195,41 +197,55 @@ class _chat extends State<chat>{
           )
         ],
       ),
-      backgroundColor: defaultColor,
-      body: Column(
+      body:Container(
+      height: double.infinity,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: FractionalOffset.topLeft,
+          end: FractionalOffset.bottomRight,
+          colors: [
+            const Color(0xffe4a972).withOpacity(0.8),
+            const Color(0xff9941d8).withOpacity(0.8),
+          ],
+          stops: const [
+            0.0,
+            1.0,
+          ],
+        ),
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children:[
           Stack(
             clipBehavior: Clip.none,
             children:[
-              DecoratedBox(
-                decoration: const BoxDecoration(color: Color.fromARGB(255, 22, 22, 22)),
-                child:Column( 
-                  children: [
-                    SizedBox(
-                      width:MediaQuery.of(context).size.width,
-                      child: Container(
-                        margin: const EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
-                        child:Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children:[
-                            SingleChildScrollView(
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 800),
-                                reverseDuration: const Duration(milliseconds: 800),
-                                child:MessageCard(stream: channel, userCredential: userCredential)
-                              ),
-                            )
-                          ]
-                        ),
+              Column( 
+                children: [
+                  SizedBox(
+                    width:MediaQuery.of(context).size.width,
+                    child: Container(
+                      margin: const EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
+                      child:Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children:[
+                          SingleChildScrollView(
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 800),
+                              reverseDuration: const Duration(milliseconds: 800),
+                              child:MessageCard(stream: channel, userCredential: userCredential)
+                            ),
+                          )
+                        ]
                       ),
                     ),
-                  ] //childlen 画面全体
-                )
-              ),
+                  ),
+                ] // childlen 画面全体
+              )
             ] 
           )
         ],
+      )
       )
     );
   }
