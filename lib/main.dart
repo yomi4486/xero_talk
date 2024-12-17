@@ -68,7 +68,6 @@ class _LoginPageState extends State<MyHomePage> {
       //作成したcredentialを元にfirebaseAuthで認証を行う
       UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       WebSocket channel = await getSession();
-      final Stream<dynamic> bloadCast = channel.asBroadcastStream();
       if (userCredential.additionalUserInfo!.isNewUser) {
         print("loggin OK ,1"); // 新規ユーザーの場合
         Navigator.push(
