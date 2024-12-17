@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xero_talk/account_page.dart';
-import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/home.dart';
 
 import 'dart:async';
