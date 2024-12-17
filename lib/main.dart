@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:xero_talk/account_startup.dart';
 import 'package:xero_talk/home.dart';
 import 'dart:io';
+import 'dart:async';
 class MyHttpOverrides extends HttpOverrides{ // これがないとWSS通信ができない
   @override
   HttpClient createHttpClient(SecurityContext? context){
@@ -67,18 +68,19 @@ class _LoginPageState extends State<MyHomePage> {
       //作成したcredentialを元にfirebaseAuthで認証を行う
       UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       WebSocket channel = await getSession();
+      final Stream<dynamic> bloadCast = channel.asBroadcastStream();
       if (userCredential.additionalUserInfo!.isNewUser) {
         print("loggin OK ,1"); // 新規ユーザーの場合
         Navigator.push(
 
           context,
-          MaterialPageRoute(builder: (context) => AccountStartup(userCredential:userCredential,channel: channel,)),
+          MaterialPageRoute(builder: (context) => AccountStartup(userCredential:userCredential,channel: channel,bloadCast:channel.asBroadcastStream())),
         );
       } else {
         print("loggin OK ,2"); //既存ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => chatHome(userCredential: userCredential,channel:channel)),
+          MaterialPageRoute(builder: (context) => chatHome(userCredential: userCredential,channel:channel,bloadCast:channel.asBroadcastStream())),
         );
       }
     } on FirebaseException catch (e) {
