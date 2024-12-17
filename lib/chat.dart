@@ -3,9 +3,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // import 'package:http/http.dart' as http;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
-import 'package:rxdart/rxdart.dart';
 
 import 'package:xero_talk/widgets/message_card.dart';
 
@@ -88,12 +86,15 @@ class _chat extends State<chat>{
                 ),
               ),
               IconButton(
-                style:ButtonStyle(backgroundColor:MaterialStateProperty.all<Color>(const Color.fromARGB(255, 140, 206, 74))),
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+                  overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
+                ),
                 onPressed: () async {
                   void sendMessage(String? text) async {
-                    if(text!.isNotEmpty){
+                    if (text!.isNotEmpty) {
                       final channelId = channelInfo["channelId"];
-                      final sendBody = {"type":"send_message","content":text,"channel":channelId};
+                      final sendBody = {"type": "send_message", "content": text, "channel": channelId};
                       channel.add(convert.json.encode(sendBody));
                     }
                   }
@@ -101,10 +102,24 @@ class _chat extends State<chat>{
                   chatText = "";
                   fieldText.clear();
                 },
-                icon: const ImageIcon(
-                  AssetImage("assets/images/send.png"),
-                  color: Color.fromARGB(255, 255, 255, 255),
-                )
+                icon: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 140, 206, 74), 
+                        Color.fromARGB(255, 210, 255, 183)
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const ImageIcon(
+                    AssetImage("assets/images/send.png"),
+                    color: Color.fromARGB(255, 255, 255, 255),
+                  ),
+                ),
               ),
             ],
           )
