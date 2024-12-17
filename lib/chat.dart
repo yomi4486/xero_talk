@@ -1,31 +1,36 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
+import 'package:rxdart/rxdart.dart';
+
 import 'package:xero_talk/widgets/message_card.dart';
 
 class chat extends StatefulWidget {
-  const chat({Key? key, required this.userCredential, required this.channelInfo,required this.channel}) : super(key: key);
+  const chat({Key? key, required this.userCredential, required this.channelInfo,required this.channel,required this.bloadCast}) : super(key: key);
   final UserCredential userCredential;
   final Map channelInfo;
   final WebSocket channel;
+  final Stream<dynamic> bloadCast;
   @override
   
   State<chat> createState(){
-    return _chat(userCredential: userCredential,channelInfo: channelInfo,channel: channel);
+    return _chat(userCredential: userCredential,channelInfo: channelInfo,channel: channel,bloadCast:bloadCast);
   }
 }
 
 class _chat extends State<chat>{
-  
-  _chat({required this.userCredential, required this.channelInfo,required this.channel});
+
+  _chat({required this.userCredential, required this.channelInfo,required this.channel,required this.bloadCast});
   UserCredential userCredential;
   Map channelInfo;
   WebSocket channel;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   String? chatText = "";
+  Stream<dynamic> bloadCast;
   final fieldText = TextEditingController();
 
   @override
@@ -33,9 +38,9 @@ class _chat extends State<chat>{
     fieldText.dispose();
     super.dispose();
   }
+  
   @override
   Widget build(BuildContext context) {
-    
     final String displayName = channelInfo["displayName"];
 
     return Scaffold(
@@ -233,7 +238,7 @@ class _chat extends State<chat>{
                             child: AnimatedSwitcher(
                               duration: const Duration(milliseconds: 800),
                               reverseDuration: const Duration(milliseconds: 800),
-                              child:MessageCard(stream: channel, userCredential: userCredential)
+                              child:MessageCard(bloadCast: bloadCast, userCredential: userCredential)
                             ),
                           )
                         ]

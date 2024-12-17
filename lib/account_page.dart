@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xero_talk/chat.dart';
@@ -8,9 +8,10 @@ import 'package:xero_talk/notify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class accountPage extends StatelessWidget{
-  accountPage({Key? key, required this.userCredential,required this.channel}) : super(key: key);
+  accountPage({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
   UserCredential userCredential;
   WebSocket channel;
+  Stream<dynamic> bloadCast;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   var description = "";
   var displayName = "";
@@ -44,14 +45,14 @@ class accountPage extends StatelessWidget{
               onTap: (value) {
                 if(value == 0){
                   Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (_, __, ___)=>chatHome(userCredential:userCredential,channel: channel,),
+                    pageBuilder: (_, __, ___)=>chatHome(userCredential:userCredential,channel: channel,bloadCast: bloadCast,),
                         transitionsBuilder: (context, animation, secondaryAnimation, child){
                           return FadeTransition(opacity: animation, child: child,);
                     }
                   ));
                 }else if(value==1){
                   Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (_, __, ___)=>notifyPage(userCredential:userCredential,channel:channel),
+                    pageBuilder: (_, __, ___)=>notifyPage(userCredential:userCredential,channel:channel,bloadCast: bloadCast,),
                         transitionsBuilder: (context, animation, secondaryAnimation, child){
                           return FadeTransition(opacity: animation, child: child,);
                     }
