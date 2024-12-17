@@ -1,15 +1,16 @@
 import 'dart:io';
-
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/home.dart';
 
 class AccountStartup extends StatelessWidget{
-  AccountStartup({Key? key, required this.userCredential,required this.channel}) : super(key: key);
+  AccountStartup({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
   UserCredential userCredential;
   WebSocket channel;
   Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+  Stream<dynamic> bloadCast;
   @override
   Widget build(BuildContext context) {
     String name =  "${userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '')}";
@@ -44,7 +45,7 @@ class AccountStartup extends StatelessWidget{
               .then((value){
                 print("ok!!!");
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => chatHome(userCredential:userCredential,channel:channel,))
+                  MaterialPageRoute(builder: (context) => chatHome(userCredential:userCredential,channel:channel,bloadCast: bloadCast,))
                 );
               })
               .catchError((err){

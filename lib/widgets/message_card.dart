@@ -5,41 +5,24 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
-// import 'package:rxdart/rxdart.dart';
-List<Widget> returnWidget=[];
+import 'package:rxdart/rxdart.dart';
+
+List<Widget> returnWidget = [];
+
 class MessageCard extends StatefulWidget {
-  final WebSocket stream;
+  final Stream<dynamic> bloadCast;
   final UserCredential userCredential;
-  MessageCard({Key? key, required this.stream, required this.userCredential}) : super(key: key);
+  MessageCard({Key? key, required this.bloadCast, required this.userCredential}) : super(key: key);
 
   @override
   _MessageCardState createState() => _MessageCardState();
 }
 
 class _MessageCardState extends State<MessageCard> {
-  late StreamController<dynamic> _streamController;
-  late StreamSubscription subscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _streamController = StreamController<dynamic>.broadcast();
-    subscription = widget.stream.asBroadcastStream().listen((data) {
-      _streamController.add(data); 
-    });
-  }
-
-  @override
-  void dispose() {
-    subscription.cancel();
-    _streamController.close();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: _streamController.stream,
+      stream: widget.bloadCast,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         var displayName = "";
         var content = {};
@@ -50,8 +33,8 @@ class _MessageCardState extends State<MessageCard> {
           return Container();
         }
         final a = FirebaseFirestore.instance
-          .collection('user_account')
-          .doc('${content["author"]}');
+            .collection('user_account')
+            .doc('${content["author"]}');
         return FutureBuilder(
           future: a.get(),
           builder: (context, AsyncSnapshot<DocumentSnapshot> docSnapshot) {
@@ -105,7 +88,7 @@ class _MessageCardState extends State<MessageCard> {
                   ],
                 ),
               );
-              
+
               returnWidget = [chatWidget];
               return Column(children: returnWidget);
             } else {
