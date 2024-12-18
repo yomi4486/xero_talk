@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
-
 import 'package:xero_talk/widgets/message_card.dart';
 
 class chat extends StatefulWidget {
@@ -26,7 +25,6 @@ class _chat extends State<chat>{
   UserCredential userCredential;
   Map channelInfo;
   WebSocket channel;
-  Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   String? chatText = "";
   Stream<dynamic> bloadCast;
   final fieldText = TextEditingController();
@@ -40,12 +38,11 @@ class _chat extends State<chat>{
   @override
   Widget build(BuildContext context) {
     final String displayName = channelInfo["displayName"];
-
     return Scaffold(
       bottomSheet: BottomAppBar(
         height: MediaQuery.of(context).size.height*0.12,
         notchMargin:4.0,
-        color:const Color.fromARGB(255, 40, 40, 40),
+        color: Color.fromARGB(255, 152, 97, 192).withOpacity(1),
         child:Container(
           margin: const EdgeInsets.only(bottom:20),
           width: MediaQuery.of(context).size.width,
@@ -55,6 +52,7 @@ class _chat extends State<chat>{
               SizedBox(
                 width: MediaQuery.of(context).size.width*0.75,
                 child:TextField(
+                  cursorColor: const Color.fromARGB(55, 255, 255, 255),
                   controller: fieldText,
                   onTapOutside:(_)=>FocusScope.of(context).unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
                   keyboardType: TextInputType.multiline,
@@ -64,7 +62,12 @@ class _chat extends State<chat>{
                     fontSize: 16,
                   ),
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color:Colors.transparent),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color:Colors.transparent),
                       borderRadius: BorderRadius.circular(30),
                     ),
                     hintText: '$displayNameにメッセージを送信',
@@ -77,8 +80,8 @@ class _chat extends State<chat>{
                       color: Color.fromARGB(255, 255, 255, 255),
                       fontSize: 16,
                     ),
-                    filled: false,
-                    fillColor: const Color.fromARGB(16, 255, 255, 255)
+                    filled: true,
+                    fillColor: const Color.fromARGB(55, 0, 0, 0)
                   ),
                   onChanged: (text){
                     chatText = text;
@@ -107,8 +110,8 @@ class _chat extends State<chat>{
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Color.fromARGB(255, 140, 206, 74), 
-                        Color.fromARGB(255, 210, 255, 183)
+                        Color.fromARGB(55, 0, 0, 0), 
+                        Color.fromARGB(55, 0, 0, 0)
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -133,7 +136,7 @@ class _chat extends State<chat>{
           color:Color.fromARGB(200, 255, 255, 255),
           fontSize: 20
         ),
-        backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+        backgroundColor: const Color.fromARGB(255, 231, 176, 125),
         leading: Container(
           margin: const EdgeInsets.only(left:7),
           child:Row(
@@ -218,54 +221,54 @@ class _chat extends State<chat>{
         ],
       ),
       body:Container(
-      height: double.infinity,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: FractionalOffset.topLeft,
-          end: FractionalOffset.bottomRight,
-          colors: [
-            const Color(0xffe4a972).withOpacity(0.8),
-            const Color(0xff9941d8).withOpacity(0.8),
-          ],
-          stops: const [
-            0.0,
-            1.0,
-          ],
+        decoration: BoxDecoration( 
+          gradient: LinearGradient( 
+            begin: FractionalOffset.topLeft, 
+            end: FractionalOffset.bottomRight, 
+            colors: [ 
+              const Color(0xffe4a972).withOpacity(0.8), 
+              const Color(0xff9941d8).withOpacity(0.8), 
+            ], 
+            stops: const [ 
+              0.0, 
+              1.0, 
+            ], 
+          ), 
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children:[
-          Stack(
-            clipBehavior: Clip.none,
-            children:[
-              Column( 
-                children: [
-                  SizedBox(
-                    width:MediaQuery.of(context).size.width,
-                    child: Container(
-                      margin: const EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
-                      child:Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children:[
-                          SingleChildScrollView(
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 800),
-                              reverseDuration: const Duration(milliseconds: 800),
-                              child:MessageCard(bloadCast: bloadCast, userCredential: userCredential)
-                            ),
-                          )
-                        ]
+        height: double.infinity,
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children:[
+            Stack(
+              clipBehavior: Clip.none,
+              children:[
+                Column( 
+                  children: [
+                    SizedBox(
+                      width:MediaQuery.of(context).size.width,
+                      child: Container(
+                        margin: const EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
+                        child:Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children:[
+                            SingleChildScrollView(
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 800),
+                                reverseDuration: const Duration(milliseconds: 800),
+                                child:MessageCard(bloadCast: bloadCast, userCredential: userCredential)
+                              ),
+                            )
+                          ]
+                        ),
                       ),
                     ),
-                  ),
-                ] // childlen 画面全体
-              )
-            ] 
-          )
-        ],
-      )
+                  ] // childlen 画面全体
+                )
+              ] 
+            )
+          ],
+        )
       )
     );
   }

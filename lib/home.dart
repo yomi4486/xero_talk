@@ -22,7 +22,7 @@ class chatHome extends StatelessWidget{
         onTap: (value) {
           if(value == 1){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>notifyPage(userCredential:userCredential,channel: channel,bloadCast: bloadCast,),
+              pageBuilder: (_, __, ___)=>NotifyPage(userCredential:userCredential,channel: channel,bloadCast: bloadCast,),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }

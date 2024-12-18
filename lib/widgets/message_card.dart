@@ -27,7 +27,6 @@ class _MessageCardState extends State<MessageCard> {
         try {
           content = convert.json.decode(snapshot.data);
         } catch (e) {
-          print("JSON decode error!: $e");
           return Container();
         }
         final a = FirebaseFirestore.instance
