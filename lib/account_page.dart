@@ -8,17 +8,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class accountPage extends StatelessWidget{
   accountPage({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
-  UserCredential userCredential;
-  WebSocket channel;
-  Stream<dynamic> bloadCast;
-  Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
-  var description = "";
-  var displayName = "";
-  var name = "";
-  
+  final UserCredential userCredential;
+  final WebSocket channel;
+  final Stream<dynamic> bloadCast;
+  final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
 
   @override
   Widget build (BuildContext context) {
+    var description = "";
+    var displayName = "";
+    // var name = "";
     var profile = userCredential.additionalUserInfo?.profile;
     return WillPopScope(
       onWillPop:() async => false,
@@ -34,6 +33,7 @@ class accountPage extends StatelessWidget{
             displayName = "";
           } else if (snapshot.hasData) { // successful
             displayName = (snapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No description";
+            description = (snapshot.data?.data() as Map<String, dynamic>)["description"] ?? "";
           } else {
             displayName = "";
           }
@@ -51,7 +51,7 @@ class accountPage extends StatelessWidget{
                   ));
                 }else if(value==1){
                   Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (_, __, ___)=>notifyPage(userCredential:userCredential,channel:channel,bloadCast: bloadCast,),
+                    pageBuilder: (_, __, ___)=>NotifyPage(userCredential:userCredential,channel:channel,bloadCast: bloadCast,),
                         transitionsBuilder: (context, animation, secondaryAnimation, child){
                           return FadeTransition(opacity: animation, child: child,);
                     }
@@ -185,6 +185,7 @@ class accountPage extends StatelessWidget{
                       child:Container(
                         margin: const EdgeInsets.only(left: 30,right: 30),
                         child: TextField(
+                          controller: TextEditingController(text: description),
                           keyboardType: TextInputType.multiline,
                           maxLines: null,
                           style:const TextStyle(                            
