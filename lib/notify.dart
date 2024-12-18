@@ -7,13 +7,13 @@ import 'package:xero_talk/home.dart';
 
 import 'dart:async';
 
-class notifyPage extends StatelessWidget{
-  notifyPage({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
-  WebSocket channel;
-  UserCredential userCredential;
+class NotifyPage extends StatelessWidget{
+  NotifyPage({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
+  final WebSocket channel;
+  final UserCredential userCredential;
   final Stream<dynamic> bloadCast;
 
-  Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+  final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   @override
   Widget build(BuildContext context) {
     return WillPopScope(

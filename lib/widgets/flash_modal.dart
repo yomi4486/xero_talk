@@ -11,12 +11,12 @@ import 'package:flash/flash_helper.dart';
 class InfoSnack extends StatelessWidget {
   /// アプリ内通知などに使うモーダル。一般的なレベルの情報は全てこれを使用。　
   InfoSnack({Key? key, required this.userCredential,required this.title,required this.datail}) : super(key: key);
-  UserCredential userCredential;
-  String title;
-  String datail;
+  final UserCredential userCredential;
+  final String title;
+  final String datail;
   @override
   Widget build(BuildContext context) {
-    final snack = Container(child:ElevatedButton(
+    final snack = ElevatedButton(
       child:const Text("通知(テスト)"),
       onPressed: () => context.showFlash<bool>(
         barrierDismissible: true,
@@ -37,7 +37,7 @@ class InfoSnack extends StatelessWidget {
             TextButton(onPressed: () => controller.dismiss(true), child: Text('Ok')) // TODO:これがクリックされたら対象ユーザーのチャット画面に遷移する処理を書く
           ],
         ),
-      ),),);
+      ),);
     return snack;
   }
 }
