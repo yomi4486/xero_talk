@@ -7,15 +7,15 @@ import 'package:xero_talk/home.dart';
 
 class AccountStartup extends StatelessWidget{
   AccountStartup({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
-  UserCredential userCredential;
-  WebSocket channel;
-  Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
-  Stream<dynamic> bloadCast;
+  final UserCredential userCredential;
+  final WebSocket channel;
+  final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+  final Stream<dynamic> bloadCast;
   @override
   Widget build(BuildContext context) {
     String name =  "${userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '')}";
     String displayName= "${userCredential.user!.displayName}";
-    String discription="";
+    String description="";
     return Scaffold(
       appBar:AppBar(
         automaticallyImplyLeading: false,
@@ -37,7 +37,7 @@ class AccountStartup extends StatelessWidget{
               .doc('${profile?["sub"]}') // ドキュメントID
               .set(
                 {
-                  'discription': discription,
+                  'description': description,
                   'display_name': displayName,
                   'name':name, 
                 }
@@ -184,7 +184,7 @@ class AccountStartup extends StatelessWidget{
                       
                     ),
                     onChanged: (text){
-                      discription = text;
+                      description = text;
                     },
                   ),
                 )
