@@ -7,10 +7,10 @@ import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
 class chatHome extends StatelessWidget{
   chatHome({Key? key, required this.userCredential,required this.channel,required this.bloadCast}) : super(key: key);
-  WebSocket channel;
-  UserCredential userCredential;
-  Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
-  Stream<dynamic> bloadCast;
+  final WebSocket channel;
+  final UserCredential userCredential;
+  final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+  final Stream<dynamic> bloadCast;
 
   @override
   Widget build(BuildContext context) {
