@@ -109,7 +109,6 @@ class chatHome extends StatelessWidget{
                                     context,
                                     MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"106017943896753291176","displayName":"yomi4486","name":"yomi4486"},channel: channel,bloadCast: bloadCast,)),
                                   );
-
                                 },
                                 child:Container(
                                   decoration: const BoxDecoration(color:Color.fromARGB(0, 255, 255, 255)),
@@ -180,7 +179,6 @@ class chatHome extends StatelessWidget{
                                   ),
                                 ),
                               ),
-
                             ]                          
                           ),
                         )
