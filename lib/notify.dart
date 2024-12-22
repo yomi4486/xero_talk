@@ -97,7 +97,7 @@ class NotifyPage extends StatelessWidget{
                       SizedBox(
                         width:MediaQuery.of(context).size.width,
                         child: Container(
-                          margin: EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
+                          margin: const EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
                           child:Column(
                             children:[
                               Row(
@@ -107,7 +107,6 @@ class NotifyPage extends StatelessWidget{
                                     children: [
                                       GestureDetector(
                                         onTap: () {
-                                          print("onTap called.");
                                           Navigator.push(context, PageRouteBuilder(
                                             pageBuilder: (context, animation, secondaryAnimation) => chatHome(userCredential:userCredential,channel:channel,bloadCast: bloadCast,),
                                             transitionsBuilder: (context, animation, secondaryAnimation, child) {
