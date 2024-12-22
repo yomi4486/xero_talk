@@ -13,7 +13,7 @@ class AccountStartup extends StatelessWidget{
   final Stream<dynamic> bloadCast;
   @override
   Widget build(BuildContext context) {
-    String name =  "${userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '')}";
+    String name =  userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '');
     String displayName= "${userCredential.user!.displayName}";
     String description="";
     return Scaffold(
