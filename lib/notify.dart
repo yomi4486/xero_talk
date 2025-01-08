@@ -32,7 +32,7 @@ class NotifyPage extends StatelessWidget{
             ));
           }else if(value == 2){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>accountPage(userCredential:userCredential,channel:channel,bloadCast: bloadCast,),
+              pageBuilder: (_, __, ___)=>AccountPage(userCredential:userCredential,channel:channel,bloadCast: bloadCast,),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }

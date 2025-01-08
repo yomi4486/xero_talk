@@ -43,9 +43,8 @@ class AccountStartup extends StatelessWidget{
                 }
               )
               .then((value){
-                print("ok!!!");
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => chatHome(userCredential:userCredential,channel:channel,bloadCast: bloadCast,))
+                  MaterialPageRoute(builder: (context) => chatHome(userCredential:userCredential,channel:channel,bloadCast: bloadCast))
                 );
               })
               .catchError((err){
