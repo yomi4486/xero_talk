@@ -37,7 +37,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
@@ -68,15 +67,12 @@ class _LoginPageState extends State<MyHomePage> {
       //作成したcredentialを元にfirebaseAuthで認証を行う
       UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       WebSocket channel = await getSession();
-      if (userCredential.additionalUserInfo!.isNewUser) {
-        print("loggin OK ,1"); // 新規ユーザーの場合
+      if (userCredential.additionalUserInfo!.isNewUser) { // 新規ユーザーの場合
         Navigator.push(
-
           context,
           MaterialPageRoute(builder: (context) => AccountStartup(userCredential:userCredential,channel: channel,bloadCast:channel.asBroadcastStream())),
         );
-      } else {
-        print("loggin OK ,2"); //既存ユーザーの場合
+      } else { //既存ユーザーの場合
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => chatHome(userCredential: userCredential,channel:channel,bloadCast:channel.asBroadcastStream())),
@@ -133,7 +129,6 @@ class _LoginPageState extends State<MyHomePage> {
                     }catch(e){
                       print(e);
                     }
-
                   },
                   icon: const ImageIcon(
                     AssetImage("assets/images/google_logo.png"),
