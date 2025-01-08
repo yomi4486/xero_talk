@@ -247,10 +247,11 @@ class _chat extends State<chat>{
                   children: [
                     SizedBox(
                       width:MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height*0.76,
                       child: Container(
                         margin: const EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
                         child:Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children:[
                             SingleChildScrollView(
                               child: AnimatedSwitcher(
