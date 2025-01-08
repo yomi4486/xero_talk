@@ -131,7 +131,6 @@ class _chat extends State<chat>{
       appBar:AppBar(
         centerTitle: false,
         automaticallyImplyLeading: false,
-        
         titleTextStyle: const TextStyle(
           color:Color.fromARGB(200, 255, 255, 255),
           fontSize: 20
