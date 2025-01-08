@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,8 +29,8 @@ class _MessageCardState extends State<MessageCard> {
           return Container();
         }
         final a = FirebaseFirestore.instance
-            .collection('user_account')
-            .doc('${content["author"]}');
+          .collection('user_account')
+          .doc('${content["author"]}');
         return FutureBuilder(
           future: a.get(),
           builder: (context, AsyncSnapshot<DocumentSnapshot> docSnapshot) {
@@ -47,6 +46,7 @@ class _MessageCardState extends State<MessageCard> {
                 margin: const EdgeInsets.only(bottom: 10, top: 10),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(2000000),
