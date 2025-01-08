@@ -6,6 +6,9 @@ import 'package:xero_talk/account_startup.dart';
 import 'package:xero_talk/home.dart';
 import 'dart:io';
 import 'dart:async';
+import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:http/http.dart' as http;
 class MyHttpOverrides extends HttpOverrides{ // これがないとWSS通信ができない
   @override
   HttpClient createHttpClient(SecurityContext? context){
@@ -56,7 +59,11 @@ class _LoginPageState extends State<MyHomePage> {
   void signInWithGoogle() async {
     try {
       //Google認証フローを起動する
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignInAccount? googleUser = await GoogleSignIn(
+        scopes: [
+          drive.DriveApi.driveFileScope
+        ]
+      ).signIn();
       //リクエストから認証情報を取得する
       final googleAuth = await googleUser?.authentication;
       //firebaseAuthで認証を行う為、credentialを作成
