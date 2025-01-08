@@ -6,19 +6,24 @@ import 'package:xero_talk/home.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class accountPage extends StatelessWidget{
-  accountPage({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
+class AccountPage extends StatefulWidget {
+  final Stream<dynamic> bloadCast;
   final UserCredential userCredential;
   final WebSocket channel;
-  final Stream<dynamic> bloadCast;
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+  AccountPage({Key? key, required this.bloadCast, required this.userCredential, required this.channel}) : super(key: key);
 
   @override
+  _AccountPage createState() => _AccountPage();
+}
+
+class _AccountPage extends State<AccountPage>{
+  bool _showFab = false; // falseなら未編集、trueなら編集済み
+  var description = "";
+  var displayName = "";
+  @override
   Widget build (BuildContext context) {
-    var description = "";
-    var displayName = "";
-    // var name = "";
-    var profile = userCredential.additionalUserInfo?.profile;
+    var profile = widget.userCredential.additionalUserInfo?.profile;
     return WillPopScope(
       onWillPop:() async => false,
       child: FutureBuilder(
@@ -27,15 +32,17 @@ class accountPage extends StatelessWidget{
           .doc('${profile?["sub"]}') // ドキュメントID
           .get(),
         builder:(context, snapshot){
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            displayName = "";
-          } else if (snapshot.hasError) {
-            displayName = "";
-          } else if (snapshot.hasData) { // successful
-            displayName = (snapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No description";
-            description = (snapshot.data?.data() as Map<String, dynamic>)["description"] ?? "";
-          } else {
-            displayName = "";
+          if(!_showFab){
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              displayName = "";
+            } else if (snapshot.hasError) {
+              displayName = "";
+            } else if (snapshot.hasData) { // successful
+              displayName = (snapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No description";
+              description = (snapshot.data?.data() as Map<String, dynamic>)["description"] ?? "";
+            } else {
+              displayName = "";
+            }
           }
           return Scaffold(
             bottomNavigationBar: BottomNavigationBar(
@@ -44,14 +51,14 @@ class accountPage extends StatelessWidget{
               onTap: (value) {
                 if(value == 0){
                   Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (_, __, ___)=>chatHome(userCredential:userCredential,channel: channel,bloadCast: bloadCast,),
+                    pageBuilder: (_, __, ___)=>chatHome(userCredential:widget.userCredential,channel: widget.channel,bloadCast: widget.bloadCast,),
                         transitionsBuilder: (context, animation, secondaryAnimation, child){
                           return FadeTransition(opacity: animation, child: child,);
                     }
                   ));
                 }else if(value==1){
                   Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (_, __, ___)=>NotifyPage(userCredential:userCredential,channel:channel,bloadCast: bloadCast,),
+                    pageBuilder: (_, __, ___)=>NotifyPage(userCredential:widget.userCredential,channel:widget.channel,bloadCast: widget.bloadCast,),
                         transitionsBuilder: (context, animation, secondaryAnimation, child){
                           return FadeTransition(opacity: animation, child: child,);
                     }
@@ -91,18 +98,41 @@ class accountPage extends StatelessWidget{
               backgroundColor: const Color.fromARGB(255, 40, 40, 40),
               
             ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-              },
-              backgroundColor: const Color.fromARGB(255, 140, 206, 74),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(128), //角の丸み
-              ),
-              child: const Icon(Icons.add,color: Color.fromARGB(200, 255, 255, 255),),
-
-            ),
+            floatingActionButton: _showFab ? FloatingActionButton( 
+              onPressed: () async {
+                if(_showFab){
+                  var profile = widget.userCredential.additionalUserInfo?.profile;
+                  // ドキュメント作成
+                  FirebaseFirestore.instance
+                    .collection('user_account') // コレクションID
+                    .doc('${profile?["sub"]}') // ドキュメントID
+                    .update(
+                      {
+                        'description': description,
+                        'display_name': displayName,
+                      }
+                    )
+                    .then((value){
+                      setState((){
+                        _showFab = false;
+                      });
+                    })
+                    .catchError((err){
+                      print(err);
+                    });
+                }
+              }, 
+              backgroundColor: const Color.fromARGB(255, 140, 206, 74), 
+              shape: RoundedRectangleBorder( 
+                borderRadius: BorderRadius.circular(128), 
+              ), 
+              child: const Icon( 
+                Icons.check, 
+                color: Color.fromARGB(200, 255, 255, 255), 
+              ), 
+            ) : null, 
             
-            backgroundColor: defaultColor,
+            backgroundColor: widget.defaultColor,
             body: SafeArea(
               child: DecoratedBox(
                 decoration: const BoxDecoration(color: Color.fromARGB(255, 22, 22, 22)),
@@ -122,7 +152,7 @@ class accountPage extends StatelessWidget{
                                     ClipRRect( // アイコン表示（角丸）
                                       borderRadius: BorderRadius.circular(2000000),
                                         child:Image.network(
-                                          "${userCredential.user!.photoURL}",
+                                          "${widget.userCredential.user!.photoURL}",
                                           width: MediaQuery.of(context).size.width *0.2,
                                         ),
                                     ),
@@ -170,6 +200,14 @@ class accountPage extends StatelessWidget{
                                             )
                                             
                                           ),
+                                          onChanged:(text){
+                                            displayName = text;
+                                            if(!_showFab){
+                                              setState((){
+                                                _showFab = true;
+                                              });
+                                            }
+                                          }
                                         ),
                                       ]
                                     )
@@ -210,6 +248,11 @@ class accountPage extends StatelessWidget{
                           ),
                           onChanged: (text){
                             description = text;
+                            if(!_showFab){
+                              setState((){
+                                _showFab = true;
+                              });
+                            }    
                           },
                         ),
                       )
