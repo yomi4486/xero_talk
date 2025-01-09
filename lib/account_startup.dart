@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,7 +14,7 @@ class AccountStartup extends StatelessWidget{
   final Stream<dynamic> bloadCast;
   @override
   Widget build(BuildContext context) {
-    String name =  userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '');
+    String name = userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '');
     String displayName= "${userCredential.user!.displayName}";
     String description="";
     return Scaffold(
@@ -180,7 +181,6 @@ class AccountStartup extends StatelessWidget{
                       ),
                       filled: true,
                       fillColor: Color.fromARGB(16, 255, 255, 255),
-                      
                     ),
                     onChanged: (text){
                       description = text;
