@@ -64,7 +64,7 @@ class _LoginPageState extends State<MyHomePage> {
       //Google認証フローを起動する
       final GoogleSignInAccount? googleUser = await GoogleSignIn(
         scopes: [
-          drive.DriveApi.driveFileScope
+          drive.DriveApi.driveAppdataScope
         ]
       ).signIn();
       //リクエストから認証情報を取得する
