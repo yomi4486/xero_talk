@@ -3,13 +3,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
+import 'package:googleapis/drive/v3.dart' as drive;
 
 List<Widget> returnWidget = [];
 
 class MessageCard extends StatefulWidget {
   final Stream<dynamic> bloadCast;
   final UserCredential userCredential;
-  MessageCard({Key? key, required this.bloadCast, required this.userCredential}) : super(key: key);
+  final drive.DriveApi googleDriveApi;
+  MessageCard({Key? key, required this.bloadCast, required this.userCredential,required this.googleDriveApi}) : super(key: key);
 
   @override
   _MessageCardState createState() => _MessageCardState();
@@ -31,6 +33,13 @@ class _MessageCardState extends State<MessageCard> {
         final a = FirebaseFirestore.instance
           .collection('user_account')
           .doc('${content["author"]}');
+        ()async{ // 会話に変更があった場合ファイルに書き込み
+          final uploadFile = drive.File();
+          uploadFile.name = "testfile.txt";
+          await widget.googleDriveApi.files.create(
+            uploadFile,
+          );
+        };
         return FutureBuilder(
           future: a.get(),
           builder: (context, AsyncSnapshot<DocumentSnapshot> docSnapshot) {
