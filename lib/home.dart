@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
+
 class chatHome extends StatelessWidget{
   chatHome({Key? key, required this.userCredential,required this.channel,required this.bloadCast}) : super(key: key);
   final WebSocket channel;

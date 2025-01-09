@@ -1,11 +1,10 @@
 import 'dart:io';
+import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/home.dart';
-
-import 'dart:async';
 
 class NotifyPage extends StatelessWidget{
   NotifyPage({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
@@ -110,14 +109,13 @@ class NotifyPage extends StatelessWidget{
                                           Navigator.push(context, PageRouteBuilder(
                                             pageBuilder: (context, animation, secondaryAnimation) => chatHome(userCredential:userCredential,channel:channel,bloadCast: bloadCast,),
                                             transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                              return const FadeUpwardsPageTransitionsBuilder()
-                                                  .buildTransitions(
-                                                    MaterialPageRoute(builder: (context)=>chatHome(userCredential:userCredential,channel: channel,bloadCast: bloadCast,)),
-                                                    context,
-                                                    animation,
-                                                    secondaryAnimation,
-                                                    child
-                                                  );
+                                              return const FadeUpwardsPageTransitionsBuilder().buildTransitions(
+                                                MaterialPageRoute(builder: (context)=>chatHome(userCredential:userCredential,channel: channel,bloadCast: bloadCast,)),
+                                                context,
+                                                animation,
+                                                secondaryAnimation,
+                                                child
+                                              );
                                             },
                                           ));
                                         },
