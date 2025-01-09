@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:googleapis/drive/v3.dart';
 import 'package:xero_talk/home.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,7 +12,8 @@ class AccountPage extends StatefulWidget {
   final UserCredential userCredential;
   final WebSocket channel;
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
-  AccountPage({Key? key, required this.bloadCast, required this.userCredential, required this.channel}) : super(key: key);
+  final DriveApi googleDriveApi;
+  AccountPage({Key? key, required this.bloadCast, required this.userCredential, required this.channel, required this.googleDriveApi}) : super(key: key);
 
   @override
   _AccountPage createState() => _AccountPage();
@@ -51,7 +53,7 @@ class _AccountPage extends State<AccountPage>{
               onTap: (value) {
                 if(value == 0){
                   Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (_, __, ___)=>chatHome(userCredential:widget.userCredential,channel: widget.channel,bloadCast: widget.bloadCast,),
+                    pageBuilder: (_, __, ___)=>chatHome(userCredential:widget.userCredential,channel: widget.channel,bloadCast: widget.bloadCast,googleDriveApi: widget.googleDriveApi,),
                         transitionsBuilder: (context, animation, secondaryAnimation, child){
                           return FadeTransition(opacity: animation, child: child,);
                     }

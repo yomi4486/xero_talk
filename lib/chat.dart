@@ -2,16 +2,19 @@ import 'dart:async';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:googleapis/drive/v3.dart';
+import 'package:xero_talk/main.dart';
 // import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/message_card.dart';
 
 class chat extends StatefulWidget {
-  const chat({Key? key, required this.userCredential, required this.channelInfo,required this.channel,required this.bloadCast}) : super(key: key);
+  const chat({Key? key, required this.userCredential, required this.channelInfo,required this.channel,required this.bloadCast,required this.googleDriveApi}) : super(key: key);
   final UserCredential userCredential;
   final Map channelInfo;
   final WebSocket channel;
   final Stream<dynamic> bloadCast;
+  final DriveApi googleDriveApi;
   @override
   
   State<chat> createState(){
@@ -256,7 +259,7 @@ class _chat extends State<chat>{
                               child: AnimatedSwitcher(
                                 duration: const Duration(milliseconds: 800),
                                 reverseDuration: const Duration(milliseconds: 800),
-                                child:MessageCard(bloadCast: bloadCast, userCredential: userCredential)
+                                child:MessageCard(bloadCast: bloadCast, userCredential: userCredential,googleDriveApi: googleDriveApi,)
                               ),
                             )
                           ]
