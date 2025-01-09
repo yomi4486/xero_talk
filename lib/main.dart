@@ -7,8 +7,10 @@ import 'package:xero_talk/home.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:http/http.dart' as http;
+import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
+
+late drive.DriveApi googleDriveApi;
+
 class MyHttpOverrides extends HttpOverrides{ // これがないとWSS通信ができない
   @override
   HttpClient createHttpClient(SecurityContext? context){
@@ -62,11 +64,12 @@ class _LoginPageState extends State<MyHomePage> {
   void signInWithGoogle() async {
     try {
       //Google認証フローを起動する
-      final GoogleSignInAccount? googleUser = await GoogleSignIn(
+      final googleSignIn = GoogleSignIn(
         scopes: [
           drive.DriveApi.driveAppdataScope
         ]
-      ).signIn();
+      );
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       //リクエストから認証情報を取得する
       final googleAuth = await googleUser?.authentication;
       //firebaseAuthで認証を行う為、credentialを作成
@@ -77,15 +80,27 @@ class _LoginPageState extends State<MyHomePage> {
       //作成したcredentialを元にfirebaseAuthで認証を行う
       UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       WebSocket channel = await getSession();
+      final httpClient = (await googleSignIn.authenticatedClient())!;
+      googleDriveApi = drive.DriveApi(httpClient);
       if (userCredential.additionalUserInfo!.isNewUser) { // 新規ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AccountStartup(userCredential:userCredential,channel: channel,bloadCast:channel.asBroadcastStream())),
+          MaterialPageRoute(builder: (context) => AccountStartup(
+            userCredential:userCredential,
+            channel: channel,
+            bloadCast:channel.asBroadcastStream(),
+            googleDriveApi: googleDriveApi,
+          )),
         );
       } else { //既存ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => chatHome(userCredential: userCredential,channel:channel,bloadCast:channel.asBroadcastStream())),
+          MaterialPageRoute(builder: (context) => chatHome(
+            userCredential: userCredential,
+            channel:channel,
+            bloadCast:channel.asBroadcastStream(),
+            googleDriveApi: googleDriveApi,
+          )),
         );
       }
     } on FirebaseException catch (e) {

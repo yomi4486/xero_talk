@@ -3,16 +3,18 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:googleapis/drive/v3.dart';
 import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
 
 class chatHome extends StatelessWidget{
-  chatHome({Key? key, required this.userCredential,required this.channel,required this.bloadCast}) : super(key: key);
+  chatHome({Key? key, required this.userCredential,required this.channel,required this.bloadCast,required this.googleDriveApi}) : super(key: key);
   final WebSocket channel;
   final UserCredential userCredential;
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   final Stream<dynamic> bloadCast;
+  final DriveApi googleDriveApi;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,7 @@ class chatHome extends StatelessWidget{
             ));
           }else if(value == 2){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>AccountPage(userCredential:userCredential,channel: channel,bloadCast: bloadCast,),
+              pageBuilder: (_, __, ___)=>AccountPage(userCredential:userCredential,channel: channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }
@@ -109,7 +111,7 @@ class chatHome extends StatelessWidget{
                                 onTap: () async {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"106017943896753291176","displayName":"yomi4486","name":"yomi4486"},channel: channel,bloadCast: bloadCast,)),
+                                    MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"106017943896753291176","displayName":"yomi4486","name":"yomi4486"},channel: channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,)),
                                   );
                                 },
                                 child:Container(
@@ -148,7 +150,7 @@ class chatHome extends StatelessWidget{
                                   Navigator.push(
                                     context,
                                     
-                                    MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"112905252227299870586","displayName":"太郎","name":"ta"},channel:channel,bloadCast: bloadCast,)),
+                                    MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"112905252227299870586","displayName":"太郎","name":"ta"},channel:channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,)),
                                   );
                                 },
                                 child:Container(

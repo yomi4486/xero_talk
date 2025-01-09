@@ -4,14 +4,16 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:googleapis/drive/v3.dart';
 import 'package:xero_talk/home.dart';
 
 class AccountStartup extends StatelessWidget{
-  AccountStartup({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
+  AccountStartup({Key? key, required this.userCredential,required this.channel, required this.bloadCast,required this.googleDriveApi}) : super(key: key);
   final UserCredential userCredential;
   final WebSocket channel;
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   final Stream<dynamic> bloadCast;
+  final DriveApi googleDriveApi;
   @override
   Widget build(BuildContext context) {
     String name = userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '');
@@ -45,7 +47,7 @@ class AccountStartup extends StatelessWidget{
               )
               .then((value){
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => chatHome(userCredential:userCredential,channel:channel,bloadCast: bloadCast))
+                  MaterialPageRoute(builder: (context) => chatHome(userCredential:userCredential,channel:channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,))
                 );
               })
               .catchError((err){
