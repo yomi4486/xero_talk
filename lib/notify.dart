@@ -72,16 +72,6 @@ class NotifyPage extends StatelessWidget{
         backgroundColor: const Color.fromARGB(255, 40, 40, 40),
         
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-        },
-        backgroundColor: const Color.fromARGB(255, 140, 206, 74),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(128), //角の丸み
-        ),
-        child: const Icon(Icons.add,color: Color.fromARGB(200, 255, 255, 255),),
-
-      ),
       
       backgroundColor: defaultColor,
       body: Column(
