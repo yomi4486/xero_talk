@@ -81,13 +81,18 @@ class _MessageCardState extends State<MessageCard> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          Text(
-                            messageContent,
-                            style: const TextStyle(
-                              color: Color.fromARGB(200, 55, 55, 55),
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width*0.7,
+                            child:Flexible(
+                              child:Text(
+                                messageContent,
+                                style: const TextStyle(
+                                  color: Color.fromARGB(200, 55, 55, 55),
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                            )
+                          )
                         ],
                       ),
                     ),
