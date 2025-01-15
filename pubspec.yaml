@@ -50,6 +50,8 @@ dependencies:
   googleapis_auth: ^1.6.0
   path_provider: ^2.1.5
   extension_google_sign_in_as_googleapis_auth: ^2.0.12
+  image_picker: ^1.1.2
+  firebase_storage: ^11.7.7
 
 dev_dependencies:
   flutter_test:
