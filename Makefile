@@ -10,3 +10,8 @@ push %:
 	git add .
 	git commit -m "${@:push-%=%}"
 	git push
+
+ios:
+	cd ios
+	pod install --repo-update
+	cd ..
