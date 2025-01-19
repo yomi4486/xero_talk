@@ -13,5 +13,5 @@ push %:
 
 ios:
 	cd ios
-	pod install --repo-update
+	arch -x86_64 pod install --repo-update
 	cd ..
