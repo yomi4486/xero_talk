@@ -99,7 +99,6 @@ class _MessageCardState extends State<MessageCard> {
                   ],
                 ),
               );
-
               returnWidget = [chatWidget];
               return Column(children: returnWidget);
             } else {
