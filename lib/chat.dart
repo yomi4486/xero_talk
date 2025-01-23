@@ -255,13 +255,7 @@ class _chat extends State<chat>{
                         child:Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children:[
-                            SingleChildScrollView(
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 800),
-                                reverseDuration: const Duration(milliseconds: 800),
-                                child:MessageCard(bloadCast: bloadCast, userCredential: userCredential,googleDriveApi: googleDriveApi,)
-                              ),
-                            )
+                            MessageCard(bloadCast: bloadCast, userCredential: userCredential,googleDriveApi: googleDriveApi,)
                           ]
                         ),
                       ),
