@@ -83,15 +83,13 @@ class _MessageCardState extends State<MessageCard> {
                           ),
                           SizedBox(
                             width: MediaQuery.of(context).size.width*0.7,
-                            child:Flexible(
-                              child:Text(
-                                messageContent,
-                                style: const TextStyle(
-                                  color: Color.fromARGB(200, 55, 55, 55),
-                                ),
-                                textAlign: TextAlign.left,
+                            child:Text(
+                              messageContent,
+                              style: const TextStyle(
+                                color: Color.fromARGB(200, 55, 55, 55),
                               ),
-                            )
+                              textAlign: TextAlign.left,
+                            ),
                           )
                         ],
                       ),
