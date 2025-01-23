@@ -6,24 +6,7 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:xero_talk/home.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
-Future upload(String id) async {
-  // 画像をスマホのギャラリーから取得
-  final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-  // 画像を取得できた場合はFirebaseStorageにアップロードする
-  if (image != null) {
-    final imageFile = File(image.path);
-    FirebaseStorage storage = FirebaseStorage.instance;
-    try {
-      await storage.ref('$id.png').putFile(imageFile);
-    } catch (e) {
-      print(e);
-    }
-  }
-  return;
-}
 
 class AccountPage extends StatefulWidget {
   final Stream<dynamic> bloadCast;
@@ -184,7 +167,6 @@ class _AccountPage extends State<AccountPage>{
                                         maximumSize: Size.fromWidth(MediaQuery.of(context).size.width *0.2,)
                                       ),
                                       onPressed: () {
-                                        upload(profile?["sub"]);
                                       },
                                       label: const Text(
                                         '変更',
