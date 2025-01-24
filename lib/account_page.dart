@@ -7,20 +7,17 @@ import 'package:xero_talk/home.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
-Future upload(String id) async {
+import 'dart:convert';
+import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
+Future upload(String token,) async {
   // 画像をスマホのギャラリーから取得
   final image = await ImagePicker().pickImage(source: ImageSource.gallery);
   // 画像を取得できた場合はFirebaseStorageにアップロードする
   if (image != null) {
     final imageFile = File(image.path);
-    FirebaseStorage storage = FirebaseStorage.instance;
-    try {
-      await storage.ref('$id.png').putFile(imageFile);
-    } catch (e) {
-      print(e);
-    }
+    final bytesData = await imageFile.readAsBytes();
+    final base64Data = base64Encode(bytesData);
+    uit.upload(token, base64Data);
   }
   return;
 }
@@ -183,8 +180,9 @@ class _AccountPage extends State<AccountPage>{
                                         minimumSize: const Size(0, 0),
                                         maximumSize: Size.fromWidth(MediaQuery.of(context).size.width *0.2,)
                                       ),
-                                      onPressed: () {
-                                        upload(profile?["sub"]);
+                                      onPressed: () async {
+                                        String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+                                        upload('$token');
                                       },
                                       label: const Text(
                                         '変更',
