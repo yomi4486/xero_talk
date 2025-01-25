@@ -11,30 +11,6 @@ import 'dart:convert';
 import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
 
-Future upload(String token) async {
-  // 画像をスマホのギャラリーから取得
-  final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-
-  // 画像を取得できた場合はクロップする
-  if (image != null) {
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: image.path,
-      compressFormat:ImageCompressFormat.png,
-      maxHeight: 1024,
-      maxWidth: 1024,
-      aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0) // 正方形
-    );
-
-    if (croppedFile != null) {
-      final bytesData = await croppedFile.readAsBytes();
-      final base64Data = base64Encode(bytesData);
-      uit.upload(token, base64Data);
-    }
-  }
-  return;
-}
-
-
 class AccountPage extends StatefulWidget {
   final Stream<dynamic> bloadCast;
   final UserCredential userCredential;
@@ -51,6 +27,29 @@ class _AccountPage extends State<AccountPage>{
   bool _showFab = false; // falseなら未編集、trueなら編集済み
   var description = "";
   var displayName = "";
+  Future upload(String token) async {
+    // 画像をスマホのギャラリーから取得
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    // 画像を取得できた場合はクロップする
+    if (image != null) {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        compressFormat:ImageCompressFormat.png,
+        maxHeight: 1024,
+        maxWidth: 1024,
+        aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0) // 正方形
+      );
+
+      if (croppedFile != null) {
+        final bytesData = await croppedFile.readAsBytes();
+        final base64Data = base64Encode(bytesData);
+        await uit.upload(token, base64Data);
+        setState((){});
+      }
+    }
+    return;
+  }
   @override
   Widget build (BuildContext context) {
     var profile = widget.userCredential.additionalUserInfo?.profile;
@@ -182,7 +181,7 @@ class _AccountPage extends State<AccountPage>{
                                     ClipRRect( // アイコン表示（角丸）
                                       borderRadius: BorderRadius.circular(2000000),
                                         child:Image.network(
-                                          "${widget.userCredential.user!.photoURL}",
+                                          "https://xenfo.org:8092/geticon?user_id=${profile?['sub']}",
                                           width: MediaQuery.of(context).size.width *0.2,
                                         ),
                                     ),
