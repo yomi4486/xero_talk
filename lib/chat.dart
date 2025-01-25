@@ -166,7 +166,7 @@ class _chat extends State<chat>{
                       child:ClipRRect( // アイコン表示（角丸）
                       borderRadius: BorderRadius.circular(2000000),
                       child:Image.network(
-                        "${userCredential.user!.photoURL}",
+                        "https://xenfo.org:8092/geticon?user_id=${channelInfo["channelId"]}",
                         fit:BoxFit.contain
                       ),
                       ),
