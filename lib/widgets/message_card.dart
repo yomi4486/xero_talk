@@ -60,7 +60,7 @@ class _MessageCardState extends State<MessageCard> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(2000000),
                       child: Image.network(
-                        "${widget.userCredential.user!.photoURL}",
+                        "https://xenfo.org:8092/geticon?user_id=${content['author']}",
                         width: MediaQuery.of(context).size.height * 0.05,
                       ),
                     ),
