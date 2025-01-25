@@ -52,6 +52,7 @@ dependencies:
   extension_google_sign_in_as_googleapis_auth: ^2.0.12
   image_picker: ^1.1.2
   firebase_storage: ^11.7.7
+  image_cropper: ^8.1.0
 
 dev_dependencies:
   flutter_test:
