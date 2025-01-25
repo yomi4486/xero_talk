@@ -118,7 +118,7 @@ class NotifyPage extends StatelessWidget{
                                               ClipRRect( // アイコン表示（角丸）
                                                 borderRadius: BorderRadius.circular(2000000),
                                                   child:Image.network(
-                                                    "${userCredential.user!.photoURL}",
+                                                    "https://xenfo.org:8092/geticon?user_id=106017943896753291176",
                                                     width: MediaQuery.of(context).size.height *0.05,
                                                   ),
                                               ),
