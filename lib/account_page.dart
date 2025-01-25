@@ -9,18 +9,31 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
-Future upload(String token,) async {
+import 'package:image_cropper/image_cropper.dart';
+
+Future upload(String token) async {
   // 画像をスマホのギャラリーから取得
   final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-  // 画像を取得できた場合はFirebaseStorageにアップロードする
+
+  // 画像を取得できた場合はクロップする
   if (image != null) {
-    final imageFile = File(image.path);
-    final bytesData = await imageFile.readAsBytes();
-    final base64Data = base64Encode(bytesData);
-    uit.upload(token, base64Data);
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: image.path,
+      compressFormat:ImageCompressFormat.png,
+      maxHeight: 1024,
+      maxWidth: 1024,
+      aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0) // 正方形
+    );
+
+    if (croppedFile != null) {
+      final bytesData = await croppedFile.readAsBytes();
+      final base64Data = base64Encode(bytesData);
+      uit.upload(token, base64Data);
+    }
   }
   return;
 }
+
 
 class AccountPage extends StatefulWidget {
   final Stream<dynamic> bloadCast;
@@ -28,7 +41,7 @@ class AccountPage extends StatefulWidget {
   final WebSocket channel;
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   final drive.DriveApi googleDriveApi;
-  AccountPage({Key? key, required this.bloadCast, required this.userCredential, required this.channel, required this.googleDriveApi}) : super(key: key);
+  const AccountPage({Key? key, required this.bloadCast, required this.userCredential, required this.channel, required this.googleDriveApi}) : super(key: key);
 
   @override
   _AccountPage createState() => _AccountPage();
@@ -69,15 +82,15 @@ class _AccountPage extends State<AccountPage>{
                 if(value == 0){
                   Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (_, __, ___)=>chatHome(userCredential:widget.userCredential,channel: widget.channel,bloadCast: widget.bloadCast,googleDriveApi: widget.googleDriveApi,),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child){
-                          return FadeTransition(opacity: animation, child: child,);
+                      transitionsBuilder: (context, animation, secondaryAnimation, child){
+                      return FadeTransition(opacity: animation, child: child,);
                     }
                   ));
                 }else if(value==1){
                   Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (_, __, ___)=>NotifyPage(userCredential:widget.userCredential,channel:widget.channel,bloadCast: widget.bloadCast,),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child){
-                          return FadeTransition(opacity: animation, child: child,);
+                      transitionsBuilder: (context, animation, secondaryAnimation, child){
+                      return FadeTransition(opacity: animation, child: child,);
                     }
                   ));
                 }
