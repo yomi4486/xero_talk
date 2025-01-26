@@ -8,6 +8,8 @@ import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:xero_talk/widgets/chat_list_widget.dart';
 
 class chatHome extends StatelessWidget{
   chatHome({Key? key, required this.userCredential,required this.channel,required this.bloadCast,required this.googleDriveApi}) : super(key: key);
@@ -19,6 +21,7 @@ class chatHome extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
+    var profile = userCredential.additionalUserInfo?.profile;
     return WillPopScope(
       onWillPop:() async => false,
       child:Scaffold(
@@ -115,94 +118,17 @@ class chatHome extends StatelessWidget{
                                     MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"106017943896753291176","displayName":"yomi4486","name":"yomi4486"},channel: channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,)),
                                   );
                                 },
-                                child:Container(
-                                  decoration: const BoxDecoration(color:Color.fromARGB(0, 255, 255, 255)),
-                                  margin: const EdgeInsets.only(bottom:10),
-                                  child: Row(
-                                    children:[
-                                      ClipRRect( // アイコン表示（角丸）
-                                        borderRadius: BorderRadius.circular(2000000),
-                                          child:Image.network(
-                                            "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=106017943896753291176",
-                                            width: MediaQuery.of(context).size.height *0.05,
-                                            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child; 
-                                              } else {
-                                                return Image.asset(
-                                                  'assets/images/default_user_icon.png',
-                                                  width: MediaQuery.of(context).size.height *0.05,
-                                                );    
-                                              } 
-                                            },
-                                          ),
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(left:10),
-                                        child:const Column(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children:[
-                                            SizedBox(
-                                                child:Text("yomi4486",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
-                                            ),
-                                            // SizedBox(
-                                            //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
-                                            // )
-                                          ]
-                                        )
-                                      )
-                                    ]
-                                  ),
-                                ),
+                                child:ChatListWidget(userId: '106017943896753291176',)
                               ),
                               GestureDetector(
                                 onTap: () async{
                                   print("onTap called.");
                                   Navigator.push(
                                     context,
-                                    
                                     MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"112905252227299870586","displayName":"太郎","name":"ta"},channel:channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,)),
                                   );
                                 },
-                                child:Container(
-                                  decoration: const BoxDecoration(color:Color.fromARGB(0, 255, 255, 255)),
-                                  margin: const EdgeInsets.only(bottom:10),
-                                  child: Row(
-                                    children:[
-                                      ClipRRect( // アイコン表示（角丸）
-                                        borderRadius: BorderRadius.circular(2000000),
-                                          child:Image.network(
-                                            "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=112905252227299870586",
-                                            width: MediaQuery.of(context).size.height *0.05,
-                                            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child; 
-                                              } else {
-                                                return Image.asset(
-                                                  'assets/images/default_user_icon.png',
-                                                  width: MediaQuery.of(context).size.height *0.05,
-                                                );    
-                                              } 
-                                            },
-                                          ),
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(left:10),
-                                        child:const Column(
-                                          mainAxisAlignment: MainAxisAlignment.start,
-                                          children:[
-                                            SizedBox(
-                                                child:Text("太郎",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
-                                            ),
-                                            // SizedBox(
-                                            //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
-                                            // )
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                child:ChatListWidget(userId: '112905252227299870586')
                               ),
                             ]                          
                           ),
