@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AccountPage extends StatefulWidget {
   final Stream<dynamic> bloadCast;
@@ -38,6 +39,7 @@ class _AccountPage extends State<AccountPage>{
         compressFormat:ImageCompressFormat.png,
         maxHeight: 1024,
         maxWidth: 1024,
+        compressQuality: 0,
         aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0) // 正方形
       );
 
@@ -181,8 +183,19 @@ class _AccountPage extends State<AccountPage>{
                                     ClipRRect( // アイコン表示（角丸）
                                       borderRadius: BorderRadius.circular(2000000),
                                         child:Image.network(
-                                          "https://xenfo.org:8092/geticon?user_id=${profile?['sub']}",
+                                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${profile?['sub']}&t=${DateTime.now().millisecondsSinceEpoch}",
                                           width: MediaQuery.of(context).size.width *0.2,
+                                          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                            if (loadingProgress == null) {
+                                              return child; 
+                                            } else {
+                                              return Image.asset(
+                                                'assets/images/default_user_icon.png',
+                                                width: MediaQuery.of(context).size.width *0.2,
+                                              );
+                                              
+                                            } 
+                                          },
                                         ),
                                     ),
                                     ElevatedButton.icon( // アイコン変更ボタン

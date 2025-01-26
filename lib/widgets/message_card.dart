@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
 import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 List<Widget> returnWidget = [];
 
@@ -60,7 +61,7 @@ class _MessageCardState extends State<MessageCard> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(2000000),
                       child: Image.network(
-                        "https://xenfo.org:8092/geticon?user_id=${content['author']}",
+                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${content['author']}&t=${DateTime.now().millisecondsSinceEpoch}",
                         width: MediaQuery.of(context).size.height * 0.05,
                       ),
                     ),
