@@ -7,6 +7,7 @@ import 'package:xero_talk/main.dart';
 // import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/message_card.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class chat extends StatefulWidget {
   const chat({Key? key, required this.userCredential, required this.channelInfo,required this.channel,required this.bloadCast,required this.googleDriveApi}) : super(key: key);
@@ -164,11 +165,21 @@ class _chat extends State<chat>{
                       width: 34,
                       margin:const EdgeInsets.only(left:5),
                       child:ClipRRect( // アイコン表示（角丸）
-                      borderRadius: BorderRadius.circular(2000000),
-                      child:Image.network(
-                        "https://xenfo.org:8092/geticon?user_id=${channelInfo["channelId"]}",
-                        fit:BoxFit.contain
-                      ),
+                        borderRadius: BorderRadius.circular(2000000),
+                        child:Image.network(
+                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["channelId"]}&t=${DateTime.now().millisecondsSinceEpoch}",
+                          fit:BoxFit.contain,
+                          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child; 
+                            } else {
+                              return Image.asset(
+                                'assets/images/default_user_icon.png',
+                                fit:BoxFit.contain,
+                              );    
+                            } 
+                          },
+                        ),
                       ),
                     ),
                   ],
