@@ -167,7 +167,7 @@ class _chat extends State<chat>{
                       child:ClipRRect( // アイコン表示（角丸）
                         borderRadius: BorderRadius.circular(2000000),
                         child:Image.network(
-                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["channelId"]}&t=${DateTime.now().millisecondsSinceEpoch}",
+                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["channelId"]}",
                           fit:BoxFit.contain,
                           loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                             if (loadingProgress == null) {
