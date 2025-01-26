@@ -22,7 +22,7 @@ class MyHttpOverrides extends HttpOverrides{ // これがないとWSS通信が�
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await dotenv.load(fileName: ".env");
+  await dotenv.load();
   HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
