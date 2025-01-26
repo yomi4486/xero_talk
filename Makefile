@@ -4,7 +4,7 @@ android:
 	&& flutter build appbundle
 
 release:
-	&& flutter run --release \
+	flutter run --release
 
 ios:
 	cd ios \
@@ -23,7 +23,7 @@ clean:
 	&& cd ios \
 	&& pod install --repo-update \
 	&& cd ..
-	
+
 cache_clear:
 	pod cache clean --all \
 	&& rm -rf ~/Library/Developer/Xcode/DerivedData/*
