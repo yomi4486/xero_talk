@@ -8,6 +8,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 late drive.DriveApi googleDriveApi;
 
@@ -21,6 +22,7 @@ class MyHttpOverrides extends HttpOverrides{ // これがないとWSS通信が�
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await dotenv.load();
   HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
@@ -54,7 +56,7 @@ class _LoginPageState extends State<MyHomePage> {
   Future<WebSocket> getSession() async{
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     final WebSocket channel = await WebSocket.connect(
-      'wss://xenfo.org:8092/v1',
+      'wss://${dotenv.env['BASE_URL']}:8092/v1',
       headers: {
         'token':token
       }

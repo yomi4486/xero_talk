@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/home.dart';
 import 'package:xero_talk/main.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class NotifyPage extends StatelessWidget{
   NotifyPage({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
@@ -118,7 +119,7 @@ class NotifyPage extends StatelessWidget{
                                               ClipRRect( // アイコン表示（角丸）
                                                 borderRadius: BorderRadius.circular(2000000),
                                                   child:Image.network(
-                                                    "https://xenfo.org:8092/geticon?user_id=106017943896753291176",
+                                                    "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=106017943896753291176&t=${DateTime.now().millisecondsSinceEpoch}",
                                                     width: MediaQuery.of(context).size.height *0.05,
                                                   ),
                                               ),
