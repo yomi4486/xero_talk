@@ -53,6 +53,7 @@ dependencies:
   image_picker: ^1.1.2
   firebase_storage: ^11.7.7
   image_cropper: ^8.1.0
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:

@@ -7,6 +7,7 @@ import 'package:googleapis/drive/v3.dart';
 import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class chatHome extends StatelessWidget{
   chatHome({Key? key, required this.userCredential,required this.channel,required this.bloadCast,required this.googleDriveApi}) : super(key: key);
@@ -122,8 +123,18 @@ class chatHome extends StatelessWidget{
                                       ClipRRect( // アイコン表示（角丸）
                                         borderRadius: BorderRadius.circular(2000000),
                                           child:Image.network(
-                                            "https://xenfo.org:8092/geticon?user_id=106017943896753291176",
+                                            "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=106017943896753291176",
                                             width: MediaQuery.of(context).size.height *0.05,
+                                            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child; 
+                                              } else {
+                                                return Image.asset(
+                                                  'assets/images/default_user_icon.png',
+                                                  width: MediaQuery.of(context).size.height *0.05,
+                                                );    
+                                              } 
+                                            },
                                           ),
                                       ),
                                       Container(
@@ -161,8 +172,18 @@ class chatHome extends StatelessWidget{
                                       ClipRRect( // アイコン表示（角丸）
                                         borderRadius: BorderRadius.circular(2000000),
                                           child:Image.network(
-                                            "https://xenfo.org:8092/geticon?user_id=112905252227299870586",
+                                            "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=112905252227299870586",
                                             width: MediaQuery.of(context).size.height *0.05,
+                                            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child; 
+                                              } else {
+                                                return Image.asset(
+                                                  'assets/images/default_user_icon.png',
+                                                  width: MediaQuery.of(context).size.height *0.05,
+                                                );    
+                                              } 
+                                            },
                                           ),
                                       ),
                                       Container(
