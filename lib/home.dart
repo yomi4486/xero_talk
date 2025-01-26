@@ -7,8 +7,6 @@ import 'package:googleapis/drive/v3.dart';
 import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
 
 class chatHome extends StatelessWidget{
@@ -21,7 +19,6 @@ class chatHome extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    var profile = userCredential.additionalUserInfo?.profile;
     return WillPopScope(
       onWillPop:() async => false,
       child:Scaffold(
