@@ -37,8 +37,8 @@ class _AccountPage extends State<AccountPage>{
       final croppedFile = await ImageCropper().cropImage(
         sourcePath: image.path,
         compressFormat:ImageCompressFormat.png,
-        maxHeight: 1024,
-        maxWidth: 1024,
+        maxHeight: 512,
+        maxWidth: 512,
         compressQuality: 0,
         aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0) // 正方形
       );
