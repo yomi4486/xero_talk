@@ -24,6 +24,7 @@ class _AccountPage extends State<AccountPage>{
   var description = "";
   var displayName = "";
   final AuthContext instance = AuthContext();
+  final nowDt = DateTime.now().millisecondsSinceEpoch;
 
   Future upload(String token) async {
     // 画像をスマホのギャラリーから取得
@@ -179,7 +180,7 @@ class _AccountPage extends State<AccountPage>{
                                     ClipRRect( // アイコン表示（角丸）
                                       borderRadius: BorderRadius.circular(2000000),
                                         child:Image.network(
-                                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${profile?['sub']}&t=${DateTime.now().millisecondsSinceEpoch}",
+                                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${profile?['sub']}&t=${nowDt}",
                                           width: MediaQuery.of(context).size.width *0.2,
                                           loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                                             if (loadingProgress == null) {
