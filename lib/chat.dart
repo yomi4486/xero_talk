@@ -72,7 +72,8 @@ class _chat extends State<chat>{
                     ),
                     hintStyle: const TextStyle(
                       color: Color.fromARGB(255, 255, 255, 255),
-                      fontSize: 16,
+                      fontSize: 12,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     filled: true,
                     fillColor: const Color.fromARGB(55, 0, 0, 0)
