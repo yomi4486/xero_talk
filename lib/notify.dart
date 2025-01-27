@@ -1,19 +1,9 @@
-import 'dart:io';
-import 'dart:async';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/home.dart';
-import 'package:xero_talk/main.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class NotifyPage extends StatelessWidget{
-  NotifyPage({Key? key, required this.userCredential,required this.channel, required this.bloadCast}) : super(key: key);
-  final WebSocket channel;
-  final UserCredential userCredential;
-  final Stream<dynamic> bloadCast;
-
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   @override
   Widget build(BuildContext context) {
@@ -26,14 +16,14 @@ class NotifyPage extends StatelessWidget{
         onTap: (value) {
           if(value == 0){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>chatHome(userCredential:userCredential,channel:channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,),
+              pageBuilder: (_, __, ___)=>chatHome(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }
             ));
           }else if(value == 2){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>AccountPage(userCredential:userCredential,channel:channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,),
+              pageBuilder: (_, __, ___)=>AccountPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }
@@ -99,10 +89,10 @@ class NotifyPage extends StatelessWidget{
                                       GestureDetector(
                                         onTap: () {
                                           Navigator.push(context, PageRouteBuilder(
-                                            pageBuilder: (context, animation, secondaryAnimation) => chatHome(userCredential:userCredential,channel:channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,),
+                                            pageBuilder: (context, animation, secondaryAnimation) => chatHome(),
                                             transitionsBuilder: (context, animation, secondaryAnimation, child) {
                                               return const FadeUpwardsPageTransitionsBuilder().buildTransitions(
-                                                MaterialPageRoute(builder: (context)=>chatHome(userCredential:userCredential,channel: channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,)),
+                                                MaterialPageRoute(builder: (context)=>chatHome()),
                                                 context,
                                                 animation,
                                                 secondaryAnimation,

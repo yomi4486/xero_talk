@@ -1,21 +1,14 @@
-import 'dart:io';
-import 'dart:async';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:googleapis/drive/v3.dart';
 import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
+import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
 
 class chatHome extends StatelessWidget{
-  chatHome({Key? key, required this.userCredential,required this.channel,required this.bloadCast,required this.googleDriveApi}) : super(key: key);
-  final WebSocket channel;
-  final UserCredential userCredential;
+  chatHome();
+  final AuthContext instance = AuthContext();
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
-  final Stream<dynamic> bloadCast;
-  final DriveApi googleDriveApi;
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +20,14 @@ class chatHome extends StatelessWidget{
         onTap: (value) {
           if(value == 1){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>NotifyPage(userCredential:userCredential,channel: channel,bloadCast: bloadCast,),
+              pageBuilder: (_, __, ___)=>NotifyPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }
             ));
           }else if(value == 2){
             Navigator.push(context, PageRouteBuilder(
-              pageBuilder: (_, __, ___)=>AccountPage(userCredential:userCredential,channel: channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,),
+              pageBuilder: (_, __, ___)=>AccountPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child){
                     return FadeTransition(opacity: animation, child: child,);
               }
@@ -112,7 +105,7 @@ class chatHome extends StatelessWidget{
                                 onTap: () async {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"106017943896753291176","displayName":"yomi4486","name":"yomi4486"},channel: channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,)),
+                                    MaterialPageRoute(builder: (context) => const chat(channelInfo: {"channelId":"106017943896753291176","displayName":"yomi4486","name":"yomi4486"},)),
                                   );
                                 },
                                 child:ChatListWidget(userId: '106017943896753291176',)
@@ -122,7 +115,7 @@ class chatHome extends StatelessWidget{
                                   print("onTap called.");
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => chat(userCredential: userCredential,channelInfo:const {"channelId":"112905252227299870586","displayName":"太郎","name":"ta"},channel:channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,)),
+                                    MaterialPageRoute(builder: (context) => const chat(channelInfo: {"channelId":"112905252227299870586","displayName":"ちんちん太郎","name":"tarou"})),
                                   );
                                 },
                                 child:ChatListWidget(userId: '112905252227299870586')
