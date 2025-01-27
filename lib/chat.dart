@@ -22,11 +22,18 @@ class _chat extends State<chat>{
   String? chatText = "";
   final AuthContext instance = AuthContext();
   final fieldText = TextEditingController();
+  FocusNode focusNode = FocusNode();
 
   @override
   void dispose() {
     fieldText.dispose();
     super.dispose();
+  }
+
+  void unfocus() {
+     if (focusNode.hasFocus) {
+      focusNode.unfocus(); 
+    } 
   }
   
   @override
@@ -46,9 +53,10 @@ class _chat extends State<chat>{
               SizedBox(
                 width: MediaQuery.of(context).size.width*0.75,
                 child:TextField(
+                  focusNode: focusNode,
                   cursorColor: const Color.fromARGB(55, 255, 255, 255),
                   controller: fieldText,
-                  onTapOutside:(_)=>FocusScope.of(context).unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
+                  onTapOutside:(_)=>unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
                   keyboardType: TextInputType.multiline,
                   maxLines: null,
                   style: const TextStyle(                            
@@ -276,7 +284,7 @@ class _chat extends State<chat>{
                         child:Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children:[
-                            MessageCard()
+                            MessageCard(focusNode: focusNode,)
                           ]
                         ),
                       ),

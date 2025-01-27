@@ -5,16 +5,29 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 
-List<Widget> returnWidget = [];
-
 class MessageCard extends StatefulWidget {
-  MessageCard();
-  
+  MessageCard({Key? key, required this.focusNode}) : super(key: key);
+  final FocusNode focusNode;
   @override
   _MessageCardState createState() => _MessageCardState();
 }
 
 class _MessageCardState extends State<MessageCard> {
+  List<Widget> returnWidget = [];
+  void addWidget(Widget newWidget) {
+    returnWidget.add(newWidget); 
+  }
+
+  @override 
+  void initState() {
+    super.initState();
+  }
+  @override void dispose() { 
+    widget.focusNode.dispose(); 
+    super.dispose();
+  }
+
+
   final AuthContext instance = AuthContext();
   @override
   Widget build(BuildContext context) {
@@ -68,23 +81,24 @@ class _MessageCardState extends State<MessageCard> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          Text( // 名前
                             displayName,
                             style: const TextStyle(
                               color: Color.fromARGB(200, 55, 55, 55),
                               fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              fontSize: 14,
                             ),
                             textAlign: TextAlign.left,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          SizedBox(
+                          SizedBox( // コンテンツ
                             width: MediaQuery.of(context).size.width*0.7,
                             child:Text(
                               messageContent,
                               style: const TextStyle(
-                                color: Color.fromARGB(200, 55, 55, 55),
+                                color: Color.fromARGB(200, 33, 33, 33),
+                                fontSize: 16.0
                               ),
                               textAlign: TextAlign.left,
                             ),
@@ -95,11 +109,9 @@ class _MessageCardState extends State<MessageCard> {
                   ],
                 ),
               );
-              returnWidget = [chatWidget];
-              return Column(children: returnWidget);
-            } else {
-              return const Column();
+              addWidget(chatWidget);
             }
+            return Column(children: returnWidget);
           },
         );
       },
