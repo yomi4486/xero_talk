@@ -92,7 +92,18 @@ class _chat extends State<chat>{
                     if (text!.isNotEmpty) {
                       final channelId = channelInfo["channelId"];
                       final sendBody = {"type": "send_message", "content": text, "channel": channelId};
-                      instance.channel.add(convert.json.encode(sendBody));
+                      final String data = convert.json.encode(sendBody);
+                      if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
+                        await instance.restoreConnection().then((v){
+                          instance.channel.add(data);
+                        });
+                        return;
+                      }
+                      try{
+                        instance.channel.add(data);
+                      }catch(e){
+                        print('送信に失敗：${e}');
+                      }
                     }
                   }
                   sendMessage(chatText);
