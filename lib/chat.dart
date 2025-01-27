@@ -72,7 +72,8 @@ class _chat extends State<chat>{
                     ),
                     hintStyle: const TextStyle(
                       color: Color.fromARGB(255, 255, 255, 255),
-                      fontSize: 16,
+                      fontSize: 12,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     filled: true,
                     fillColor: const Color.fromARGB(55, 0, 0, 0)
@@ -189,7 +190,15 @@ class _chat extends State<chat>{
               Container(
                 width: 200,
                 margin:const EdgeInsets.only(left:10),
-                child:Text(displayName,style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color:Color.fromARGB(200, 255, 255, 255)),),
+                child:Text(
+                  displayName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color:Color.fromARGB(200, 255, 255, 255),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               )
             ]
           ),
