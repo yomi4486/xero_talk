@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:xero_talk/home.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,20 +9,17 @@ import 'dart:convert';
 import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:xero_talk/utils/auth_context.dart';
 
 class AccountPage extends StatefulWidget {
-  final Stream<dynamic> bloadCast;
-  final UserCredential userCredential;
-  final WebSocket channel;
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
-  final drive.DriveApi googleDriveApi;
-  const AccountPage({Key? key, required this.bloadCast, required this.userCredential, required this.channel, required this.googleDriveApi}) : super(key: key);
 
   @override
   _AccountPage createState() => _AccountPage();
 }
 
 class _AccountPage extends State<AccountPage>{
+  final AuthContext instance = AuthContext();
   bool _showFab = false; // falseなら未編集、trueなら編集済み
   var description = "";
   var displayName = "";
@@ -54,7 +49,7 @@ class _AccountPage extends State<AccountPage>{
   }
   @override
   Widget build (BuildContext context) {
-    var profile = widget.userCredential.additionalUserInfo?.profile;
+    var profile = instance.userCredential.additionalUserInfo?.profile;
     return WillPopScope(
       onWillPop:() async => false,
       child: FutureBuilder(
@@ -82,14 +77,14 @@ class _AccountPage extends State<AccountPage>{
               onTap: (value) {
                 if(value == 0){
                   Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (_, __, ___)=>chatHome(userCredential:widget.userCredential,channel: widget.channel,bloadCast: widget.bloadCast,googleDriveApi: widget.googleDriveApi,),
+                    pageBuilder: (_, __, ___)=>chatHome(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child){
                       return FadeTransition(opacity: animation, child: child,);
                     }
                   ));
                 }else if(value==1){
                   Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (_, __, ___)=>NotifyPage(userCredential:widget.userCredential,channel:widget.channel,bloadCast: widget.bloadCast,),
+                    pageBuilder: (_, __, ___)=>NotifyPage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child){
                       return FadeTransition(opacity: animation, child: child,);
                     }
@@ -132,7 +127,7 @@ class _AccountPage extends State<AccountPage>{
             floatingActionButton: _showFab ? FloatingActionButton( 
               onPressed: () async {
                 if(_showFab){
-                  var profile = widget.userCredential.additionalUserInfo?.profile;
+                  var profile = instance.userCredential.additionalUserInfo?.profile;
                   // ドキュメント作成
                   FirebaseFirestore.instance
                     .collection('user_account') // コレクションID
