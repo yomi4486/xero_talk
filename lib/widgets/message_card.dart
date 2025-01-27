@@ -1,9 +1,12 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 class MessageCard extends StatefulWidget {
   MessageCard({Key? key, required this.focusNode}) : super(key: key);
@@ -14,6 +17,7 @@ class MessageCard extends StatefulWidget {
 
 class _MessageCardState extends State<MessageCard> {
   List<Widget> returnWidget = [];
+  
   void addWidget(Widget newWidget) {
     returnWidget.add(newWidget); 
   }
@@ -22,9 +26,53 @@ class _MessageCardState extends State<MessageCard> {
   void initState() {
     super.initState();
   }
-  @override void dispose() { 
+
+  @override void dispose() {  // チャット入力欄のフォーカスを無視する
     widget.focusNode.dispose(); 
     super.dispose();
+  }
+
+  void launchURL(String url) async { 
+    if (await canLaunch(url)) { 
+      await launch(url); 
+    } else { 
+      throw 'Could not launch $url'; 
+    } 
+  }
+
+  List<TextSpan> getTextSpans(String text) {
+    final RegExp urlRegExp = RegExp(
+      r'(http|https):\/\/([\w.]+\/?)\S*',
+      caseSensitive: false,
+    );
+
+    final List<TextSpan> spans = [];
+    final matches = urlRegExp.allMatches(text);
+
+    int lastMatchEnd = 0;
+    for (final match in matches) {
+      if (match.start > lastMatchEnd) {
+        spans.add(TextSpan(text: text.substring(lastMatchEnd, match.start)));
+      }
+      final url = match.group(0);
+      spans.add(
+        TextSpan(
+          text: url,
+            style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline),
+            recognizer: TapGestureRecognizer()..onTap = () async {
+              if (await canLaunch(url!)) {
+                await launch(url);
+              }
+            },
+          ),
+      );
+      lastMatchEnd = match.end;
+    }
+    if (lastMatchEnd < text.length) {
+      spans.add(TextSpan(text: text.substring(lastMatchEnd)));
+    }
+
+    return spans;
   }
 
 
@@ -62,6 +110,7 @@ class _MessageCardState extends State<MessageCard> {
             } else if (docSnapshot.hasData) {
               displayName = (docSnapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No Name";
               final String messageContent = content["content"];
+              
               final chatWidget = Container(
                 margin: const EdgeInsets.only(bottom: 10, top: 10),
                 child: Row(
@@ -94,13 +143,14 @@ class _MessageCardState extends State<MessageCard> {
                           ),
                           SizedBox( // コンテンツ
                             width: MediaQuery.of(context).size.width*0.7,
-                            child:Text(
-                              messageContent,
-                              style: const TextStyle(
+                            child:RichText(
+                              text: TextSpan(
+                                children: getTextSpans(messageContent),
+                                style:const TextStyle(
                                 color: Color.fromARGB(200, 33, 33, 33),
                                 fontSize: 16.0
                               ),
-                              textAlign: TextAlign.left,
+                              ),
                             ),
                           )
                         ],
