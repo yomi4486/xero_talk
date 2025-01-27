@@ -31,7 +31,7 @@ class _chat extends State<chat>{
   
   @override
   Widget build(BuildContext context) {
-    final String displayName = channelInfo["displayName"];
+    final String displayName = channelInfo["display_name"];
     return Scaffold(
       bottomSheet: BottomAppBar(
         height: MediaQuery.of(context).size.height*0.12,
@@ -90,7 +90,7 @@ class _chat extends State<chat>{
                 onPressed: () async {
                   void sendMessage(String? text) async {
                     if (text!.isNotEmpty) {
-                      final channelId = channelInfo["channelId"];
+                      final channelId = channelInfo["id"];
                       final sendBody = {"type": "send_message", "content": text, "channel": channelId};
                       final String data = convert.json.encode(sendBody);
                       if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
