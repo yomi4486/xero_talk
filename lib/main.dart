@@ -122,7 +122,6 @@ class _LoginPageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-
               Image.asset('assets/images/logo.png', fit: BoxFit.contain,width:MediaQuery.of(context).size.width *0.5),
               Container(
                 margin: const EdgeInsets.all(10),

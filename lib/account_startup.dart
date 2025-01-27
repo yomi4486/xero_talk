@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 class AccountStartup extends StatelessWidget{
   final AuthContext instance = AuthContext();
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+  final nowDt = DateTime.now().millisecondsSinceEpoch;
   @override
   Widget build(BuildContext context) {
     String name = instance.userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '');
@@ -71,7 +72,7 @@ class AccountStartup extends StatelessWidget{
                               ClipRRect( // アイコン表示（角丸）
                                 borderRadius: BorderRadius.circular(2000000),
                                   child:Image.network(
-                                    "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${instance.id}&t=${DateTime.now().millisecondsSinceEpoch}",
+                                    "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${instance.id}&t=${nowDt}",
                                     width: MediaQuery.of(context).size.width *0.2,
                                   ),
                               ),
