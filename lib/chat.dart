@@ -190,7 +190,15 @@ class _chat extends State<chat>{
               Container(
                 width: 200,
                 margin:const EdgeInsets.only(left:10),
-                child:Text(displayName,style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color:Color.fromARGB(200, 255, 255, 255)),),
+                child:Text(
+                  displayName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color:Color.fromARGB(200, 255, 255, 255),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               )
             ]
           ),
