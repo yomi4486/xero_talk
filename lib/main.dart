@@ -90,6 +90,7 @@ class _LoginPageState extends State<MyHomePage> {
       authContext.channel = channel;
       authContext.bloadCast = channel.asBroadcastStream();
       authContext.googleDriveApi = googleDriveApi;
+      authContext.userCredential = userCredential;
       if (userCredential.additionalUserInfo!.isNewUser) { // 新規ユーザーの場合
         Navigator.push(
           context,
