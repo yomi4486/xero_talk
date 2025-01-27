@@ -1,23 +1,16 @@
-import 'dart:io';
-import 'dart:async';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:googleapis/drive/v3.dart';
 import 'package:xero_talk/home.dart';
+import 'package:xero_talk/utils/auth_context.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AccountStartup extends StatelessWidget{
-  AccountStartup({Key? key, required this.userCredential,required this.channel, required this.bloadCast,required this.googleDriveApi}) : super(key: key);
-  final UserCredential userCredential;
-  final WebSocket channel;
+  final AuthContext instance = AuthContext();
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
-  final Stream<dynamic> bloadCast;
-  final DriveApi googleDriveApi;
   @override
   Widget build(BuildContext context) {
-    String name = userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '');
-    String displayName= "${userCredential.user!.displayName}";
+    String name = instance.userCredential.user!.email!.replaceAll('@gmail.com', '').replaceAll('@icloud.com', '');
+    String displayName= "${instance.userCredential.user!.displayName}";
     String description="";
     return Scaffold(
       appBar:AppBar(
@@ -33,7 +26,7 @@ class AccountStartup extends StatelessWidget{
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          var profile = userCredential.additionalUserInfo?.profile;
+          var profile = instance.userCredential.additionalUserInfo?.profile;
           // ドキュメント作成
           FirebaseFirestore.instance
               .collection('user_account') // コレクションID
@@ -47,7 +40,7 @@ class AccountStartup extends StatelessWidget{
               )
               .then((value){
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => chatHome(userCredential:userCredential,channel:channel,bloadCast: bloadCast,googleDriveApi: googleDriveApi,))
+                  MaterialPageRoute(builder: (context) => chatHome())
                 );
               })
               .catchError((err){
@@ -78,7 +71,7 @@ class AccountStartup extends StatelessWidget{
                               ClipRRect( // アイコン表示（角丸）
                                 borderRadius: BorderRadius.circular(2000000),
                                   child:Image.network(
-                                    "${userCredential.user!.photoURL}",
+                                    "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${instance.id}&t=${DateTime.now().millisecondsSinceEpoch}",
                                     width: MediaQuery.of(context).size.width *0.2,
                                   ),
                               ),
