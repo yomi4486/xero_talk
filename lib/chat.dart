@@ -1,36 +1,26 @@
-import 'dart:async';
-import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:googleapis/drive/v3.dart';
-import 'package:xero_talk/main.dart';
+import 'package:xero_talk/utils/auth_context.dart';
 // import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/message_card.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class chat extends StatefulWidget {
-  const chat({Key? key, required this.userCredential, required this.channelInfo,required this.channel,required this.bloadCast,required this.googleDriveApi}) : super(key: key);
-  final UserCredential userCredential;
+  const chat({Key? key, required this.channelInfo}) : super(key: key);
   final Map channelInfo;
-  final WebSocket channel;
-  final Stream<dynamic> bloadCast;
-  final DriveApi googleDriveApi;
+
   @override
   
   State<chat> createState(){
-    return _chat(userCredential: userCredential,channelInfo: channelInfo,channel: channel,bloadCast:bloadCast);
+    return _chat(channelInfo: channelInfo);
   }
 }
 
 class _chat extends State<chat>{
-
-  _chat({required this.userCredential, required this.channelInfo,required this.channel,required this.bloadCast});
-  UserCredential userCredential;
+  _chat({required this.channelInfo});
   Map channelInfo;
-  WebSocket channel;
   String? chatText = "";
-  Stream<dynamic> bloadCast;
+  final AuthContext instance = AuthContext();
   final fieldText = TextEditingController();
 
   @override
@@ -102,7 +92,7 @@ class _chat extends State<chat>{
                     if (text!.isNotEmpty) {
                       final channelId = channelInfo["channelId"];
                       final sendBody = {"type": "send_message", "content": text, "channel": channelId};
-                      channel.add(convert.json.encode(sendBody));
+                      instance.channel.add(convert.json.encode(sendBody));
                     }
                   }
                   sendMessage(chatText);
@@ -266,7 +256,7 @@ class _chat extends State<chat>{
                         child:Column(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children:[
-                            MessageCard(bloadCast: bloadCast, userCredential: userCredential,googleDriveApi: googleDriveApi,)
+                            MessageCard()
                           ]
                         ),
                       ),

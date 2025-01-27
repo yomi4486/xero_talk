@@ -1,28 +1,25 @@
-import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:xero_talk/utils/auth_context.dart';
 
 List<Widget> returnWidget = [];
 
 class MessageCard extends StatefulWidget {
-  final Stream<dynamic> bloadCast;
-  final UserCredential userCredential;
-  final drive.DriveApi googleDriveApi;
-  MessageCard({Key? key, required this.bloadCast, required this.userCredential,required this.googleDriveApi}) : super(key: key);
-
+  MessageCard();
+  
   @override
   _MessageCardState createState() => _MessageCardState();
 }
 
 class _MessageCardState extends State<MessageCard> {
+  final AuthContext instance = AuthContext();
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: widget.bloadCast,
+      stream: instance.bloadCast,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         var displayName = "";
         var content = {};
@@ -37,7 +34,7 @@ class _MessageCardState extends State<MessageCard> {
         ()async{ // 会話に変更があった場合ファイルに書き込み
           final uploadFile = drive.File();
           uploadFile.name = "testfile.txt";
-          await widget.googleDriveApi.files.create(
+          await instance.googleDriveApi.files.create(
             uploadFile,
           );
         };
@@ -61,7 +58,7 @@ class _MessageCardState extends State<MessageCard> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(2000000),
                       child: Image.network(
-                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${content['author']}&t=${DateTime.now().millisecondsSinceEpoch}",
+                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${content['author']}",
                         width: MediaQuery.of(context).size.height * 0.05,
                       ),
                     ),
