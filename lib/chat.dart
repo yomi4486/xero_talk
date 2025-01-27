@@ -41,7 +41,7 @@ class _chat extends State<chat>{
     final String displayName = channelInfo["display_name"];
     return Scaffold(
       bottomSheet: BottomAppBar(
-        height: MediaQuery.of(context).size.height*0.12,
+        height: MediaQuery.of(context).size.height*0.13,
         notchMargin:4.0,
         color: Color.fromARGB(255, 152, 97, 192).withOpacity(1),
         child:Container(
@@ -51,7 +51,7 @@ class _chat extends State<chat>{
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               SizedBox(
-                width: MediaQuery.of(context).size.width*0.75,
+                width: MediaQuery.of(context).size.width*0.7,
                 child:TextField(
                   focusNode: focusNode,
                   cursorColor: const Color.fromARGB(55, 255, 255, 255),
@@ -91,50 +91,52 @@ class _chat extends State<chat>{
                   },
                 ),
               ),
-              IconButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
-                  overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
-                ),
-                onPressed: () async {
-                  void sendMessage(String? text) async {
-                    if (text!.isNotEmpty) {
-                      final channelId = channelInfo["id"];
-                      final sendBody = {"type": "send_message", "content": text, "channel": channelId};
-                      final String data = convert.json.encode(sendBody);
-                      if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
-                        await instance.restoreConnection().then((v){
+              SizedBox( 
+                child:IconButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+                    overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
+                  ),
+                  onPressed: () async {
+                    void sendMessage(String? text) async {
+                      if (text!.isNotEmpty) {
+                        final channelId = channelInfo["id"];
+                        final sendBody = {"type": "send_message", "content": text, "channel": channelId};
+                        final String data = convert.json.encode(sendBody);
+                        if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
+                          await instance.restoreConnection().then((v){
+                            instance.channel.add(data);
+                          });
+                          return;
+                        }
+                        try{
                           instance.channel.add(data);
-                        });
-                        return;
-                      }
-                      try{
-                        instance.channel.add(data);
-                      }catch(e){
-                        print('送信に失敗：${e}');
+                        }catch(e){
+                          print('送信に失敗：${e}');
+                        }
                       }
                     }
-                  }
-                  sendMessage(chatText);
-                  chatText = "";
-                  fieldText.clear();
-                },
-                icon: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color.fromARGB(55, 0, 0, 0), 
-                        Color.fromARGB(55, 0, 0, 0)
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                    sendMessage(chatText);
+                    chatText = "";
+                    fieldText.clear();
+                  },
+                  icon: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color.fromARGB(55, 0, 0, 0), 
+                          Color.fromARGB(55, 0, 0, 0)
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
                     ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const ImageIcon(
-                    AssetImage("assets/images/send.png"),
-                    color: Color.fromARGB(255, 255, 255, 255),
+                    child: const ImageIcon(
+                      AssetImage("assets/images/send.png"),
+                      color: Color.fromARGB(255, 255, 255, 255),
+                    ),
                   ),
                 ),
               ),

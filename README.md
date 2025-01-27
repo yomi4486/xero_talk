@@ -13,4 +13,14 @@
 <string>Access to pick a photo</string>
 <key>NSPhotoLibraryUsageDescription</key>
 <string>Access to pick a photo</string>
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>http</string>
+    <string>https</string>
+</array>
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
 ```
