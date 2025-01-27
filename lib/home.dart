@@ -4,6 +4,7 @@ import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
+import 'package:xero_talk/utils/get_user_profile.dart';
 
 class chatHome extends StatelessWidget{
   chatHome();
@@ -103,24 +104,27 @@ class chatHome extends StatelessWidget{
                             children: [
                               GestureDetector(
                                 onTap: () async {
+                                  final Map<String, dynamic> userData = await getUserProfile('106017943896753291176');
+                                  print(userData);
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const chat(channelInfo: {"channelId":"106017943896753291176","displayName":"yomi4486","name":"yomi4486"},)),
+                                    MaterialPageRoute(builder: (context) => chat(channelInfo: userData)),
                                   );
                                 },
                                 child:ChatListWidget(userId: '106017943896753291176',)
                               ),
                               GestureDetector(
                                 onTap: () async{
-                                  print("onTap called.");
+                                  final Map<String, dynamic> userData = await getUserProfile('112905252227299870586');
+                                  print(userData);
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const chat(channelInfo: {"channelId":"112905252227299870586","displayName":"ちんちん太郎","name":"tarou"})),
+                                    MaterialPageRoute(builder: (context) => chat(channelInfo:userData)),
                                   );
                                 },
                                 child:ChatListWidget(userId: '112905252227299870586')
                               ),
-                            ]                          
+                            ]                        
                           ),
                         )
                       ),
