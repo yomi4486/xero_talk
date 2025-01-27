@@ -121,9 +121,6 @@ class NotifyPage extends StatelessWidget{
                                                     SizedBox(
                                                         child:Text("yomi4486があなたをメンションしました",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
                                                     ),
-                                                    // SizedBox(
-                                                    //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
-                                                    // )
                                                   ]
                                                 )
                                               )
@@ -131,33 +128,6 @@ class NotifyPage extends StatelessWidget{
                                           ),
                                         ),
                                       ),
-                                      // Container(margin: const EdgeInsets.only(bottom:10,top: 10),
-                                      //   child: Row(
-                                      //     children: [
-                                      //       ClipRRect( // アイコン表示（角丸）
-                                      //         borderRadius: BorderRadius.circular(2000000),
-                                      //           child:Image.network(
-                                      //             "${userCredential.user!.photoURL}",
-                                      //             width: MediaQuery.of(context).size.height *0.05,
-                                      //           ),
-                                      //       ),
-                                      //       Container(
-                                      //         margin: const EdgeInsets.only(left:10),
-                                      //         child:const Column(
-                                      //           mainAxisAlignment: MainAxisAlignment.start,
-                                      //           children:[
-                                      //             SizedBox(
-                                      //               child:Text("yomi4486",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255),fontWeight: FontWeight.bold,),textAlign: TextAlign.left,),
-                                      //             ),
-                                      //             // SizedBox(
-                                      //             //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left), 
-                                      //             // )
-                                      //           ]
-                                      //         )
-                                      //       )
-                                      //     ],
-                                      //   ),
-                                      // ),
                                     ],                             
                                   ),
                                 ],
