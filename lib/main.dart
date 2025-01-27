@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:xero_talk/utils/auth_context.dart';
 
 late drive.DriveApi googleDriveApi;
 
@@ -84,25 +85,20 @@ class _LoginPageState extends State<MyHomePage> {
       WebSocket channel = await getSession();
       final httpClient = (await googleSignIn.authenticatedClient())!;
       googleDriveApi = drive.DriveApi(httpClient);
+      final authContext = AuthContext();
+      authContext.id = userCredential.additionalUserInfo?.profile?['sub'];
+      authContext.channel = channel;
+      authContext.bloadCast = channel.asBroadcastStream();
+      authContext.googleDriveApi = googleDriveApi;
       if (userCredential.additionalUserInfo!.isNewUser) { // 新規ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AccountStartup(
-            userCredential:userCredential,
-            channel: channel,
-            bloadCast:channel.asBroadcastStream(),
-            googleDriveApi: googleDriveApi,
-          )),
+          MaterialPageRoute(builder: (context) => AccountStartup()),
         );
       } else { //既存ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => chatHome(
-            userCredential: userCredential,
-            channel:channel,
-            bloadCast:channel.asBroadcastStream(),
-            googleDriveApi: googleDriveApi,
-          )),
+          MaterialPageRoute(builder: (context) => chatHome()),
         );
       }
     } on FirebaseException catch (e) {
