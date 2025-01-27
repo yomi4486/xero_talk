@@ -12,17 +12,19 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 
 class AccountPage extends StatefulWidget {
+  AccountPage();
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
-
   @override
   _AccountPage createState() => _AccountPage();
 }
 
 class _AccountPage extends State<AccountPage>{
-  final AuthContext instance = AuthContext();
+  _AccountPage();
   bool _showFab = false; // falseなら未編集、trueなら編集済み
   var description = "";
   var displayName = "";
+  final AuthContext instance = AuthContext();
+
   Future upload(String token) async {
     // 画像をスマホのギャラリーから取得
     final image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -51,7 +53,7 @@ class _AccountPage extends State<AccountPage>{
   Widget build (BuildContext context) {
     var profile = instance.userCredential.additionalUserInfo?.profile;
     return WillPopScope(
-      onWillPop:() async => false,
+      onWillPop:() async => true,
       child: FutureBuilder(
         future:FirebaseFirestore.instance
           .collection('user_account') // コレクションID
@@ -127,7 +129,6 @@ class _AccountPage extends State<AccountPage>{
             floatingActionButton: _showFab ? FloatingActionButton( 
               onPressed: () async {
                 if(_showFab){
-                  var profile = instance.userCredential.additionalUserInfo?.profile;
                   // ドキュメント作成
                   FirebaseFirestore.instance
                     .collection('user_account') // コレクションID
