@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+String lastMessageId = "";
 
 class MessageCard extends StatefulWidget {
   MessageCard({Key? key, required this.focusNode, required this.scrollController}) : super(key: key);
@@ -18,7 +19,6 @@ class MessageCard extends StatefulWidget {
 
 class _MessageCardState extends State<MessageCard> {
   List<Widget> returnWidget = [];
-  String lastMessageId = "";
   
   void addWidget(Widget newWidget, double currentPosition) {
     returnWidget.add(newWidget); 
