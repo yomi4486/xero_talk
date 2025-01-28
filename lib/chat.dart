@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:xero_talk/utils/auth_context.dart';
-// import 'package:http/http.dart' as http;
+
 import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/message_card.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -23,6 +23,7 @@ class _chat extends State<chat>{
   final AuthContext instance = AuthContext();
   final fieldText = TextEditingController();
   FocusNode focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
@@ -283,14 +284,26 @@ class _chat extends State<chat>{
                       height: MediaQuery.of(context).size.height*0.76,
                       child: Container(
                         margin: const EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
-                        child:Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children:[
-                            MessageCard(focusNode: focusNode,)
-                          ]
-                        ),
+                        child:LayoutBuilder(
+                          builder: (context, constraints) {
+                            return SingleChildScrollView(
+                              controller: _scrollController,
+                              child:ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                ),
+                                child:Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children:[
+                                    MessageCard(focusNode: focusNode,scrollController: _scrollController,)
+                                  ]
+                                ),
+                              ),
+                            );
+                          },
+                        )
                       ),
-                    ),
+                    )
                   ] // childlen 画面全体
                 )
               ] 
