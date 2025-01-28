@@ -9,8 +9,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 
 class MessageCard extends StatefulWidget {
-  MessageCard({Key? key, required this.focusNode}) : super(key: key);
+  MessageCard({Key? key, required this.focusNode, required this.scrollController}) : super(key: key);
   final FocusNode focusNode;
+  final ScrollController scrollController;
   @override
   _MessageCardState createState() => _MessageCardState();
 }
@@ -18,8 +19,18 @@ class MessageCard extends StatefulWidget {
 class _MessageCardState extends State<MessageCard> {
   List<Widget> returnWidget = [];
   
-  void addWidget(Widget newWidget) {
+  void addWidget(Widget newWidget, double currentPosition) {
     returnWidget.add(newWidget); 
+    
+    print(currentPosition); // 再描画前にいた場所を取得
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.scrollController.jumpTo(currentPosition);
+      widget.scrollController.animateTo(
+        widget.scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   @override 
@@ -99,14 +110,14 @@ class _MessageCardState extends State<MessageCard> {
             uploadFile,
           );
         };
+        final _currentPosition = widget.scrollController.position.pixels;
         return FutureBuilder(
           future: a.get(),
           builder: (context, AsyncSnapshot<DocumentSnapshot> docSnapshot) {
             if (docSnapshot.connectionState == ConnectionState.waiting) {
-              displayName = "Loading...(0)";
-              return const Column();
+              //　取得中
             } else if (docSnapshot.hasError) {
-              return const Column();
+              // エラー
             } else if (docSnapshot.hasData) {
               displayName = (docSnapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No Name";
               final String messageContent = content["content"];
@@ -147,9 +158,9 @@ class _MessageCardState extends State<MessageCard> {
                               text: TextSpan(
                                 children: getTextSpans(messageContent),
                                 style:const TextStyle(
-                                color: Color.fromARGB(200, 33, 33, 33),
-                                fontSize: 16.0
-                              ),
+                                  color: Color.fromARGB(200, 33, 33, 33),
+                                  fontSize: 16.0
+                                ),
                               ),
                             ),
                           )
@@ -159,9 +170,9 @@ class _MessageCardState extends State<MessageCard> {
                   ],
                 ),
               );
-              addWidget(chatWidget);
+              addWidget(chatWidget,_currentPosition);
             }
-            return Column(children: returnWidget);
+            return Column(children: returnWidget,);
           },
         );
       },
