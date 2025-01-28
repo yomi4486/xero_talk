@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+String lastMessageId = "";
 
 class MessageCard extends StatefulWidget {
   MessageCard({Key? key, required this.focusNode, required this.scrollController}) : super(key: key);
@@ -82,7 +83,6 @@ class _MessageCardState extends State<MessageCard> {
     if (lastMatchEnd < text.length) {
       spans.add(TextSpan(text: text.substring(lastMatchEnd)));
     }
-
     return spans;
   }
 
@@ -121,6 +121,11 @@ class _MessageCardState extends State<MessageCard> {
             } else if (docSnapshot.hasData) {
               displayName = (docSnapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No Name";
               final String messageContent = content["content"];
+              final String messageId = content["id"];
+              if(lastMessageId == messageId){ // 同一のメッセージ複数受け取っている場合は無視
+                return Column(children: returnWidget,);
+              }
+              lastMessageId = messageId; // 最終受信を上書き
               
               final chatWidget = Container(
                 margin: const EdgeInsets.only(bottom: 10, top: 10),
