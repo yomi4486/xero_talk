@@ -122,11 +122,22 @@ class _MessageCardState extends State<MessageCard> {
               displayName = (docSnapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No Name";
               final String messageContent = content["content"];
               final String messageId = content["id"];
+              final int timestamp = content["timestamp"];
+              final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+              final DateTime nowDate = DateTime.now();
+              late String today;
+              if (dateTime.year == nowDate.year && dateTime.month == nowDate.month && dateTime.day == nowDate.day){
+                today = "今日";
+              }else{
+                today = "${dateTime.year}/${dateTime.month}/${dateTime.day}";
+              }
+              final String modifiedDateTime = "$today, ${dateTime.hour}:${dateTime.minute}";
+              
               if(lastMessageId == messageId){ // 同一のメッセージ複数受け取っている場合は無視
                 return Column(children: returnWidget,);
               }
               lastMessageId = messageId; // 最終受信を上書き
-              
+
               final chatWidget = Container(
                 margin: const EdgeInsets.only(bottom: 10, top: 10),
                 child: Row(
@@ -146,16 +157,32 @@ class _MessageCardState extends State<MessageCard> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text( // 名前
-                            displayName,
-                            style: const TextStyle(
-                              color: Color.fromARGB(200, 55, 55, 55),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                            textAlign: TextAlign.left,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children:[
+                              Text( // 名前
+                                displayName,
+                                style: const TextStyle(
+                                  color: Color.fromARGB(200, 55, 55, 55),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.left,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 7),
+                                child:Text(
+                                  "$modifiedDateTime",
+                                  style: const TextStyle(
+                                    color: Color.fromARGB(198, 79, 79, 79),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                )
+                              )
+                            ]
                           ),
                           SizedBox( // コンテンツ
                             width: MediaQuery.of(context).size.width*0.7,
