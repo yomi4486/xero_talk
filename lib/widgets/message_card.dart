@@ -22,11 +22,9 @@ class _MessageCardState extends State<MessageCard> {
   
   void addWidget(Widget newWidget, double currentPosition) {
     returnWidget.add(newWidget); 
-    
-    print(currentPosition); // 再描画前にいた場所を取得
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.scrollController.jumpTo(currentPosition);
-      widget.scrollController.animateTo(
+      widget.scrollController.jumpTo(currentPosition); // 再描画前の座標にScrollViewを戻す
+      widget.scrollController.animateTo( // 最新のメッセージまでスクロール
         widget.scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
@@ -173,7 +171,7 @@ class _MessageCardState extends State<MessageCard> {
                               Padding(
                                 padding: const EdgeInsets.only(left: 7),
                                 child:Text(
-                                  "$modifiedDateTime",
+                                  modifiedDateTime,
                                   style: const TextStyle(
                                     color: Color.fromARGB(198, 79, 79, 79),
                                     fontWeight: FontWeight.bold,
