@@ -44,7 +44,7 @@ class _chat extends State<chat>{
       bottomSheet: BottomAppBar(
         height: MediaQuery.of(context).size.height*0.13,
         notchMargin:4.0,
-        color: Color.fromARGB(255, 152, 97, 192).withOpacity(1),
+        color: const Color.fromARGB(255, 152, 97, 192),
         child:Container(
           margin: const EdgeInsets.only(bottom:20),
           width: MediaQuery.of(context).size.width,
@@ -250,15 +250,15 @@ class _chat extends State<chat>{
         ],
       ),
       body:Container(
-        decoration: BoxDecoration( 
+        decoration: const BoxDecoration( 
           gradient: LinearGradient( 
             begin: FractionalOffset.topLeft, 
             end: FractionalOffset.bottomRight, 
             colors: [ 
-              const Color(0xffe4a972).withOpacity(0.8), 
-              const Color(0xff9941d8).withOpacity(0.8), 
+              Color.fromARGB(204, 228, 169, 114), 
+              Color.fromARGB(204, 153, 65, 216), 
             ], 
-            stops: const [ 
+            stops: [ 
               0.0, 
               1.0, 
             ], 
