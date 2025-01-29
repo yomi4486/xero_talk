@@ -153,66 +153,61 @@ class _chat extends State<chat>{
           fontSize: 20
         ),
         backgroundColor: const Color.fromARGB(255, 231, 176, 125),
-        leading: Container(
-          margin: const EdgeInsets.only(left:7),
-          child:Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children:[
-              SizedBox(
-                child: Row(
-                  children:[
-                    ClipRRect( // アイコン表示（角丸）
-                      borderRadius: BorderRadius.circular(30),
-                      child:IconButton(
-                        onPressed: (){
-                          Navigator.of(context).pop();
+        leadingWidth: 0,
+        title:  Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children:[
+            IconButton(
+              onPressed: (){
+                Navigator.of(context).pop();
+              },
+              icon: const Icon(
+                Icons.arrow_back,
+                color: Color.fromARGB(128, 255, 255, 255)
+              )
+            ),
+            SizedBox(
+              child: Row(
+                children:[
+                  Container(
+                    height: 34,
+                    width: 34,
+                    margin:const EdgeInsets.only(left:5),
+                    child:ClipRRect( // アイコン表示（角丸）
+                      borderRadius: BorderRadius.circular(2000000),
+                      child:Image.network(
+                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["id"]}",
+                        fit:BoxFit.contain,
+                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child; 
+                          } else {
+                            return Image.asset(
+                              'assets/images/default_user_icon.png',
+                              fit:BoxFit.contain,
+                            );    
+                          } 
                         },
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          color: Color.fromARGB(128, 255, 255, 255)
-                        )
-                      )
-                    ),
-                    Container(
-                      height: 34,
-                      width: 34,
-                      margin:const EdgeInsets.only(left:5),
-                      child:ClipRRect( // アイコン表示（角丸）
-                        borderRadius: BorderRadius.circular(2000000),
-                        child:Image.network(
-                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["id"]}",
-                          fit:BoxFit.contain,
-                          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child; 
-                            } else {
-                              return Image.asset(
-                                'assets/images/default_user_icon.png',
-                                fit:BoxFit.contain,
-                              );    
-                            } 
-                          },
-                        ),
                       ),
                     ),
-                  ],
-                )
-              ),
-              Container(
-                width: 200,
-                margin:const EdgeInsets.only(left:10),
-                child:Text(
-                  displayName,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color:Color.fromARGB(200, 255, 255, 255),
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
+                ],
               )
-            ]
-          ),
+            ),
+            Container(
+              width: 150,
+              margin:const EdgeInsets.only(left:10),
+              child:Text(
+                displayName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color:Color.fromARGB(200, 255, 255, 255),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            )
+          ]
         ),
         actions: [
           Container(
