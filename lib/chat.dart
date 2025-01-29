@@ -295,7 +295,7 @@ class _chat extends State<chat>{
                                 child:Column(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children:[
-                                    MessageCard(focusNode: focusNode,scrollController: _scrollController,) // コントローラーやノードの状態をストリームの描画部分と共有
+                                    MessageCard(focusNode: focusNode,scrollController: _scrollController,channelInfo: channelInfo,) // コントローラーやノードの状態をストリームの描画部分と共有
                                   ]
                                 ),
                               ),

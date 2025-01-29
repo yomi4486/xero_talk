@@ -10,9 +10,10 @@ import 'package:url_launcher/url_launcher.dart';
 String lastMessageId = "";
 
 class MessageCard extends StatefulWidget {
-  MessageCard({Key? key, required this.focusNode, required this.scrollController}) : super(key: key);
+  MessageCard({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo}) : super(key: key);
   final FocusNode focusNode;
   final ScrollController scrollController;
+  final Map channelInfo;
   @override
   _MessageCardState createState() => _MessageCardState();
 }
@@ -30,6 +31,14 @@ class _MessageCardState extends State<MessageCard> {
         curve: Curves.easeOut,
       );
     });
+  }
+
+  void removeWidget(String key) {
+    try{
+      returnWidget.removeWhere((widget) => (widget.key as ValueKey).value == key);
+    }catch(e){
+      print(e);
+    }
   }
 
   @override 
@@ -96,7 +105,8 @@ class _MessageCardState extends State<MessageCard> {
         try {
           content = convert.json.decode(snapshot.data);
         } catch (e) {
-          return Container();
+          print(e);
+          return Column(children: returnWidget);
         }
         final a = FirebaseFirestore.instance
           .collection('user_account')
@@ -118,8 +128,13 @@ class _MessageCardState extends State<MessageCard> {
               // エラー
             } else if (docSnapshot.hasData) {
               displayName = (docSnapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No Name";
-              final String messageContent = content["content"];
+              final String type = content["type"];
               final String messageId = content["id"];
+              if(type == "delete_message"){
+                removeWidget(messageId);
+                return Column(children: returnWidget);
+              }
+              final String messageContent = content["content"];
               final int timestamp = content["timestamp"];
               final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
               final DateTime nowDate = DateTime.now();
@@ -136,73 +151,92 @@ class _MessageCardState extends State<MessageCard> {
               }
               lastMessageId = messageId; // 最終受信を上書き
 
-              final chatWidget = Container(
-                margin: const EdgeInsets.only(bottom: 10, top: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(2000000),
-                      child: Image.network(
-                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${content['author']}",
-                        width: MediaQuery.of(context).size.height * 0.05,
+              final chatWidget = GestureDetector(
+                key:ValueKey(messageId),
+                onLongPress: ()async{
+                  print("aaaa");
+                  final sendBody = {"type": "delete_message","id": messageId,"channel":widget.channelInfo["id"]};
+                  final String data = convert.json.encode(sendBody);
+                  if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
+                    await instance.restoreConnection().then((v){
+                      instance.channel.add(data);
+                    });
+                    return;
+                  }
+                  try{
+                    instance.channel.add(data);
+                  }catch(e){
+                    print('送信に失敗：${e}');
+                  }
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 10, top: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(2000000),
+                        child: Image.network(
+                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${content['author']}",
+                          width: MediaQuery.of(context).size.height * 0.05,
+                        ),
                       ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(left: 10),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children:[
-                              Text( // 名前
-                                displayName,
-                                style: const TextStyle(
-                                  color: Color.fromARGB(200, 55, 55, 55),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                                textAlign: TextAlign.left,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 7),
-                                child:Text(
-                                  modifiedDateTime,
+                      Container(
+                        margin: const EdgeInsets.only(left: 10),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children:[
+                                Text( // 名前
+                                  displayName,
                                   style: const TextStyle(
-                                    color: Color.fromARGB(198, 79, 79, 79),
+                                    color: Color.fromARGB(200, 55, 55, 55),
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 10,
-                                    overflow: TextOverflow.ellipsis,
+                                    fontSize: 14,
                                   ),
+                                  textAlign: TextAlign.left,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 7),
+                                  child:Text(
+                                    modifiedDateTime,
+                                    style: const TextStyle(
+                                      color: Color.fromARGB(198, 79, 79, 79),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  )
                                 )
-                              )
-                            ]
-                          ),
-                          SizedBox( // コンテンツ
-                            width: MediaQuery.of(context).size.width*0.7,
-                            child:RichText(
-                              text: TextSpan(
-                                children: getTextSpans(messageContent),
-                                style:const TextStyle(
-                                  color: Color.fromARGB(200, 33, 33, 33),
-                                  fontSize: 16.0
+                              ]
+                            ),
+                            SizedBox( // コンテンツ
+                              width: MediaQuery.of(context).size.width*0.7,
+                              child:RichText(
+                                text: TextSpan(
+                                  children: getTextSpans(messageContent),
+                                  style:const TextStyle(
+                                    color: Color.fromARGB(200, 33, 33, 33),
+                                    fontSize: 16.0
+                                  ),
                                 ),
                               ),
-                            ),
-                          )
-                        ],
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
               addWidget(chatWidget,_currentPosition);
             }
-            return Column(children: returnWidget,);
+            return Column(children: returnWidget);
           },
         );
       },
