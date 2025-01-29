@@ -150,89 +150,120 @@ class _MessageCardState extends State<MessageCard> {
                 return Column(children: returnWidget,);
               }
               lastMessageId = messageId; // 最終受信を上書き
-
-              final chatWidget = GestureDetector(
-                key:ValueKey(messageId),
-                onLongPress: ()async{
-                  print("aaaa");
-                  final sendBody = {"type": "delete_message","id": messageId,"channel":widget.channelInfo["id"]};
-                  final String data = convert.json.encode(sendBody);
-                  if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
-                    await instance.restoreConnection().then((v){
-                      instance.channel.add(data);
-                    });
-                    return;
-                  }
-                  try{
-                    instance.channel.add(data);
-                  }catch(e){
-                    print('送信に失敗：${e}');
-                  }
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 10, top: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(2000000),
-                        child: Image.network(
-                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${content['author']}",
-                          width: MediaQuery.of(context).size.height * 0.05,
-                        ),
+              final Widget _chatWidget = Container(
+                margin: const EdgeInsets.only(bottom: 10, top: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(2000000),
+                      child: Image.network(
+                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${content['author']}",
+                        width: MediaQuery.of(context).size.height * 0.05,
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 10),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children:[
-                                Text( // 名前
-                                  displayName,
-                                  style: const TextStyle(
-                                    color: Color.fromARGB(200, 55, 55, 55),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                  textAlign: TextAlign.left,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(left: 10),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children:[
+                              Text( // 名前
+                                displayName,
+                                style: const TextStyle(
+                                  color: Color.fromARGB(200, 55, 55, 55),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 7),
-                                  child:Text(
-                                    modifiedDateTime,
-                                    style: const TextStyle(
-                                      color: Color.fromARGB(198, 79, 79, 79),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 10,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  )
-                                )
-                              ]
-                            ),
-                            SizedBox( // コンテンツ
-                              width: MediaQuery.of(context).size.width*0.7,
-                              child:RichText(
-                                text: TextSpan(
-                                  children: getTextSpans(messageContent),
-                                  style:const TextStyle(
-                                    color: Color.fromARGB(200, 33, 33, 33),
-                                    fontSize: 16.0
+                                textAlign: TextAlign.left,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 7),
+                                child:Text(
+                                  modifiedDateTime,
+                                  style: const TextStyle(
+                                    color: Color.fromARGB(198, 79, 79, 79),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
+                                )
+                              )
+                            ]
+                          ),
+                          SizedBox( // コンテンツ
+                            width: MediaQuery.of(context).size.width*0.7,
+                            child:RichText(
+                              text: TextSpan(
+                                children: getTextSpans(messageContent),
+                                style:const TextStyle(
+                                  color: Color.fromARGB(200, 33, 33, 33),
+                                  fontSize: 16.0
                                 ),
                               ),
-                            )
-                          ],
-                        ),
+                            ),
+                          )
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              );
+              final chatWidget = GestureDetector(
+                key:ValueKey(messageId),
+                onLongPress: (){
+                  Future deleteMessage() async {
+                    final sendBody = {"type": "delete_message","id": messageId,"channel":widget.channelInfo["id"]};
+                    final String data = convert.json.encode(sendBody);
+                    if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
+                      await instance.restoreConnection().then((v){
+                        instance.channel.add(data);
+                      });
+                      return;
+                    }
+                    try{
+                      instance.channel.add(data);
+                    }catch(e){
+                      print('送信に失敗：${e}');
+                    }
+                  }
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return SimpleDialog(
+                        title:const Text('メッセージを削除',style: TextStyle(fontSize: 16),),
+                        children: <Widget>[
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width *0.8,
+                            child:Padding(
+                              padding:const EdgeInsets.all(10),
+                              child:_chatWidget,
+                            ),
+                          ),
+                          SimpleDialogOption(
+                            child: const Text('削除',style: TextStyle(color: Color.fromARGB(255, 255, 10, 10)),),
+                            onPressed: ()async {
+                              await deleteMessage();
+                              Navigator.pop(context);
+                            }
+                          ),
+                          SimpleDialogOption(
+                            child: const Text('キャンセル'),
+                            onPressed: ()async{
+                              Navigator.pop(context);
+                            }
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: _chatWidget
               );
               addWidget(chatWidget,_currentPosition);
             }
