@@ -1,13 +1,14 @@
 .PHONY: android, release, ios, clean, cache_clear
 android:
-	cd android \
-	&& flutter build appbundle
+	@cd android \
+	&& flutter build appbundle \
+	&& cd ..
 
 release:
-	flutter run --release
+	@flutter run --release
 
 ios:
-	cd ios \
+	@cd ios \
 	&& arch -x86_64 pod install --repo-update \
 	&& cd ..
 
@@ -25,5 +26,5 @@ clean:
 	&& cd ..
 
 cache_clear:
-	pod cache clean --all \
+	@pod cache clean --all \
 	&& rm -rf ~/Library/Developer/Xcode/DerivedData/*
