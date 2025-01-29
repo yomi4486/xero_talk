@@ -145,7 +145,6 @@ class _MessageCardState extends State<MessageCard> {
                 today = "${dateTime.year}/${dateTime.month}/${dateTime.day}";
               }
               final String modifiedDateTime = "$today, ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
-
               
               if(lastMessageId == messageId){ // 同一のメッセージ複数受け取っている場合は無視
                 return Column(children: returnWidget,);
