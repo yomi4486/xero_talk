@@ -6,6 +6,7 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:xero_talk/utils/message_tools.dart';
 
 String lastMessageId = "";
 
@@ -103,7 +104,11 @@ class _MessageCardState extends State<MessageCard> {
         var displayName = "";
         var content = {};
         try {
-          content = convert.json.decode(snapshot.data);
+          if (snapshot.data != null){
+            content = convert.json.decode(snapshot.data);
+          }else{
+            return Column(children: returnWidget);
+          }
         } catch (e) {
           print(e);
           return Column(children: returnWidget);
@@ -217,21 +222,6 @@ class _MessageCardState extends State<MessageCard> {
               final chatWidget = GestureDetector(
                 key:ValueKey(messageId),
                 onLongPress: (){
-                  Future deleteMessage() async {
-                    final sendBody = {"type": "delete_message","id": messageId,"channel":widget.channelInfo["id"]};
-                    final String data = convert.json.encode(sendBody);
-                    if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
-                      await instance.restoreConnection().then((v){
-                        instance.channel.add(data);
-                      });
-                      return;
-                    }
-                    try{
-                      instance.channel.add(data);
-                    }catch(e){
-                      print('送信に失敗：${e}');
-                    }
-                  }
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
@@ -248,7 +238,7 @@ class _MessageCardState extends State<MessageCard> {
                           SimpleDialogOption(
                             child: const Text('削除',style: TextStyle(color: Color.fromARGB(255, 255, 10, 10)),),
                             onPressed: ()async {
-                              await deleteMessage();
+                              await deleteMessage(messageId, widget.channelInfo["id"]);
                               Navigator.pop(context);
                             }
                           ),
