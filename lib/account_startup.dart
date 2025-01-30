@@ -71,10 +71,10 @@ class AccountStartup extends StatelessWidget{
                             children: [
                               ClipRRect( // アイコン表示（角丸）
                                 borderRadius: BorderRadius.circular(2000000),
-                                  child:Image.network(
-                                    "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${instance.id}&t=${nowDt}",
-                                    width: MediaQuery.of(context).size.width *0.2,
-                                  ),
+                                child:Image.network(
+                                  "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${instance.id}&t=${nowDt}",
+                                  width: MediaQuery.of(context).size.width *0.2,
+                                ),
                               ),
                               ElevatedButton.icon( // アイコン変更ボタン
                                 style: ElevatedButton.styleFrom(

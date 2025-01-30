@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 
-import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/message_card.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:xero_talk/utils/message_tools.dart';
 
 class chat extends StatefulWidget {
   const chat({Key? key, required this.channelInfo}) : super(key: key);
@@ -99,25 +99,7 @@ class _chat extends State<chat>{
                     overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
                   ),
                   onPressed: () async {
-                    void sendMessage(String? text) async {
-                      if (text!.isNotEmpty) {
-                        final channelId = channelInfo["id"];
-                        final sendBody = {"type": "send_message", "content": text, "channel": channelId};
-                        final String data = convert.json.encode(sendBody);
-                        if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
-                          await instance.restoreConnection().then((v){
-                            instance.channel.add(data);
-                          });
-                          return;
-                        }
-                        try{
-                          instance.channel.add(data);
-                        }catch(e){
-                          print('送信に失敗：${e}');
-                        }
-                      }
-                    }
-                    sendMessage(chatText);
+                    sendMessage(chatText,channelInfo["id"]);
                     chatText = "";
                     fieldText.clear();
                   },
