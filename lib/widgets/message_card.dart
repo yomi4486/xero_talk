@@ -222,33 +222,70 @@ class _MessageCardState extends State<MessageCard> {
               final chatWidget = GestureDetector(
                 key:ValueKey(messageId),
                 onLongPress: (){
-                  showDialog(
+                  showModalBottomSheet(
                     context: context,
                     builder: (BuildContext context) {
-                      return SimpleDialog(
-                        title:const Text('メッセージを削除',style: TextStyle(fontSize: 16),),
-                        children: <Widget>[
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width *0.8,
-                            child:Padding(
-                              padding:const EdgeInsets.all(10),
-                              child:_chatWidget,
-                            ),
+                      return Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(20.0),
+                            topRight: Radius.circular(20.0),
                           ),
-                          SimpleDialogOption(
-                            child: const Text('削除',style: TextStyle(color: Color.fromARGB(255, 255, 10, 10)),),
-                            onPressed: ()async {
-                              await deleteMessage(messageId, widget.channelInfo["id"]);
-                              Navigator.pop(context);
-                            }
-                          ),
-                          SimpleDialogOption(
-                            child: const Text('キャンセル'),
-                            onPressed: ()async{
-                              Navigator.pop(context);
-                            }
-                          ),
-                        ],
+                        ),
+                        height: MediaQuery.of(context).size.height*0.4,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top:20),
+                          child:ListView(
+                            children: [
+                              SimpleDialogOption( // メッセージ削除ボタン
+                                padding: const EdgeInsets.all(15),
+                                child: const Row(
+                                  children:[
+                                    Icon(Icons.delete),
+                                    Padding(
+                                      padding: EdgeInsets.only(left:5),
+                                      child: Text('メッセージを削除',style: TextStyle(fontSize: 16))
+                                    )
+                                  ]
+                                ),
+                                onPressed: ()async {
+                                  Navigator.pop(context);
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return SimpleDialog(
+                                        title:const Text('メッセージを削除',style: TextStyle(fontSize: 16),),
+                                        children: <Widget>[
+                                          SizedBox(
+                                            width: MediaQuery.of(context).size.width *0.8,
+                                            child:Padding(
+                                              padding:const EdgeInsets.all(10),
+                                              child:_chatWidget,
+                                            ),
+                                          ),
+                                          SimpleDialogOption(
+                                            child: const Text('削除',style: TextStyle(color: Color.fromARGB(255, 255, 10, 10)),),
+                                            onPressed: ()async {
+                                              await deleteMessage(messageId, widget.channelInfo["id"]);
+                                              Navigator.pop(context);
+                                            }
+                                          ),
+                                          SimpleDialogOption(
+                                            child: const Text('キャンセル'),
+                                            onPressed: ()async{
+                                              Navigator.pop(context);
+                                            }
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );      
+                                }
+                              ),
+                            ],
+                          )
+                        )
                       );
                     },
                   );

@@ -8,7 +8,6 @@ void sendMessage(String? text,String channelId) async {
   if (text!.isNotEmpty) {
     final sendBody = {"type": "send_message", "content": text, "channel": channelId};
     final String data = convert.json.encode(sendBody);
-    print(instance.channel.readyState);
     if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
       await instance.restoreConnection();
       instance.channel.add(data);
