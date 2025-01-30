@@ -105,7 +105,6 @@ class chatHome extends StatelessWidget{
                               GestureDetector(
                                 onTap: () async {
                                   final Map<String, dynamic> userData = await getUserProfile('106017943896753291176');
-                                  print(userData);
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) => chat(channelInfo: userData)),
@@ -116,7 +115,6 @@ class chatHome extends StatelessWidget{
                               GestureDetector(
                                 onTap: () async{
                                   final Map<String, dynamic> userData = await getUserProfile('112905252227299870586');
-                                  print(userData);
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) => chat(channelInfo:userData)),
