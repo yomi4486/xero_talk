@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/widgets.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -23,6 +24,7 @@ class AuthContext {
   late UserCredential userCredential;
   late Stream<dynamic> bloadCast;
   late drive.DriveApi googleDriveApi;
+  late List<Color> theme;
 
   Future restoreConnection() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
