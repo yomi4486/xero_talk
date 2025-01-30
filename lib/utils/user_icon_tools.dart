@@ -6,9 +6,7 @@ Future<void> upload(String token,String imageData)async{
     headers: <String, String>{ 'Content-Type': 'application/json; charset=UTF-8' },
     body: jsonEncode(<String,String>{'token':token,'content':imageData})
   );
-  if (response.statusCode == 200) { 
-    print('Request successful'); }
-  else { 
+  if (response.statusCode != 200) {
     print('Request failed with status: ${response.statusCode}'); 
   }
 }
