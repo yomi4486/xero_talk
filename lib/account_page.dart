@@ -125,7 +125,25 @@ class _AccountPage extends State<AccountPage>{
                 fontSize: 20
               ),
               backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-              
+              actions: [  
+                              
+                Container( 
+                  padding: const EdgeInsets.only(right: 10), 
+                  child:ClipRRect( // アイコン表示（角丸）
+                    borderRadius: BorderRadius.circular(30),
+                    child:Container(
+                      color:const Color.fromARGB(0, 255, 255, 255),
+                      child:IconButton(
+                        onPressed: (){}, // TODO:setting.dartに遷移する処理を書く
+                        icon: const Icon(
+                          Icons.settings,
+                          color: Color.fromARGB(128, 255, 255, 255)
+                        )
+                      )
+                    ),
+                  ),
+                ),
+              ],
             ),
             floatingActionButton: _showFab ? FloatingActionButton( 
               onPressed: () async {
