@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 
@@ -14,19 +13,11 @@ class SettingItem extends StatefulWidget {
 }
 
 class _SettingItemState extends State<SettingItem> { 
-  @override 
-  void initState() {
-    super.initState();
-  }
-
-  @override void dispose() {  // チャット入力欄のフォーカスを無視する 
-    super.dispose();
-  }
   @override
   Widget build(BuildContext context) {
     return Column(children: [
       Text(widget.name),
-      widget
+      widget.widget
     ]);
   }
 }

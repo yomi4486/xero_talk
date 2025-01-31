@@ -135,12 +135,10 @@ class _AccountPage extends State<AccountPage>{
                       color:const Color.fromARGB(0, 255, 255, 255),
                       child:IconButton(
                         onPressed: (){
-                          Navigator.push(context, PageRouteBuilder(
-                            pageBuilder: (_, __, ___)=>SettingPage(),
-                              transitionsBuilder: (context, animation, secondaryAnimation, child){
-                              return FadeTransition(opacity: animation, child: child,);
-                            }
-                          ));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => SettingPage()),
+                          );
                         }, // TODO:setting.dartに遷移する処理を書く
                         icon: const Icon(
                           Icons.settings,
