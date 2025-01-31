@@ -15,9 +15,21 @@ class _SettingPage extends State<SettingPage>{
   _SettingPage();
   bool _showFab = false; // falseなら未編集、trueなら編集済み
   final AuthContext instance = AuthContext();
-  late List<String> theme;
+  late List<dynamic> theme;
   Color oneColor = const Color.fromARGB(204, 228, 169, 114);
   Color twoColor = const Color.fromARGB(204, 153, 65, 216);
+
+  String colorToHex(Color color) {
+    return '#${color.value.toRadixString(16).toUpperCase().padLeft(8, '0')}';
+  }
+
+  Color hexToColor(String hexColor) {
+    hexColor = hexColor.toUpperCase().replaceAll("#", "");
+    if (hexColor.length == 6) {
+      hexColor = "FF" + hexColor;
+    }
+    return Color(int.parse(hexColor, radix: 16));
+  }
 
   @override
   Widget build (BuildContext context) {
@@ -33,6 +45,10 @@ class _SettingPage extends State<SettingPage>{
           } else if (snapshot.hasError) {
           } else if (snapshot.hasData) { // successful
             theme = (snapshot.data?.data() as Map<String, dynamic>)["color_theme"] ?? [];
+            if (theme != []){ // レスポンスが空でなければ
+              oneColor = hexToColor(theme[0]);
+              twoColor = hexToColor(theme[1]);
+            }
           } else {
           }
         }
@@ -56,7 +72,7 @@ class _SettingPage extends State<SettingPage>{
                   .doc('${profile?["sub"]}') // ドキュメントID
                   .update(
                     {
-                      'color_theme':[]
+                      'color_theme':[colorToHex(oneColor),colorToHex(twoColor)]
                     }
                   )
                   .then((value){
@@ -88,58 +104,87 @@ class _SettingPage extends State<SettingPage>{
                     name: "テーマ", 
                     defaultValue: "", 
                     widget: Row(
+                      spacing: 10,
                       children:[
                         GestureDetector(
-                          child:Container(decoration: BoxDecoration(color: oneColor),),
+                          child:Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                              color: oneColor,
+                              border:Border.all(color:const Color.fromARGB(255, 255, 255, 255),width: 2)
+                            ),
+                            width: 30,
+                            height: 30,
+                          ),
                           onTap: (){
-                            AlertDialog(
-                              title: const Text('色を選択してください'),
-                              content: SingleChildScrollView(
-                                child: ColorPicker(
-                                  pickerColor: oneColor,
-                                  onColorChanged: (Color color) {
-                                    setState(() {
-                                      oneColor = color;
-                                    });
-                                  },
-                                ),
-                              ),
-                              actions: <Widget>[
-                                IconButton(
-                                  icon:const Icon(Icons.check),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('色を選択してください'),
+                                  content: SingleChildScrollView(
+                                    child: ColorPicker(
+                                      pickerColor: oneColor,
+                                      onColorChanged: (Color color) {
+                                        setState(() {
+                                          oneColor = color;
+                                          _showFab = true;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  actions: <Widget>[
+                                    IconButton(
+                                      icon:const Icon(Icons.check),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                           },
                         ),
                         GestureDetector(
-                          child:Container(decoration: BoxDecoration(color: twoColor),),
+                          child:Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10.0),
+                              color: twoColor,
+                              border:Border.all(color:const Color.fromARGB(255, 255, 255, 255),width: 2)
+                            ),
+                            width: 30,
+                            height: 30,
+                          ),
                           onTap: (){
-                            AlertDialog(
-                              title: const Text('色を選択してください'),
-                              content: SingleChildScrollView(
-                                child: ColorPicker(
-                                  pickerColor: twoColor,
-                                  onColorChanged: (Color color) {
-                                    setState(() {
-                                      twoColor = color;
-                                    });
-                                  },
-                                ),
-                              ),
-                              actions: <Widget>[
-                                IconButton(
-                                  icon:const Icon(Icons.check),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('色を選択してください'),
+                                  content: SingleChildScrollView(
+                                    child: ColorPicker(
+                                      pickerColor: twoColor,
+                                      onColorChanged: (Color color) {
+                                        setState(() {
+                                          twoColor = color;
+                                          _showFab = true;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  actions: <Widget>[
+                                    IconButton(
+                                      icon:const Icon(Icons.check),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
                             );
-                          },
+                          }
                         )
                       ]
                     )
