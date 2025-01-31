@@ -44,11 +44,14 @@ class _SettingPage extends State<SettingPage>{
           if (snapshot.connectionState == ConnectionState.waiting) {
           } else if (snapshot.hasError) {
           } else if (snapshot.hasData) { // successful
-            theme = (snapshot.data?.data() as Map<String, dynamic>)["color_theme"] ?? [];
-            if (theme != []){ // レスポンスが空でなければ
-              oneColor = hexToColor(theme[0]);
-              twoColor = hexToColor(theme[1]);
-            }
+            final data = snapshot.data?.data();
+              if (data != null && data.containsKey("color_theme")) {
+                theme = data["color_theme"];
+                if (theme.isNotEmpty) {
+                  oneColor = hexToColor(theme[0]);
+                  twoColor = hexToColor(theme[1]);
+                }
+              }
           } else {
           }
         }
@@ -78,6 +81,7 @@ class _SettingPage extends State<SettingPage>{
                   .then((value){
                     setState((){
                       _showFab = false;
+                      instance.theme = [oneColor,twoColor]; 
                     });
                   })
                   .catchError((err){
