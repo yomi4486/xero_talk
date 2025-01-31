@@ -36,15 +36,24 @@ class _chat extends State<chat>{
       focusNode.unfocus(); 
     } 
   }
+
+  Color darkenColor(Color color, double amount) {
+    assert(amount >= 0 && amount <= 1);
+    final hsl = HSLColor.fromColor(color);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+    return hslDark.toColor();
+  }
   
   @override
   Widget build(BuildContext context) {
     final String displayName = channelInfo["display_name"];
     return Scaffold(
       bottomSheet: BottomAppBar(
+        surfaceTintColor:Colors.transparent,
+        shadowColor: Colors.transparent,
         height: MediaQuery.of(context).size.height*0.13,
         notchMargin:4.0,
-        color: const Color.fromARGB(255, 152, 97, 192),
+        color: darkenColor(instance.theme[1].withOpacity(1), .1),
         child:Container(
           margin: const EdgeInsets.only(bottom:20),
           width: MediaQuery.of(context).size.width,
@@ -74,7 +83,6 @@ class _chat extends State<chat>{
                       borderRadius: BorderRadius.circular(30),
                     ),
                     hintText: '$displayNameにメッセージを送信',
-                    // labelText:'yomi4486にメッセージを送信',
                     labelStyle: const TextStyle(
                       color: Color.fromARGB(255, 255, 255, 255),
                       fontSize: 16,
@@ -92,34 +100,32 @@ class _chat extends State<chat>{
                   },
                 ),
               ),
-              SizedBox( 
-                child:IconButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
-                    overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
+              IconButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+                  overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
+                ),
+                onPressed: () async {
+                  sendMessage(chatText,channelInfo["id"]);
+                  chatText = "";
+                  fieldText.clear();
+                },
+                icon: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(55, 0, 0, 0), 
+                        Color.fromARGB(55, 0, 0, 0)
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
                   ),
-                  onPressed: () async {
-                    sendMessage(chatText,channelInfo["id"]);
-                    chatText = "";
-                    fieldText.clear();
-                  },
-                  icon: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color.fromARGB(55, 0, 0, 0), 
-                          Color.fromARGB(55, 0, 0, 0)
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const ImageIcon(
-                      AssetImage("assets/images/send.png"),
-                      color: Color.fromARGB(255, 255, 255, 255),
-                    ),
+                  child: const ImageIcon(
+                    AssetImage("assets/images/send.png"),
+                    color: Color.fromARGB(255, 255, 255, 255),
                   ),
                 ),
               ),
@@ -134,7 +140,7 @@ class _chat extends State<chat>{
           color:Color.fromARGB(200, 255, 255, 255),
           fontSize: 20
         ),
-        backgroundColor: const Color.fromARGB(255, 231, 176, 125),
+        backgroundColor: darkenColor(instance.theme[0].withOpacity(1), .1),
         leadingWidth: 0,
         title:  Row(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -232,15 +238,12 @@ class _chat extends State<chat>{
         ],
       ),
       body:Container(
-        decoration: const BoxDecoration( 
+        decoration: BoxDecoration( 
           gradient: LinearGradient( 
             begin: FractionalOffset.topLeft, 
             end: FractionalOffset.bottomRight, 
-            colors: [ 
-              Color.fromARGB(204, 228, 169, 114), 
-              Color.fromARGB(204, 153, 65, 216), 
-            ], 
-            stops: [ 
+            colors: instance.theme,
+            stops: const [ 
               0.0, 
               1.0, 
             ], 
