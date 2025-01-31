@@ -5,6 +5,7 @@ import 'package:xero_talk/home.dart';
 import 'package:xero_talk/notify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:xero_talk/setting.dart';
 import 'dart:convert';
 import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
@@ -134,7 +135,12 @@ class _AccountPage extends State<AccountPage>{
                     child:Container(
                       color:const Color.fromARGB(0, 255, 255, 255),
                       child:IconButton(
-                        onPressed: (){}, // TODO:setting.dartに遷移する処理を書く
+                        onPressed: (){
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => SettingPage()),
+                          );
+                        }, // TODO:setting.dartに遷移する処理を書く
                         icon: const Icon(
                           Icons.settings,
                           color: Color.fromARGB(128, 255, 255, 255)
