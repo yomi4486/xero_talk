@@ -1,4 +1,4 @@
-.PHONY: android, release, ios, clean, cache_clear
+.PHONY: android, release, ios, clean, cache_clear, cache_clean
 android:
 	@cd android \
 	&& flutter build appbundle \
@@ -28,3 +28,6 @@ clean:
 cache_clear:
 	@pod cache clean --all \
 	&& rm -rf ~/Library/Developer/Xcode/DerivedData/*
+
+cache_clean:
+	@make cache_clear
