@@ -11,7 +11,6 @@ import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
-
 class AccountPage extends StatefulWidget {
   AccountPage();
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
@@ -136,10 +135,12 @@ class _AccountPage extends State<AccountPage>{
                       color:const Color.fromARGB(0, 255, 255, 255),
                       child:IconButton(
                         onPressed: (){
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => SettingPage()),
-                          );
+                          Navigator.push(context, PageRouteBuilder(
+                            pageBuilder: (_, __, ___)=>SettingPage(),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child){
+                              return FadeTransition(opacity: animation, child: child,);
+                            }
+                          ));
                         }, // TODO:setting.dartに遷移する処理を書く
                         icon: const Icon(
                           Icons.settings,
