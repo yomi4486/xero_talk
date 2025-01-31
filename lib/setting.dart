@@ -22,98 +22,134 @@ class _SettingPage extends State<SettingPage>{
   @override
   Widget build (BuildContext context) {
     var profile = instance.userCredential.additionalUserInfo?.profile;
-    return Scaffold(
-      body: FutureBuilder(
-        future:FirebaseFirestore.instance
-          .collection('user_account') // コレクションID
-          .doc('${profile?["sub"]}') // ドキュメントID
-          .get(),
-        builder:(context, snapshot){
-          if(!_showFab){
-            if (snapshot.connectionState == ConnectionState.waiting) {
-            } else if (snapshot.hasError) {
-            } else if (snapshot.hasData) { // successful
-              theme = (snapshot.data?.data() as Map<String, dynamic>)["color_theme"] ?? [];
-            } else {
-            }
+    return FutureBuilder(
+      future:FirebaseFirestore.instance
+        .collection('user_account') // コレクションID
+        .doc('${profile?["sub"]}') // ドキュメントID
+        .get(),
+      builder:(context, snapshot){
+        if(!_showFab){
+          if (snapshot.connectionState == ConnectionState.waiting) {
+          } else if (snapshot.hasError) {
+          } else if (snapshot.hasData) { // successful
+            theme = (snapshot.data?.data() as Map<String, dynamic>)["color_theme"] ?? [];
+          } else {
           }
-          return Scaffold(
-            appBar:AppBar(
-              centerTitle: false,
-              automaticallyImplyLeading: false,
-              title: const Text("設定",style: TextStyle(fontWeight: FontWeight.bold,)),
-              titleTextStyle: const TextStyle(
-                color:Color.fromARGB(255, 255, 255, 255),
-                fontSize: 20
-              ),
-              backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+        }
+        return Scaffold(
+          appBar:AppBar(
+            centerTitle: false,
+            automaticallyImplyLeading: false,
+            title: const Text("設定",style: TextStyle(fontWeight: FontWeight.bold,)),
+            titleTextStyle: const TextStyle(
+              color:Color.fromARGB(255, 255, 255, 255),
+              fontSize: 20
             ),
-            floatingActionButton: _showFab ? FloatingActionButton( 
-              onPressed: () async {
-                if(_showFab){
-                  // ドキュメント作成
-                  FirebaseFirestore.instance
-                    .collection('user_account') // コレクションID
-                    .doc('${profile?["sub"]}') // ドキュメントID
-                    .update(
-                      {
-                        'color_theme':[]
-                      }
-                    )
-                    .then((value){
-                      setState((){
-                        _showFab = false;
-                      });
-                    })
-                    .catchError((err){
-                      print(err);
+            backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+          ),
+          floatingActionButton: _showFab ? FloatingActionButton( 
+            onPressed: () async {
+              if(_showFab){
+                // ドキュメント作成
+                FirebaseFirestore.instance
+                  .collection('user_account') // コレクションID
+                  .doc('${profile?["sub"]}') // ドキュメントID
+                  .update(
+                    {
+                      'color_theme':[]
+                    }
+                  )
+                  .then((value){
+                    setState((){
+                      _showFab = false;
                     });
-                }
-              }, 
-              backgroundColor: const Color.fromARGB(255, 140, 206, 74), 
-              shape: RoundedRectangleBorder( 
-                borderRadius: BorderRadius.circular(128), 
-              ), 
-              child: const Icon( 
-                Icons.check, 
-                color: Color.fromARGB(200, 255, 255, 255), 
-              ), 
-            ) : null, 
-            
-            backgroundColor: widget.defaultColor,
-            body: SafeArea(
-              child: DecoratedBox(
-                decoration: const BoxDecoration(color: Color.fromARGB(255, 22, 22, 22)),
-                child:ListView( 
-                  children: [
-                    SettingItem(name: "テーマ", defaultValue: "", widget: AlertDialog(
-                      title: Text('Pick a color!'),
-                      content: SingleChildScrollView(
-                        child: ColorPicker(
-                          pickerColor: oneColor,
-                          onColorChanged: (Color color) {
-                            setState(() {
-                              oneColor = color;
-                            });
+                  })
+                  .catchError((err){
+                    print(err);
+                  });
+              }
+            }, 
+            backgroundColor: const Color.fromARGB(255, 140, 206, 74), 
+            shape: RoundedRectangleBorder( 
+              borderRadius: BorderRadius.circular(128), 
+            ), 
+            child: const Icon( 
+              Icons.check, 
+              color: Color.fromARGB(200, 255, 255, 255), 
+            ), 
+          ) : null, 
+          backgroundColor: widget.defaultColor,
+          body: SafeArea(
+            child: DecoratedBox(
+              decoration: BoxDecoration(color: widget.defaultColor),
+              child:ListView(
+                children: [
+                  SettingItem(
+                    name: "テーマ", 
+                    defaultValue: "", 
+                    widget: Row(
+                      children:[
+                        GestureDetector(
+                          child:Container(decoration: BoxDecoration(color: oneColor),),
+                          onTap: (){
+                            AlertDialog(
+                              title: const Text('色を選択してください'),
+                              content: SingleChildScrollView(
+                                child: ColorPicker(
+                                  pickerColor: oneColor,
+                                  onColorChanged: (Color color) {
+                                    setState(() {
+                                      oneColor = color;
+                                    });
+                                  },
+                                ),
+                              ),
+                              actions: <Widget>[
+                                IconButton(
+                                  icon:const Icon(Icons.check),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
                           },
                         ),
-                      ),
-                      actions: <Widget>[
-                        ElevatedButton(
-                          child: Text('Got it'),
-                          onPressed: () {
-                            Navigator.of(context).pop();
+                        GestureDetector(
+                          child:Container(decoration: BoxDecoration(color: twoColor),),
+                          onTap: (){
+                            AlertDialog(
+                              title: const Text('色を選択してください'),
+                              content: SingleChildScrollView(
+                                child: ColorPicker(
+                                  pickerColor: twoColor,
+                                  onColorChanged: (Color color) {
+                                    setState(() {
+                                      twoColor = color;
+                                    });
+                                  },
+                                ),
+                              ),
+                              actions: <Widget>[
+                                IconButton(
+                                  icon:const Icon(Icons.check),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
                           },
-                        ),
-                      ],
-                    ))
-                  ] //childlen 画面全体
-                )
-              ),
+                        )
+                      ]
+                    )
+                  )
+                ] //childlen 画面全体
+              )
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
