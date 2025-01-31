@@ -15,9 +15,26 @@ class SettingItem extends StatefulWidget {
 class _SettingItemState extends State<SettingItem> { 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Text(widget.name),
-      widget.widget
-    ]);
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(// 上の枠線
+          bottom: BorderSide(width: 1.0, color: Color.fromARGB(255, 195, 195, 195)), // 下の枠線
+        ),
+      ),
+      padding:const EdgeInsets.all(16),
+      child:Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            widget.name,
+            style:const TextStyle(
+              color: Color.fromARGB(255, 255, 255, 255),
+              fontSize: 20,
+            )
+          ),
+          widget.widget
+        ]
+      )
+    );
   }
 }
