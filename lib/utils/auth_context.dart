@@ -24,7 +24,7 @@ class AuthContext {
   late UserCredential userCredential;
   late Stream<dynamic> bloadCast;
   late drive.DriveApi googleDriveApi;
-  late List<Color> theme;
+  List<Color> theme = const [ Color.fromARGB(204, 228, 169, 114),Color.fromARGB(204, 153, 65, 216)];
 
   Future restoreConnection() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
