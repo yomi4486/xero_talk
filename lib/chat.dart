@@ -53,7 +53,7 @@ class _chat extends State<chat>{
         shadowColor: Colors.transparent,
         height: MediaQuery.of(context).size.height*0.13,
         notchMargin:4.0,
-        color: darkenColor(instance.theme[1].withOpacity(1), .1),
+        color: darkenColor(instance.theme[1].withOpacity(1), .001),
         child:Container(
           margin: const EdgeInsets.only(bottom:20),
           width: MediaQuery.of(context).size.width,
@@ -140,7 +140,7 @@ class _chat extends State<chat>{
           color:Color.fromARGB(200, 255, 255, 255),
           fontSize: 20
         ),
-        backgroundColor: darkenColor(instance.theme[0].withOpacity(1), .1),
+        backgroundColor: darkenColor(instance.theme[0].withOpacity(1), .001),
         leadingWidth: 0,
         title:  Row(
           mainAxisAlignment: MainAxisAlignment.start,
