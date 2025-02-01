@@ -59,7 +59,22 @@ class _SettingPage extends State<SettingPage>{
           appBar:AppBar(
             centerTitle: false,
             automaticallyImplyLeading: false,
-            title: const Text("設定",style: TextStyle(fontWeight: FontWeight.bold,)),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children:[
+                IconButton(
+                  icon:const Icon(Icons.arrow_back),
+                  color:Colors.white,
+                  onPressed: (){
+                    Navigator.of(context).pop();
+                  },
+                ),
+                const Text("設定",
+                  style: TextStyle(fontWeight: FontWeight.bold,)
+                ),
+              ]
+            ),
             titleTextStyle: const TextStyle(
               color:Color.fromARGB(255, 255, 255, 255),
               fontSize: 20
