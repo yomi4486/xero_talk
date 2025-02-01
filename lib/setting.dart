@@ -28,11 +28,16 @@ class _SettingPage extends State<SettingPage>{
     }
     return Color(int.parse(hexColor, radix: 16));
   }
-
+  bool init = false;
+  late Color oneColor;
+  late Color twoColor;
   @override
   Widget build (BuildContext context) {
-    Color oneColor = instance.theme[0];
-    Color twoColor = instance.theme[1];
+    if(!init){
+      init = true;
+      oneColor = instance.theme[0];
+      twoColor = instance.theme[1];
+    }
     var profile = instance.userCredential.additionalUserInfo?.profile;
     return FutureBuilder(
       future:FirebaseFirestore.instance

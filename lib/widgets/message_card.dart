@@ -98,6 +98,17 @@ class _MessageCardState extends State<MessageCard> {
   final AuthContext instance = AuthContext();
   @override
   Widget build(BuildContext context) {
+    final Color backgroundColor = Color.lerp(instance.theme[0], instance.theme[1], .5)!;
+    double brightness = (backgroundColor.red * 0.299 + backgroundColor.green * 0.587 + backgroundColor.blue * 0.114) /255;
+    List<Color> textColor = brightness > 0.5 ? [
+      const Color.fromARGB(198, 79, 79, 79),
+      const Color.fromARGB(200, 33, 33, 33),
+      const Color.fromARGB(200, 55, 55, 55),
+    ] : [
+      const Color.fromARGB(198, 176, 176, 176),
+      const Color.fromARGB(200, 222, 222, 222),
+      const Color.fromARGB(200, 200, 200, 200),
+    ];
     return StreamBuilder(
       stream: instance.bloadCast,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
@@ -178,8 +189,8 @@ class _MessageCardState extends State<MessageCard> {
                             children:[
                               Text( // 名前
                                 displayName,
-                                style: const TextStyle(
-                                  color: Color.fromARGB(200, 55, 55, 55),
+                                style: TextStyle(
+                                  color: textColor[2],
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
@@ -189,10 +200,10 @@ class _MessageCardState extends State<MessageCard> {
                               ),
                               Padding(
                                 padding: const EdgeInsets.only(left: 7),
-                                child:Text(
+                                child:Text( // 時刻
                                   modifiedDateTime,
-                                  style: const TextStyle(
-                                    color: Color.fromARGB(198, 79, 79, 79),
+                                  style: TextStyle(
+                                    color: textColor[0],
                                     fontWeight: FontWeight.bold,
                                     fontSize: 10,
                                     overflow: TextOverflow.ellipsis,
@@ -206,8 +217,8 @@ class _MessageCardState extends State<MessageCard> {
                             child:RichText(
                               text: TextSpan(
                                 children: getTextSpans(messageContent),
-                                style:const TextStyle(
-                                  color: Color.fromARGB(200, 33, 33, 33),
+                                style:TextStyle(
+                                  color: textColor[1],
                                   fontSize: 16.0
                                 ),
                               ),
