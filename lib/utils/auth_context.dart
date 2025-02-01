@@ -26,6 +26,7 @@ class AuthContext {
   late Stream<dynamic> bloadCast;
   late drive.DriveApi googleDriveApi;
   late String deviceName;
+  late Widget lastOpenedChat;
   List<Color> theme = const [ Color.fromARGB(204, 228, 169, 114),Color.fromARGB(204, 153, 65, 216)];
 
   Future restoreConnection() async {
