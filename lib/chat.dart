@@ -37,6 +37,8 @@ class _chat extends State<chat>{
     } 
   }
 
+
+
   Color darkenColor(Color color, double amount) {
     assert(amount >= 0 && amount <= 1);
     final hsl = HSLColor.fromColor(color);
@@ -46,6 +48,7 @@ class _chat extends State<chat>{
   
   @override
   Widget build(BuildContext context) {
+    instance.getTheme();
     final String displayName = channelInfo["display_name"];
     return Scaffold(
       bottomSheet: BottomAppBar(
