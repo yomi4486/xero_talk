@@ -43,6 +43,16 @@ class _chat extends State<chat>{
     final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
     return hslDark.toColor();
   }
+
+  Color lightenColor(Color color, double factor) {
+    assert(factor >= 0 && factor <= 1);
+
+    int red = color.red + ((255 - color.red) * factor).toInt();
+    int green = color.green + ((255 - color.green) * factor).toInt();
+    int blue = color.blue + ((255 - color.blue) * factor).toInt();
+
+    return Color.fromARGB(color.alpha, red, green, blue);
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -143,8 +153,7 @@ class _chat extends State<chat>{
         backgroundColor: darkenColor(instance.theme[0].withOpacity(1), .001),
         leadingWidth: 0,
         title:  Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children:[
+          children:[            
             IconButton(
               onPressed: (){
                 Navigator.of(context).pop();
@@ -154,47 +163,172 @@ class _chat extends State<chat>{
                 color: Color.fromARGB(128, 255, 255, 255)
               )
             ),
-            SizedBox(
-              child: Row(
+            GestureDetector(
+              onTap:(){
+                showModalBottomSheet(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: lightenColor(instance.theme[0],.2),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20.0),
+                          topRight: Radius.circular(20.0),
+                        ),
+                      ),
+                      height: MediaQuery.of(context).size.height*0.8,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top:20),
+                        child:ListView(
+                          children: [
+                            SimpleDialogOption( // メッセージ削除ボタン
+                              padding: const EdgeInsets.all(15),
+                              child: Column(
+                                children:[
+                                  Container(
+                                    height: MediaQuery.of(context).size.width*0.2,
+                                    width: MediaQuery.of(context).size.width*0.2,
+                                    margin:const EdgeInsets.only(left:5),
+                                    child:ClipRRect( // アイコン表示（角丸）
+                                      borderRadius: BorderRadius.circular(200),
+                                      child:Image.network(
+                                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["id"]}",
+                                        fit:BoxFit.contain,
+                                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child; 
+                                          } else {
+                                            return Image.asset(
+                                              'assets/images/default_user_icon.png',
+                                              fit:BoxFit.contain,
+                                            );
+                                          } 
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Text(
+                                      channelInfo["display_name"],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 24,
+                                        color:Color.fromARGB(200, 255, 255, 255),
+                                        overflow: TextOverflow.ellipsis,
+                                      )
+                                    )
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Text(
+                                      "@${channelInfo["name"]}",
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color:Color.fromARGB(199, 197, 197, 197),
+                                        overflow: TextOverflow.ellipsis,
+                                      )
+                                    )
+                                  ),
+                                  Container(
+                                    width: MediaQuery.of(context).size.width*0.8,
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: const BoxDecoration(
+                                      color:Color.fromARGB(22, 255, 255, 255),
+                                      borderRadius: BorderRadius.all(Radius.circular(10.0),),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children:[
+                                        const Align(
+                                          alignment: Alignment.topLeft,
+                                          child: Padding(
+                                            padding: EdgeInsets.only(top: 10,left: 10,right: 10,bottom:0),
+                                            child: Text(
+                                              "自己紹介",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color:Color.fromARGB(199, 197, 197, 197),
+                                                overflow: TextOverflow.ellipsis,
+                                              )
+                                            )
+                                          ),
+                                        ),
+                                        Align(
+                                          alignment: Alignment.topLeft,
+                                          child:Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: Text(
+                                              channelInfo["description"],
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                color:Color.fromARGB(255, 233, 233, 233),
+                                                overflow: TextOverflow.ellipsis,
+                                              )
+                                            )
+                                          )
+                                        )
+                                      ]
+                                    ),
+                                  )
+                                ]
+                              ),
+                              
+                            ),
+                          ],
+                        )
+                      )
+                    );
+                  },
+                );
+              },
+              child:Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children:[
-                  Container(
-                    height: 34,
-                    width: 34,
-                    margin:const EdgeInsets.only(left:5),
-                    child:ClipRRect( // アイコン表示（角丸）
-                      borderRadius: BorderRadius.circular(200),
-                      child:Image.network(
-                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["id"]}",
-                        fit:BoxFit.contain,
-                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child; 
-                          } else {
-                            return Image.asset(
-                              'assets/images/default_user_icon.png',
+                  SizedBox(
+                    child: Row(
+                      children:[
+                        Container(
+                          height: 34,
+                          width: 34,
+                          margin:const EdgeInsets.only(left:5),
+                          child:ClipRRect( // アイコン表示（角丸）
+                            borderRadius: BorderRadius.circular(200),
+                            child:Image.network(
+                              "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["id"]}",
                               fit:BoxFit.contain,
-                            );
-                          } 
-                        },
+                              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                if (loadingProgress == null) {
+                                  return child; 
+                                } else {
+                                  return Image.asset(
+                                    'assets/images/default_user_icon.png',
+                                    fit:BoxFit.contain,
+                                  );
+                                } 
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ),
+                  Container(
+                    width: 150,
+                    margin:const EdgeInsets.only(left:10),
+                    child:Text(
+                      displayName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color:Color.fromARGB(200, 255, 255, 255),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                ],
-              )
-            ),
-            Container(
-              width: 150,
-              margin:const EdgeInsets.only(left:10),
-              child:Text(
-                displayName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color:Color.fromARGB(200, 255, 255, 255),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  )
+                ]   
               ),
-            )
+            ),
           ]
         ),
         actions: [
