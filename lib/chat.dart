@@ -46,7 +46,6 @@ class _chat extends State<chat>{
   
   @override
   Widget build(BuildContext context) {
-    instance.getTheme();
     final String displayName = channelInfo["display_name"];
     return Scaffold(
       bottomSheet: BottomAppBar(
@@ -163,7 +162,7 @@ class _chat extends State<chat>{
                     width: 34,
                     margin:const EdgeInsets.only(left:5),
                     child:ClipRRect( // アイコン表示（角丸）
-                      borderRadius: BorderRadius.circular(2000000),
+                      borderRadius: BorderRadius.circular(200),
                       child:Image.network(
                         "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["id"]}",
                         fit:BoxFit.contain,
@@ -174,7 +173,7 @@ class _chat extends State<chat>{
                             return Image.asset(
                               'assets/images/default_user_icon.png',
                               fit:BoxFit.contain,
-                            );    
+                            );
                           } 
                         },
                       ),
