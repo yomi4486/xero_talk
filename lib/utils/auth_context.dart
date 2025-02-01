@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
@@ -35,5 +36,29 @@ class AuthContext {
       }
     );
     bloadCast = channel.asBroadcastStream();
+  }
+
+  Color hexToColor(String hexColor) {
+    hexColor = hexColor.toUpperCase().replaceAll("#", "");
+    if (hexColor.length == 6) {
+      hexColor = "FF" + hexColor;
+    }
+    return Color(int.parse(hexColor, radix: 16));
+  }
+
+  Future getTheme() async {
+    final themeDoc = await FirebaseFirestore.instance
+      .collection('user_account') // コレクションID
+      .doc(id) // ドキュメントID
+      .get();
+    final data = themeDoc.data();
+    if (data != null && data.containsKey("color_theme")) {
+      final themeData = data["color_theme"];
+      if (theme.isNotEmpty) {
+        final oneColor = hexToColor(themeData[0]);
+        final twoColor = hexToColor(themeData[1]);
+        theme = [oneColor,twoColor];
+      }
+    }
   }
 }
