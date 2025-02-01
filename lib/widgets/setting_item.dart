@@ -38,3 +38,37 @@ class _SettingItemState extends State<SettingItem> {
     );
   }
 }
+
+class TitleBar extends StatefulWidget {
+  TitleBar({Key? key, required this.name}) : super(key: key);
+  final String name;
+  @override
+  _TitleBarState createState() => _TitleBarState();
+}
+
+class _TitleBarState extends State<TitleBar> { 
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(// 上の枠線
+          bottom: BorderSide(width: .5, color: Color.fromARGB(255, 195, 195, 195)), 
+        ),
+        color:Color.fromARGB(35, 55, 55, 55)
+      ),
+      padding:const EdgeInsets.only(bottom: 4,top: 4,left:16),
+      child:Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text(
+            widget.name,
+            style:const TextStyle(
+              color: Color.fromARGB(255, 179, 179, 179),
+              fontSize: 16,
+            )
+          ),
+        ]
+      )
+    );
+  }
+}

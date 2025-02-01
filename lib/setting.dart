@@ -16,8 +16,6 @@ class _SettingPage extends State<SettingPage>{
   bool _showFab = false; // falseなら未編集、trueなら編集済み
   final AuthContext instance = AuthContext();
   late List<dynamic> theme;
-  Color oneColor = const Color.fromARGB(204, 228, 169, 114);
-  Color twoColor = const Color.fromARGB(204, 153, 65, 216);
 
   String colorToHex(Color color) {
     return '#${color.value.toRadixString(16).toUpperCase().padLeft(8, '0')}';
@@ -33,6 +31,8 @@ class _SettingPage extends State<SettingPage>{
 
   @override
   Widget build (BuildContext context) {
+    Color oneColor = instance.theme[0];
+    Color twoColor = instance.theme[1];
     var profile = instance.userCredential.additionalUserInfo?.profile;
     return FutureBuilder(
       future:FirebaseFirestore.instance
@@ -104,6 +104,7 @@ class _SettingPage extends State<SettingPage>{
               decoration: BoxDecoration(color: widget.defaultColor),
               child:ListView(
                 children: [
+                  TitleBar(name: "基本設定",),
                   SettingItem(
                     name: "テーマ", 
                     defaultValue: "", 
@@ -192,6 +193,17 @@ class _SettingPage extends State<SettingPage>{
                         )
                       ]
                     )
+                  ),
+                  SettingItem(
+                    name: "デバイス情報",
+                    defaultValue: "",
+                    widget: Text(
+                      "${instance.deviceName}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   )
                 ] //childlen 画面全体
               )
