@@ -10,6 +10,7 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 late drive.DriveApi googleDriveApi;
 
@@ -91,6 +92,21 @@ class _LoginPageState extends State<MyHomePage> {
       authContext.bloadCast = channel.asBroadcastStream();
       authContext.googleDriveApi = googleDriveApi;
       authContext.userCredential = userCredential;
+
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      String deviceData;
+
+      if (Theme.of(context).platform == TargetPlatform.android) {
+        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        deviceData = 'Android ${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt}), ${androidInfo.model}';
+      } else if (Theme.of(context).platform == TargetPlatform.iOS) {
+        IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+        deviceData = '${iosInfo.utsname.machine}, ${iosInfo.systemName} ${iosInfo.systemVersion}';
+      } else {
+        deviceData = 'Unsupported platform';
+      }
+      authContext.deviceName = deviceData;
+  
       if (userCredential.additionalUserInfo!.isNewUser) { // 新規ユーザーの場合
         Navigator.push(
           context,
