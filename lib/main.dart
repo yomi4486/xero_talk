@@ -100,8 +100,30 @@ class _LoginPageState extends State<MyHomePage> {
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
         deviceData = 'Android ${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt}), ${androidInfo.model}';
       } else if (Theme.of(context).platform == TargetPlatform.iOS) {
+        String getIosDeviceName(String machine) {
+          Map<String, String> iosDeviceNames = {
+            'iPhone13,4': 'iPhone 12 Pro Max',
+            'iPhone14,2': 'iPhone 13 Pro',
+            'iPhone14,3': 'iPhone 13 Pro Max',
+            'iPhone14,4': 'iPhone 13 mini',
+            'iPhone14,5': 'iPhone 13',
+            'iPhone15,2': 'iPhone 14 Pro',
+            'iPhone15,3': 'iPhone 14 Pro Max',
+            'iPhone15,4': 'iPhone 14',
+            'iPhone15,5': 'iPhone 14 Plus',
+            'iPhone16,1': 'iPhone 15 Pro',
+            'iPhone16,2': 'iPhone 15 Pro Max',
+            'iPhone16,3': 'iPhone 15',
+            'iPhone16,4': 'iPhone 15 Plus',
+            'iPhone17,1': 'iPhone 16 Pro',
+            'iPhone17,2': 'iPhone 16 Pro Max',
+            'iPhone17,3': 'iPhone 16',
+            'iPhone17,4': 'iPhone 16 Plus',
+          };
+          return iosDeviceNames[machine] ?? machine;
+        }
         IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-        deviceData = '${iosInfo.utsname.machine}, ${iosInfo.systemName} ${iosInfo.systemVersion}';
+        deviceData = '${getIosDeviceName(iosInfo.utsname.machine)}, ${iosInfo.systemName} ${iosInfo.systemVersion}';
       } else {
         deviceData = 'Unsupported platform';
       }
