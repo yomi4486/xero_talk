@@ -11,17 +11,19 @@ import 'package:xero_talk/utils/message_tools.dart';
 String lastMessageId = "";
 
 class MessageCard extends StatefulWidget {
-  MessageCard({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo,required this.fieldText}) : super(key: key);
+  MessageCard({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo,required this.fieldText,required this.EditMode}) : super(key: key);
   final FocusNode focusNode; /// チャット入力欄のフォーカスノード
   final ScrollController scrollController;
   final Map channelInfo;
   final TextEditingController fieldText;
+  final Function(String,bool) EditMode;
   @override
   _MessageCardState createState() => _MessageCardState();
 }
 
 class _MessageCardState extends State<MessageCard> {
   List<Widget> returnWidget = [];
+  Map chatHistory = {};
   
   void addWidget(Widget newWidget, double currentPosition) {
     returnWidget.add(newWidget); 
@@ -41,6 +43,26 @@ class _MessageCardState extends State<MessageCard> {
     }catch(e){
       print(e);
     }
+  }
+  void editWidget(String key,String content) {
+    try{
+      chatHistory[key]["content"] = content;
+      chatHistory[key]["edited"] = true;
+    }catch(e){
+      print(e);
+    }
+  }
+
+  String getTimeStringFormat(DateTime dateTime){
+    final DateTime nowDate = DateTime.now();
+    late String today;
+    if (dateTime.year == nowDate.year && dateTime.month == nowDate.month && dateTime.day == nowDate.day){
+      today = "今日";
+    }else{
+      today = "${dateTime.year}/${dateTime.month}/${dateTime.day}";
+    }
+    final String modifiedDateTime = "$today, ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
+    return modifiedDateTime;
   }
 
   @override 
@@ -151,22 +173,28 @@ class _MessageCardState extends State<MessageCard> {
                 removeWidget(messageId);
                 return Column(children: returnWidget);
               }
+              if(type == "edit_message"){
+                editWidget(messageId,content["content"]);
+                return Column(children: returnWidget);
+              }
               final String messageContent = content["content"];
               final int timestamp = content["timestamp"];
               final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-              final DateTime nowDate = DateTime.now();
-              late String today;
-              if (dateTime.year == nowDate.year && dateTime.month == nowDate.month && dateTime.day == nowDate.day){
-                today = "今日";
-              }else{
-                today = "${dateTime.year}/${dateTime.month}/${dateTime.day}";
-              }
-              final String modifiedDateTime = "$today, ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
+              final String modifiedDateTime = getTimeStringFormat(dateTime);
               
               if(lastMessageId == messageId){ // 同一のメッセージ複数受け取っている場合は無視
                 return Column(children: returnWidget,);
               }
               lastMessageId = messageId; // 最終受信を上書き
+              chatHistory[messageId] = {
+                "author":content["author"],
+                "content":messageContent,
+                "id":messageId,
+                "timeStamp":timestamp,
+                "display_time":modifiedDateTime,
+                "edited":false,
+                "display_name":displayName
+              };
               final Widget _chatWidget = Container(
                 margin: const EdgeInsets.only(bottom: 10, top: 10),
                 child: Row(
@@ -176,7 +204,7 @@ class _MessageCardState extends State<MessageCard> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(2000000),
                       child: Image.network(
-                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${content['author']}",
+                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${chatHistory[messageId]["author"]}",
                         width: MediaQuery.of(context).size.height * 0.05,
                       ),
                     ),
@@ -189,7 +217,7 @@ class _MessageCardState extends State<MessageCard> {
                           Row(
                             children:[
                               Text( // 名前
-                                displayName,
+                                chatHistory[messageId]["display_name"],
                                 style: TextStyle(
                                   color: textColor[2],
                                   fontWeight: FontWeight.bold,
@@ -202,7 +230,7 @@ class _MessageCardState extends State<MessageCard> {
                               Padding(
                                 padding: const EdgeInsets.only(left: 7),
                                 child:Text( // 時刻
-                                  modifiedDateTime,
+                                  chatHistory[messageId]["display_time"],
                                   style: TextStyle(
                                     color: textColor[0],
                                     fontWeight: FontWeight.bold,
@@ -215,15 +243,20 @@ class _MessageCardState extends State<MessageCard> {
                           ),
                           SizedBox( // コンテンツ
                             width: MediaQuery.of(context).size.width*0.7,
-                            child:RichText(
-                              text: TextSpan(
-                                children: getTextSpans(messageContent),
-                                style:TextStyle(
-                                  color: textColor[1],
-                                  fontSize: 16.0
+                            child:Row(
+                              children:[
+                                RichText(
+                                  text: TextSpan(
+                                    children: getTextSpans(chatHistory[messageId]["content"]),
+                                    style:TextStyle(
+                                      color: textColor[1],
+                                      fontSize: 16.0
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
+                                chatHistory[messageId]["edited"] ? Padding(padding:const EdgeInsets.only(left:20),child:Text("編集済み",style:TextStyle(color: textColor[0]))) : Container()
+                              ]
+                            )
                           )
                         ],
                       ),
@@ -310,8 +343,7 @@ class _MessageCardState extends State<MessageCard> {
                                   Navigator.pop(context);
                                   widget.focusNode.requestFocus();
                                   widget.fieldText.text = messageContent;
-                                  instance.editing = true;
-                                  instance.editingMessageId = messageId;
+                                  widget.EditMode(messageId,true);
                                 }
                               ),
                             ],

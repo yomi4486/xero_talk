@@ -55,6 +55,13 @@ class _chat extends State<chat>{
 
     return Color.fromARGB(color.alpha, red, green, blue);
   }
+
+  void editMode(String messageId,bool mode){
+    setState((){
+      instance.editing = mode;
+      instance.editingMessageId = messageId;
+    });
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -119,7 +126,9 @@ class _chat extends State<chat>{
                 ),
                 onPressed: () async {
                   if (instance.editing){
-                    instance.editing = false;
+                    setState((){
+                      instance.editing = false;
+                    });
                     editMessage(instance.editingMessageId,channelInfo["id"],chatText);
                   }else{
                     sendMessage(chatText,channelInfo["id"]);
@@ -432,6 +441,7 @@ class _chat extends State<chat>{
                                           scrollController: _scrollController,
                                           channelInfo: channelInfo,
                                           fieldText: fieldText,
+                                          EditMode:editMode
                                         ) // コントローラーやノードの状態をストリームの描画部分と共有
                                       ]
                                     ),
