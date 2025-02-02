@@ -20,13 +20,15 @@ class AuthContext {
   }
 
   // クラスのプロパティやメソッド
-  late String id;
-  late WebSocket channel;
-  late UserCredential userCredential;
-  late Stream<dynamic> bloadCast;
-  late drive.DriveApi googleDriveApi;
-  late String deviceName;
-  late Widget lastOpenedChat;
+  late String id; // 現在ログインしているユーザーのサービス内でのID
+  late WebSocket channel; // サーバーとのWebSocket接続
+  late UserCredential userCredential; // Firebaseのログインインスタンス
+  late Stream<dynamic> bloadCast; // メッセージのストリーミングを行うためのブロードキャストオブジェクト
+  late drive.DriveApi googleDriveApi; // GoogleDriveにデータを書き込むためのインスタンス
+  late String deviceName; // アプリが動作しているデバイスの機種名を保管
+  late Widget lastOpenedChat; // スワイプでチャット画面を行き来した際の状態管理を行う
+  bool editing = false; // メッセージが編集中かどうかの状態管理を行う
+  late String editingMessageId;
   List<Color> theme = const [ Color.fromARGB(204, 228, 169, 114),Color.fromARGB(204, 153, 65, 216)];
 
   Future restoreConnection() async {
