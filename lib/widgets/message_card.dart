@@ -40,6 +40,7 @@ class _MessageCardState extends State<MessageCard> {
   void removeWidget(String key) {
     try{
       returnWidget.removeWhere((widget) => (widget.key as ValueKey).value == key);
+      chatHistory.remove(key);
     }catch(e){
       print(e);
     }
