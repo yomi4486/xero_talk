@@ -11,10 +11,11 @@ import 'package:xero_talk/utils/message_tools.dart';
 String lastMessageId = "";
 
 class MessageCard extends StatefulWidget {
-  MessageCard({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo}) : super(key: key);
-  final FocusNode focusNode;
+  MessageCard({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo,required this.fieldText}) : super(key: key);
+  final FocusNode focusNode; /// チャット入力欄のフォーカスノード
   final ScrollController scrollController;
   final Map channelInfo;
+  final TextEditingController fieldText;
   @override
   _MessageCardState createState() => _MessageCardState();
 }
@@ -292,6 +293,25 @@ class _MessageCardState extends State<MessageCard> {
                                       );
                                     },
                                   );      
+                                }
+                              ),
+                              SimpleDialogOption( // メッセージ削除ボタン
+                                padding: const EdgeInsets.all(15),
+                                child: const Row(
+                                  children:[
+                                    Icon(Icons.edit),
+                                    Padding(
+                                      padding: EdgeInsets.only(left:5),
+                                      child: Text('編集',style: TextStyle(fontSize: 16))
+                                    )
+                                  ]
+                                ),
+                                onPressed: ()async {
+                                  Navigator.pop(context);
+                                  widget.focusNode.requestFocus();
+                                  widget.fieldText.text = messageContent;
+                                  instance.editing = true;
+                                  instance.editingMessageId = messageId;
                                 }
                               ),
                             ],
