@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+/// アプリ全体の状態管理を担うクラス
 class AuthContext {
   // プライベートコンストラクタ
   AuthContext._privateConstructor();
@@ -30,7 +31,8 @@ class AuthContext {
   bool editing = false; // メッセージが編集中かどうかの状態管理を行う
   late String editingMessageId;
   List<Color> theme = const [ Color.fromARGB(204, 228, 169, 114),Color.fromARGB(204, 153, 65, 216)];
-
+  
+  /// セッションの復元を行うための関数です
   Future restoreConnection() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     channel = await WebSocket.connect(
@@ -42,6 +44,7 @@ class AuthContext {
     bloadCast = channel.asBroadcastStream();
   }
 
+  /// HEXカラーコードをColorオブジェクトに変換します
   Color hexToColor(String hexColor) {
     hexColor = hexColor.toUpperCase().replaceAll("#", "");
     if (hexColor.length == 6) {
@@ -49,6 +52,7 @@ class AuthContext {
     }
     return Color(int.parse(hexColor, radix: 16));
   }
+
   ///背景色に応じてダーク、ホワイトを切り替えてカラーセットを返却します
   List<Color> getTextColor(Color backgroundColor){
 
@@ -65,10 +69,11 @@ class AuthContext {
     return textColor;
   }
 
+  /// Firestoreから自分の設定しているテーマを取得します
   Future getTheme() async {
     final themeDoc = await FirebaseFirestore.instance
-      .collection('user_account') // コレクションID
-      .doc(id) // ドキュメントID
+      .collection('user_account')
+      .doc(id)
       .get();
     final data = themeDoc.data();
     if (data != null && data.containsKey("color_theme")) {
