@@ -184,12 +184,14 @@ class _chat extends State<chat>{
             ),
             GestureDetector(
               onTap:(){
+                final Color backgroundColor = lightenColor(instance.theme[0],.2);
+                final List<Color> textColor = instance.getTextColor(backgroundColor);
                 showModalBottomSheet(
                   context: context,
                   builder: (BuildContext context) {
                     return Container(
                       decoration: BoxDecoration(
-                        color: lightenColor(instance.theme[0],.2),
+                        color: backgroundColor,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(20.0),
                           topRight: Radius.circular(20.0),
@@ -200,7 +202,7 @@ class _chat extends State<chat>{
                         padding: const EdgeInsets.only(top:20),
                         child:ListView(
                           children: [
-                            SimpleDialogOption( // メッセージ削除ボタン
+                            SimpleDialogOption( // ユーザープロフィールの表示
                               padding: const EdgeInsets.all(15),
                               child: Column(
                                 children:[
@@ -230,10 +232,10 @@ class _chat extends State<chat>{
                                     padding: const EdgeInsets.all(10),
                                     child: Text(
                                       channelInfo["display_name"],
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 24,
-                                        color:Color.fromARGB(200, 255, 255, 255),
+                                        color:textColor[0],
                                         overflow: TextOverflow.ellipsis,
                                       )
                                     )
@@ -242,9 +244,9 @@ class _chat extends State<chat>{
                                     padding: const EdgeInsets.all(10),
                                     child: Text(
                                       "@${channelInfo["name"]}",
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 16,
-                                        color:Color.fromARGB(199, 197, 197, 197),
+                                        color:textColor[1],
                                         overflow: TextOverflow.ellipsis,
                                       )
                                     )
@@ -259,7 +261,7 @@ class _chat extends State<chat>{
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.start,
                                       children:[
-                                        const Align(
+                                        Align(
                                           alignment: Alignment.topLeft,
                                           child: Padding(
                                             padding: EdgeInsets.only(top: 10,left: 10,right: 10,bottom:0),
@@ -267,7 +269,7 @@ class _chat extends State<chat>{
                                               "自己紹介",
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color:Color.fromARGB(199, 197, 197, 197),
+                                                color:textColor[1],
                                                 overflow: TextOverflow.ellipsis,
                                               )
                                             )
@@ -279,9 +281,9 @@ class _chat extends State<chat>{
                                             padding: const EdgeInsets.all(10),
                                             child: Text(
                                               channelInfo["description"],
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontSize: 16,
-                                                color:Color.fromARGB(255, 233, 233, 233),
+                                                color:textColor[0],
                                                 overflow: TextOverflow.ellipsis,
                                               )
                                             )
