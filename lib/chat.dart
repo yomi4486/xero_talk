@@ -16,7 +16,6 @@ class chat extends StatefulWidget {
   }
 }
 
-
 class _chat extends State<chat>{
   _chat({required this.channelInfo});
   Map channelInfo;

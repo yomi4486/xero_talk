@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/home.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:xero_talk/utils/auth_context.dart';
 
 class NotifyPage extends StatelessWidget{
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+  final AuthContext instance = AuthContext();
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -32,8 +34,8 @@ class NotifyPage extends StatelessWidget{
         },
         unselectedLabelStyle: const TextStyle(color: Color.fromARGB(255, 200, 200, 200)),
         unselectedItemColor: const Color.fromARGB(255, 200, 200, 200),
-        selectedLabelStyle: const TextStyle(color: Color.fromARGB(255, 140, 206, 74)),
-        selectedItemColor: const Color.fromARGB(255, 140, 206, 74),
+        selectedLabelStyle: TextStyle(color: instance.theme[1]),
+        selectedItemColor: instance.theme[1],
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

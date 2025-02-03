@@ -85,7 +85,7 @@ class _AccountPage extends State<AccountPage>{
                       return FadeTransition(opacity: animation, child: child,);
                     }
                   ));
-                }else if(value==1){
+                }else if(value == 1){
                   Navigator.push(context, PageRouteBuilder(
                     pageBuilder: (_, __, ___)=>NotifyPage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child){
@@ -96,8 +96,8 @@ class _AccountPage extends State<AccountPage>{
               },
               unselectedLabelStyle: const TextStyle(color: Color.fromARGB(255, 200, 200, 200)),
               unselectedItemColor: const Color.fromARGB(255, 200, 200, 200),
-              selectedLabelStyle: const TextStyle(color: Color.fromARGB(255, 140, 206, 74)),
-              selectedItemColor: const Color.fromARGB(255, 140, 206, 74),
+              selectedLabelStyle: TextStyle(color: instance.theme[1]),
+              selectedItemColor: instance.theme[1],
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: Icon(Icons.home),
@@ -125,8 +125,7 @@ class _AccountPage extends State<AccountPage>{
                 fontSize: 20
               ),
               backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-              actions: [  
-                              
+              actions: [              
                 Container( 
                   padding: const EdgeInsets.only(right: 10), 
                   child:ClipRRect( // アイコン表示（角丸）
@@ -173,7 +172,7 @@ class _AccountPage extends State<AccountPage>{
                     });
                 }
               }, 
-              backgroundColor: const Color.fromARGB(255, 140, 206, 74), 
+              backgroundColor: instance.theme[1], 
               shape: RoundedRectangleBorder( 
                 borderRadius: BorderRadius.circular(128), 
               ), 
