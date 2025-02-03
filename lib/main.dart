@@ -92,6 +92,7 @@ class _LoginPageState extends State<MyHomePage> {
       authContext.bloadCast = channel.asBroadcastStream();
       authContext.googleDriveApi = googleDriveApi;
       authContext.userCredential = userCredential;
+      await authContext.getTheme();
 
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       String deviceData;
