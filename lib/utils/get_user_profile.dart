@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+/// Firestoreから指定したIDのユーザープロファイルを取得
 Future<Map<String, dynamic>> getUserProfile(String id)async{
   try{
     final DocumentSnapshot<Map<String, dynamic>> data = await FirebaseFirestore.instance.collection('user_account').doc(id).get();
