@@ -16,14 +16,16 @@ class chat extends StatefulWidget {
   }
 }
 
+
 class _chat extends State<chat>{
   _chat({required this.channelInfo});
   Map channelInfo;
-  String? chatText = "";
+  String chatText = "";
   final AuthContext instance = AuthContext();
   final fieldText = TextEditingController();
   FocusNode focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
+
 
   @override
   void dispose() {
@@ -52,6 +54,13 @@ class _chat extends State<chat>{
     int blue = color.blue + ((255 - color.blue) * factor).toInt();
 
     return Color.fromARGB(color.alpha, red, green, blue);
+  }
+
+  void editMode(String messageId,bool mode){
+    setState((){
+      instance.editing = mode;
+      instance.editingMessageId = messageId;
+    });
   }
   
   @override
@@ -116,7 +125,14 @@ class _chat extends State<chat>{
                   overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
                 ),
                 onPressed: () async {
-                  sendMessage(chatText,channelInfo["id"]);
+                  if (instance.editing){
+                    setState((){
+                      instance.editing = false;
+                    });
+                    editMessage(instance.editingMessageId,channelInfo["id"],chatText);
+                  }else{
+                    sendMessage(chatText,channelInfo["id"]);
+                  }
                   chatText = "";
                   fieldText.clear();
                 },
@@ -133,7 +149,10 @@ class _chat extends State<chat>{
                     ),
                     shape: BoxShape.circle,
                   ),
-                  child: const ImageIcon(
+                  child: instance.editing ? const Icon(
+                    Icons.edit,
+                    color: Color.fromARGB(255, 255, 255, 255),
+                  ) : const ImageIcon(
                     AssetImage("assets/images/send.png"),
                     color: Color.fromARGB(255, 255, 255, 255),
                   ),
@@ -421,6 +440,8 @@ class _chat extends State<chat>{
                                           focusNode: focusNode,
                                           scrollController: _scrollController,
                                           channelInfo: channelInfo,
+                                          fieldText: fieldText,
+                                          EditMode:editMode
                                         ) // コントローラーやノードの状態をストリームの描画部分と共有
                                       ]
                                     ),
