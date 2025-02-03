@@ -84,6 +84,7 @@ class _MessageCardState extends State<MessageCard> {
     } 
   }
 
+  ///　メッセージのテキストに適切な装飾を行います。（URLが含まれていたらクリック可能に、編集済みかどうか。） 
   List<TextSpan> getTextSpans(String text,bool edited,List<Color>textColor) {
     final RegExp urlRegExp = RegExp(
       r'(http|https):\/\/([\w.]+\/?)\S*',
@@ -195,9 +196,9 @@ class _MessageCardState extends State<MessageCard> {
                 "edited":edited,
                 "display_name":displayName
               };
-              returnWidget = [];
+              returnWidget = []; // IDの衝突を起こすため初期化
               for (var entry in chatHistory.entries){
-                final Widget _chatWidget = Container(
+                final Widget _chatWidget = Container( // メッセージウィジェットのUI部分
                   margin: const EdgeInsets.only(bottom: 10, top: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -265,7 +266,8 @@ class _MessageCardState extends State<MessageCard> {
                     ],
                   ),
                 );
-                final chatWidget = GestureDetector(
+                
+                final chatWidget = GestureDetector( // メッセージのウィジェットのIDとタップイベントハンドラーを担当
                   key:ValueKey(entry.key),
                   onLongPress: (){
                     showModalBottomSheet(
