@@ -131,7 +131,7 @@ class _SettingPage extends State<SettingPage>{
                     widget: Row(
                       spacing: 10,
                       children:[
-                        GestureDetector(
+                        GestureDetector( // theme[0]
                           child:Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10.0),
@@ -171,7 +171,7 @@ class _SettingPage extends State<SettingPage>{
                             );
                           },
                         ),
-                        GestureDetector(
+                        GestureDetector( // theme[1]
                           child:Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10.0),
@@ -218,7 +218,7 @@ class _SettingPage extends State<SettingPage>{
                     name: "デバイス情報",
                     defaultValue: "",
                     widget: Text(
-                      "${instance.deviceName}",
+                      instance.deviceName,
                       style: const TextStyle(
                         color: Colors.white,
                         overflow: TextOverflow.ellipsis,
