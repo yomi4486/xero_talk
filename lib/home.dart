@@ -115,7 +115,6 @@ class chatHome extends StatelessWidget{
                                   GestureDetector(
                                     onTap: () async {
                                       final Map<String, dynamic> userData = await getUserProfile('106017943896753291176');
-                                      await instance.getTheme();
                                       final Widget openWidget = chat(channelInfo:userData);
                                       instance.lastOpenedChat = openWidget;
                                       Navigator.push(
@@ -128,7 +127,6 @@ class chatHome extends StatelessWidget{
                                   GestureDetector(
                                     onTap: () async{
                                       final Map<String, dynamic> userData = await getUserProfile('112905252227299870586');
-                                      await instance.getTheme();
                                       final Widget openWidget = chat(channelInfo:userData);
                                       instance.lastOpenedChat = openWidget;
                                       Navigator.push(
