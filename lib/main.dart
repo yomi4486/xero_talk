@@ -101,6 +101,7 @@ class _LoginPageState extends State<MyHomePage> {
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
         deviceData = 'Android ${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt}), ${androidInfo.model}';
       } else if (Theme.of(context).platform == TargetPlatform.iOS) {
+        /// iPhoneの内部名を表示される機種名に変換
         String getIosDeviceName(String machine) {
           Map<String, String> iosDeviceNames = {
             'iPhone13,4': 'iPhone 12 Pro Max',
@@ -153,10 +154,7 @@ class _LoginPageState extends State<MyHomePage> {
     return Scaffold(
       body: DecoratedBox(
         decoration: const BoxDecoration(color: Color.fromARGB(255, 22, 22, 22)),
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child:SizedBox(
-          
           width:MediaQuery.of(context).size.width,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -164,7 +162,8 @@ class _LoginPageState extends State<MyHomePage> {
               Image.asset('assets/images/logo.png', fit: BoxFit.contain,width:MediaQuery.of(context).size.width *0.5),
               Container(
                 margin: const EdgeInsets.all(10),
-                child: const Text("Xero Talkで話そう､繋がろう!",
+                child: const Text(
+                  "Xero Talkで話そう､繋がろう!",
                   style:(
                     TextStyle(
                       color: Color.fromARGB(255, 240, 240, 240),
@@ -174,7 +173,6 @@ class _LoginPageState extends State<MyHomePage> {
                   )
                 ),
               ),
-
               Container(
                 margin: const EdgeInsets.all(16),
                 child:ElevatedButton.icon(

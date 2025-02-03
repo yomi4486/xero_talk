@@ -3,6 +3,7 @@ import 'dart:convert' as convert;
 
 final AuthContext instance = AuthContext();
 
+/// メッセージの送信を行います
 void sendMessage(String? text,String channelId) async {
   /// instanceで有効になっているソケット通信に対してメッセージを送信する
   if (text!.isNotEmpty) {
@@ -21,6 +22,7 @@ void sendMessage(String? text,String channelId) async {
   }
 }
 
+/// メッセージの削除を行います。
 Future deleteMessage(String messageId,String channelId) async {
   final sendBody = {"type": "delete_message","id": messageId,"channel":channelId};
   final String data = convert.json.encode(sendBody);
@@ -37,6 +39,7 @@ Future deleteMessage(String messageId,String channelId) async {
   }
 }
 
+/// 自分のメッセージを編集できます
 Future editMessage(String messageId,String channelId,String content) async {
   if (content.isNotEmpty) {
     final sendBody = {"type": "edit_message","id": messageId,"channel":channelId,"content":content};

@@ -138,7 +138,7 @@ class _AccountPage extends State<AccountPage>{
                             context,
                             MaterialPageRoute(builder: (context) => SettingPage()),
                           );
-                        }, // TODO:setting.dartに遷移する処理を書く
+                        },
                         icon: const Icon(
                           Icons.settings,
                           color: Color.fromARGB(128, 255, 255, 255)
