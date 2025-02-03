@@ -6,7 +6,7 @@ Future<Map<String, dynamic>> getUserProfile(String id)async{
 
     final userProfile = data.data() as Map<String, dynamic>;
     if (docData != null && docData.containsKey("color_theme")) {
-      if (docData.isNotEmpty) {
+      if (docData.isEmpty) {
         userProfile["description"] = "自己紹介はありません。";
       }
     }
