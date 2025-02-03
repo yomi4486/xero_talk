@@ -41,16 +41,16 @@ class chatHome extends StatelessWidget{
               }else if(value == 2){
                 Navigator.push(context, PageRouteBuilder(
                   pageBuilder: (_, __, ___)=>AccountPage(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child){
-                        return FadeTransition(opacity: animation, child: child,);
+                  transitionsBuilder: (context, animation, secondaryAnimation, child){
+                    return FadeTransition(opacity: animation, child: child,);
                   }
                 ));
               }
             },
             unselectedLabelStyle: const TextStyle(color: Color.fromARGB(255, 200, 200, 200)),
             unselectedItemColor: const Color.fromARGB(255, 200, 200, 200),
-            selectedLabelStyle: const TextStyle(color: Color.fromARGB(255, 140, 206, 74)),
-            selectedItemColor: const Color.fromARGB(255, 140, 206, 74),
+            selectedLabelStyle: TextStyle(color: instance.theme[1]),
+            selectedItemColor: instance.theme[1],
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                 icon: Icon(Icons.home),
@@ -83,7 +83,7 @@ class chatHome extends StatelessWidget{
           floatingActionButton: FloatingActionButton(
             onPressed: () {
             },
-            backgroundColor: const Color.fromARGB(255, 140, 206, 74),
+            backgroundColor: instance.theme[1],
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(128), //角の丸み
             ),
@@ -115,7 +115,6 @@ class chatHome extends StatelessWidget{
                                   GestureDetector(
                                     onTap: () async {
                                       final Map<String, dynamic> userData = await getUserProfile('106017943896753291176');
-                                      await instance.getTheme();
                                       final Widget openWidget = chat(channelInfo:userData);
                                       instance.lastOpenedChat = openWidget;
                                       Navigator.push(
@@ -128,7 +127,6 @@ class chatHome extends StatelessWidget{
                                   GestureDetector(
                                     onTap: () async{
                                       final Map<String, dynamic> userData = await getUserProfile('112905252227299870586');
-                                      await instance.getTheme();
                                       final Widget openWidget = chat(channelInfo:userData);
                                       instance.lastOpenedChat = openWidget;
                                       Navigator.push(
@@ -164,7 +162,7 @@ class chatHome extends StatelessWidget{
                                 child:ClipRRect( // アイコン表示（角丸）
                                   borderRadius: BorderRadius.circular(2000000),
                                   child:Container(
-                                    color:const Color.fromARGB(255, 140, 206, 74),
+                                    color:instance.theme[0],
                                     child:Image.asset(
                                       "assets/images/chat.png",
                                       width: MediaQuery.of(context).size.width *0.15,
