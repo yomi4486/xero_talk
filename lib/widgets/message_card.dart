@@ -242,11 +242,11 @@ class _MessageCardState extends State<MessageCard> {
                               )
                             ]
                           ),
-                          SizedBox( // コンテンツ
-                            width: MediaQuery.of(context).size.width*0.7,
-                            child:Row(
-                              children:[
-                                RichText(
+                          Row(
+                            children:[
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width*0.7,
+                                child:RichText(
                                   text: TextSpan(
                                     children: getTextSpans(chatHistory[messageId]["content"]),
                                     style:TextStyle(
@@ -254,11 +254,10 @@ class _MessageCardState extends State<MessageCard> {
                                       fontSize: 16.0
                                     ),
                                   ),
-                                ),
+                                ),),
                                 chatHistory[messageId]["edited"] ? Padding(padding:const EdgeInsets.only(left:20),child:Text("編集済み",style:TextStyle(color: textColor[0]))) : Container()
                               ]
-                            )
-                          )
+                          ),
                         ],
                       ),
                     ),
