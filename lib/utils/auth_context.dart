@@ -49,6 +49,21 @@ class AuthContext {
     }
     return Color(int.parse(hexColor, radix: 16));
   }
+  ///背景色に応じてダーク、ホワイトを切り替えてカラーセットを返却します
+  List<Color> getTextColor(Color backgroundColor){
+
+    double brightness = (backgroundColor.red * 0.299 + backgroundColor.green * 0.587 + backgroundColor.blue * 0.114) /255;
+    List<Color> textColor = brightness > 0.5 ? [
+      const Color.fromARGB(198, 79, 79, 79),
+      const Color.fromARGB(200, 33, 33, 33),
+      const Color.fromARGB(200, 55, 55, 55),
+    ] : [
+      const Color.fromARGB(198, 176, 176, 176),
+      const Color.fromARGB(200, 222, 222, 222),
+      const Color.fromARGB(200, 200, 200, 200),
+    ];
+    return textColor;
+  }
 
   Future getTheme() async {
     final themeDoc = await FirebaseFirestore.instance
