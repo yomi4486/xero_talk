@@ -10,7 +10,6 @@ class chat extends StatefulWidget {
   final Map channelInfo;
 
   @override
-  
   State<chat> createState(){
     return _chat(channelInfo: channelInfo);
   }
@@ -24,7 +23,7 @@ class _chat extends State<chat>{
   final fieldText = TextEditingController();
   FocusNode focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
-
+  List<String> images = [];
 
   @override
   void dispose() {
@@ -69,96 +68,136 @@ class _chat extends State<chat>{
       bottomSheet: BottomAppBar(
         surfaceTintColor:Colors.transparent,
         shadowColor: Colors.transparent,
-        height: MediaQuery.of(context).size.height*0.13,
+        height: MediaQuery.of(context).size.height*0.1799,
         notchMargin:4.0,
         color: darkenColor(instance.theme[1].withOpacity(1), .001),
-        child:Container(
-          margin: const EdgeInsets.only(bottom:20),
-          width: MediaQuery.of(context).size.width,
-          child:Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              SizedBox(
-                width: MediaQuery.of(context).size.width*0.7,
-                child:TextField(
-                  focusNode: focusNode,
-                  cursorColor: const Color.fromARGB(55, 255, 255, 255),
-                  controller: fieldText,
-                  onTapOutside:(_)=>unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
-                  keyboardType: TextInputType.multiline,
-                  maxLines: null,
-                  style: const TextStyle(                            
-                    color: Color.fromARGB(255, 255, 255, 255),
-                    fontSize: 16,
+        child:Column(
+          children:[
+            Container(
+              margin: const EdgeInsets.only(bottom:5),
+              width: MediaQuery.of(context).size.width,
+              child:Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width*0.7,
+                    height: 48,
+                    child:TextField(
+                      focusNode: focusNode,
+                      cursorColor: const Color.fromARGB(55, 255, 255, 255),
+                      controller: fieldText,
+                      onTapOutside:(_)=>unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
+                      keyboardType: TextInputType.multiline,
+                      maxLines: null,
+                      style: const TextStyle(                            
+                        color: Color.fromARGB(255, 255, 255, 255),
+                        fontSize: 16,
+                      ),
+                      decoration: InputDecoration(
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(color:Colors.transparent),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(color:Colors.transparent),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        hintText: '$displayNameにメッセージを送信',
+                        labelStyle: const TextStyle(
+                          color: Color.fromARGB(255, 255, 255, 255),
+                          fontSize: 16,
+                        ),
+                        hintStyle: const TextStyle(
+                          color: Color.fromARGB(255, 255, 255, 255),
+                          fontSize: 12,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        filled: true,
+                        fillColor: const Color.fromARGB(55, 0, 0, 0),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0,horizontal: 16.0), 
+                      ),
+                      onChanged: (text){
+                        chatText = text;
+                      },
+                    ),
                   ),
-                  decoration: InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color:Colors.transparent),
-                      borderRadius: BorderRadius.circular(30),
+                  SizedBox(
+                    height:60,
+                  child:IconButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
+                      overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color:Colors.transparent),
-                      borderRadius: BorderRadius.circular(30),
+                    onPressed: () async {
+                      if (instance.editing){
+                        setState((){
+                          instance.editing = false;
+                        });
+                        editMessage(instance.editingMessageId,channelInfo["id"],chatText);
+                      }else{
+                        sendMessage(chatText,channelInfo["id"],imageList: images);
+                      }
+                      chatText = "";
+                      images = [];
+                      fieldText.clear();
+                    },
+                    icon: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color.fromARGB(55, 0, 0, 0), 
+                            Color.fromARGB(55, 0, 0, 0)
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: instance.editing ? const Icon(
+                        Icons.edit,
+                        color: Color.fromARGB(255, 255, 255, 255),
+                      ) : const ImageIcon(
+                        AssetImage("assets/images/send.png"),
+                        color: Color.fromARGB(255, 255, 255, 255),
+                      ),
                     ),
-                    hintText: '$displayNameにメッセージを送信',
-                    labelStyle: const TextStyle(
-                      color: Color.fromARGB(255, 255, 255, 255),
-                      fontSize: 16,
-                    ),
-                    hintStyle: const TextStyle(
-                      color: Color.fromARGB(255, 255, 255, 255),
-                      fontSize: 12,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    filled: true,
-                    fillColor: const Color.fromARGB(55, 0, 0, 0)
                   ),
-                  onChanged: (text){
-                    chatText = text;
-                  },
-                ),
-              ),
-              IconButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
-                  overlayColor: MaterialStateProperty.all<Color>(Colors.transparent),
-                ),
-                onPressed: () async {
-                  if (instance.editing){
-                    setState((){
-                      instance.editing = false;
-                    });
-                    editMessage(instance.editingMessageId,channelInfo["id"],chatText);
-                  }else{
-                    sendMessage(chatText,channelInfo["id"]);
-                  }
-                  chatText = "";
-                  fieldText.clear();
-                },
-                icon: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color.fromARGB(55, 0, 0, 0), 
-                        Color.fromARGB(55, 0, 0, 0)
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                  ),
+                ],
+              )
+            ),
+            Container(  
+              margin: const EdgeInsets.only(bottom:20,left: 10),
+              width: MediaQuery.of(context).size.width,
+              child: Row(
+                spacing: 10,
+                children: [
+                  IconButton(
+                    icon:const Icon(
+                      Icons.photo,
+                      color:Color.fromARGB(55, 0, 0, 0),
+                      size:30
                     ),
-                    shape: BoxShape.circle,
+                    onPressed: ()async{
+                      final image = await pickImage();
+                      if(image != null){
+                        images.add(image);
+                      }
+                    },
                   ),
-                  child: instance.editing ? const Icon(
-                    Icons.edit,
-                    color: Color.fromARGB(255, 255, 255, 255),
-                  ) : const ImageIcon(
-                    AssetImage("assets/images/send.png"),
-                    color: Color.fromARGB(255, 255, 255, 255),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.emoji_emotions,
+                      color:Color.fromARGB(55, 0, 0, 0),
+                      size:30
+                    ),
+                    onPressed: (){},
                   ),
-                ),
-              ),
-            ],
-          )
+                ],
+              )
+            ),
+          ]
         )
       ),
       appBar:AppBar(
@@ -263,15 +302,15 @@ class _chat extends State<chat>{
                                         Align(
                                           alignment: Alignment.topLeft,
                                           child: Padding(
-                                            padding: EdgeInsets.only(top: 10,left: 10,right: 10,bottom:0),
+                                            padding: const EdgeInsets.only(top: 10,left: 10,right: 10,bottom:0),
                                             child: Text(
                                               "自己紹介",
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color:textColor[1],
                                                 overflow: TextOverflow.ellipsis,
-                                              )
-                                            )
+                                              ),
+                                            ),
                                           ),
                                         ),
                                         Align(
@@ -319,7 +358,7 @@ class _chat extends State<chat>{
                               fit:BoxFit.contain,
                               loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                                 if (loadingProgress == null) {
-                                  return child; 
+                                  return child;
                                 } else {
                                   return Image.asset(
                                     'assets/images/default_user_icon.png',
@@ -423,7 +462,7 @@ class _chat extends State<chat>{
                       children: [
                         SizedBox(
                           width:MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height*0.76,
+                          height: MediaQuery.of(context).size.height*0.713,
                           child: Container(
                             margin: const EdgeInsets.only(left:30,top: 30,right: 30,bottom: 30),
                             child:LayoutBuilder(
