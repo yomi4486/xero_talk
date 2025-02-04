@@ -1,5 +1,7 @@
 import 'package:xero_talk/utils/auth_context.dart';
 import 'dart:convert' as convert;
+import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
 
 final AuthContext instance = AuthContext();
 
@@ -56,4 +58,17 @@ Future editMessage(String messageId,String channelId,String content) async {
       print('編集に失敗：${e}');
     }
   }
+}
+
+Future pickImage(String token) async {
+  // 画像をスマホのギャラリーから取得
+  final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+  String base64Data = "";
+  // 画像を取得できた場合はクロップする
+  if (image != null) {
+    final bytesData = await image.readAsBytes();
+    base64Data = base64Encode(bytesData);
+    return base64Data;
+  }
+  return null;
 }
