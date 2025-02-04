@@ -7,8 +7,37 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:xero_talk/utils/message_tools.dart';
+import 'dart:typed_data';
 
 String lastMessageId = "";
+
+Uint8List decodeBase64(String base64String) {
+  return convert.base64Decode(base64String);
+}
+
+class Base64ImageWidget extends StatelessWidget {
+  final List<dynamic>? base64Strings;
+
+  Base64ImageWidget({required this.base64Strings});
+
+  @override
+  Widget build(BuildContext context) {
+    if (base64Strings != null && base64Strings!.isNotEmpty){
+      Uint8List imageBytes = decodeBase64(base64Strings![0]);
+      return Container(
+        padding:const EdgeInsets.only(top:10),
+        width: MediaQuery.of(context).size.width*0.7,
+        child:ClipRRect(
+          borderRadius: BorderRadius.circular(10.0),
+          child:Image.memory(imageBytes),
+        )
+      );
+    }else{
+      return Container();
+    }
+
+  }
+}
 
 class MessageCard extends StatefulWidget {
   MessageCard({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo,required this.fieldText,required this.EditMode}) : super(key: key);
@@ -193,7 +222,8 @@ class _MessageCardState extends State<MessageCard> {
                 "timeStamp":timestamp,
                 "display_time":modifiedDateTime,
                 "edited":edited,
-                "display_name":displayName
+                "display_name":displayName,
+                "attachments":content["attachments"]
               };
               returnWidget = []; // IDの衝突を起こすため初期化
               for (var entry in chatHistory.entries){
@@ -243,7 +273,7 @@ class _MessageCardState extends State<MessageCard> {
                                 )
                               ]
                             ),
-                            Row(
+                            Column(
                               children:[
                                 SizedBox(
                                   width: MediaQuery.of(context).size.width*0.7,
@@ -257,6 +287,7 @@ class _MessageCardState extends State<MessageCard> {
                                     ),
                                   ),
                                 ),
+                                Base64ImageWidget(base64Strings: entry.value["attachments"])
                               ]
                             ),
                           ],
