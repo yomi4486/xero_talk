@@ -23,6 +23,7 @@ class _chat extends State<chat>{
   final fieldText = TextEditingController();
   FocusNode focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
+  List<String> images = [];
 
   @override
   void dispose() {
@@ -67,7 +68,7 @@ class _chat extends State<chat>{
       bottomSheet: BottomAppBar(
         surfaceTintColor:Colors.transparent,
         shadowColor: Colors.transparent,
-        height: MediaQuery.of(context).size.height*0.16,
+        height: MediaQuery.of(context).size.height*0.1799,
         notchMargin:4.0,
         color: darkenColor(instance.theme[1].withOpacity(1), .001),
         child:Column(
@@ -134,9 +135,10 @@ class _chat extends State<chat>{
                         });
                         editMessage(instance.editingMessageId,channelInfo["id"],chatText);
                       }else{
-                        sendMessage(chatText,channelInfo["id"]);
+                        sendMessage(chatText,channelInfo["id"],imageList: images);
                       }
                       chatText = "";
+                      images = [];
                       fieldText.clear();
                     },
                     icon: Container(
@@ -168,11 +170,30 @@ class _chat extends State<chat>{
             Container(  
               margin: const EdgeInsets.only(bottom:20,left: 10),
               width: MediaQuery.of(context).size.width,
-              child:const Row(
+              child: Row(
                 spacing: 10,
                 children: [
-                  Icon(Icons.photo,color:Color.fromARGB(55, 0, 0, 0),size:30),
-                  Icon(Icons.emoji_emotions,color:Color.fromARGB(55, 0, 0, 0),size:30),
+                  IconButton(
+                    icon:const Icon(
+                      Icons.photo,
+                      color:Color.fromARGB(55, 0, 0, 0),
+                      size:30
+                    ),
+                    onPressed: ()async{
+                      final image = await pickImage();
+                      if(image != null){
+                        images.add(image);
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.emoji_emotions,
+                      color:Color.fromARGB(55, 0, 0, 0),
+                      size:30
+                    ),
+                    onPressed: (){},
+                  ),
                 ],
               )
             ),
