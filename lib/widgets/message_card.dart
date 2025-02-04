@@ -117,7 +117,6 @@ class _MessageCardState extends State<MessageCard> {
       spans.add(TextSpan(text: text.substring(lastMatchEnd)));
     }
     if(edited){
-      print("test");
       spans.add(
         TextSpan(
           text: " (編集済み)",

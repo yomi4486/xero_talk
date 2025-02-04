@@ -23,7 +23,6 @@ class AccountStartup extends StatelessWidget{
           fontSize: 16
         ),
         backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-        
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -48,7 +47,7 @@ class AccountStartup extends StatelessWidget{
                 print(err);
               });
         },
-        backgroundColor: const Color.fromARGB(255, 85, 128, 203),
+        backgroundColor: instance.theme[1],
         child: const Icon(Icons.arrow_forward_ios_sharp,color: Color.fromARGB(200, 255, 255, 255),)
       ),
       
