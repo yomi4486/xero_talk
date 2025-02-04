@@ -156,7 +156,6 @@ class _MessageCardState extends State<MessageCard> {
     return spans;
   }
 
-
   final AuthContext instance = AuthContext();
   @override
   Widget build(BuildContext context) {
@@ -206,7 +205,7 @@ class _MessageCardState extends State<MessageCard> {
               }
               if(type == "edit_message"){
                 editWidget(messageId,content["content"]);
-                edited = true;
+                edited = true;                
               }
               final String messageContent = content["content"];
               final int timestamp = content["timestamp"];
@@ -216,15 +215,21 @@ class _MessageCardState extends State<MessageCard> {
                 return Column(children: returnWidget,);
               }
               lastMessageId = messageId; // 最終受信を上書き
-              chatHistory[messageId] = {
-                "author":content["author"],
-                "content":messageContent,
-                "timeStamp":timestamp,
-                "display_time":modifiedDateTime,
-                "edited":edited,
-                "display_name":displayName,
-                "attachments":content["attachments"]
-              };
+              if (type == "edit_message"){
+                chatHistory[messageId]["content"]=messageContent;
+                chatHistory[messageId]["timeStamp"]=timestamp;
+                chatHistory[messageId]["edited"]=edited;
+              }else{
+                chatHistory[messageId] = {
+                  "author":content["author"],
+                  "content":messageContent,
+                  "timeStamp":timestamp,
+                  "display_time":modifiedDateTime,
+                  "edited":edited,
+                  "display_name":displayName,
+                  "attachments":content["attachments"]
+                };
+              }
               returnWidget = []; // IDの衝突を起こすため初期化
               for (var entry in chatHistory.entries){
                 final Widget _chatWidget = Container( // メッセージウィジェットのUI部分
