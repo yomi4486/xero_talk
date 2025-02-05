@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:xero_talk/main.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/setting_item.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -224,6 +225,40 @@ class _SettingPage extends State<SettingPage>{
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                  ),
+                  CenterButton(
+                    name: "ログアウト", 
+                    fontColor: Colors.redAccent,
+                    function: (){
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return SimpleDialog(
+                            title:const Text('ログアウトしますか？',style: TextStyle(fontSize: 16),),
+                            children: <Widget>[
+                              SimpleDialogOption(
+                                child: const Text('はい',style: TextStyle(color: Color.fromARGB(255, 255, 10, 10)),),
+                                onPressed: ()async {
+                                  await instance.logout();
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const MyHomePage()),
+                                    (route) => false,
+                                  ); 
+                                  Navigator.pop(context);
+                                }
+                              ),
+                              SimpleDialogOption(
+                                child: const Text('キャンセル'),
+                                onPressed: (){
+                                  Navigator.pop(context);
+                                }
+                              ),
+                            ],
+                          );
+                        },
+                      );          
+                    }
                   )
                 ] //childlen 画面全体
               )
