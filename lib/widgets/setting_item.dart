@@ -52,7 +52,7 @@ class _TitleBarState extends State<TitleBar> {
     return Container(
       decoration: const BoxDecoration(
         border: Border(// 上の枠線
-          bottom: BorderSide(width: .5, color: Color.fromARGB(255, 195, 195, 195)), 
+          bottom: BorderSide(width: .5, color: Color.fromARGB(255, 195, 195, 195)),
         ),
         color:Color.fromARGB(35, 55, 55, 55)
       ),
@@ -70,5 +70,47 @@ class _TitleBarState extends State<TitleBar> {
         ]
       )
     );
+  }
+}
+
+class CenterButton extends StatefulWidget {
+  CenterButton({Key? key, required this.name, required this.function,this.fontColor = Colors.white}) : super(key: key);
+  final String name;
+  final Function function;
+  final Color fontColor;
+  @override
+  CenterButtonState createState() => CenterButtonState();
+}
+
+class CenterButtonState extends State<CenterButton> {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector( 
+      onTap:(){
+        widget.function();
+      },
+      child:Container(
+      decoration: const BoxDecoration(
+        border: Border(// 上の枠線
+          bottom: BorderSide(width: .5, color: Color.fromARGB(255, 195, 195, 195)),
+          top: BorderSide(width: .5, color: Color.fromARGB(255, 195, 195, 195)),
+        ),
+        color:Color.fromARGB(35, 55, 55, 55)
+      ),
+      padding:const EdgeInsets.only(bottom: 6,top: 6),
+      child:Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            widget.name,
+            style:TextStyle(
+              fontWeight: FontWeight.bold,
+              color: widget.fontColor,
+              fontSize: 16,
+            )
+          ),
+        ]
+      )
+    ));
   }
 }
