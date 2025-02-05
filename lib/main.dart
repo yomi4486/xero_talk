@@ -40,14 +40,13 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 22, 22, 22)),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Xero Talk'),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+  const MyHomePage();
 
   @override
   State<MyHomePage> createState() => _LoginPageState();

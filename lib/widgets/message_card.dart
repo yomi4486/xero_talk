@@ -363,7 +363,7 @@ class _MessageCardState extends State<MessageCard> {
                                           ],
                                         );
                                       },
-                                    );      
+                                    );
                                   }
                                 ),
                                 SimpleDialogOption( // メッセージ削除ボタン
