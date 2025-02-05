@@ -85,4 +85,9 @@ class AuthContext {
       }
     }
   }
+
+  Future logout() async {
+    await channel.close();
+    await FirebaseAuth.instance.signOut();
+  }
 }
