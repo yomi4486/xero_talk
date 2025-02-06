@@ -244,8 +244,7 @@ class _SettingPage extends State<SettingPage>{
                                     context,
                                     MaterialPageRoute(builder: (context) => const MyHomePage()),
                                     (route) => false,
-                                  ); 
-                                  Navigator.pop(context);
+                                  );
                                 }
                               ),
                               SimpleDialogOption(
