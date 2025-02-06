@@ -87,7 +87,12 @@ class AuthContext {
   }
 
   Future logout() async {
-    await channel.close();
-    await FirebaseAuth.instance.signOut();
+    try{
+      await channel.close();
+      await FirebaseAuth.instance.signOut();
+    }catch(_){
+      
+    }
+
   }
 }
