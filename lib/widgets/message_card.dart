@@ -3,41 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
 import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:xero_talk/utils/message_tools.dart';
-import 'dart:typed_data';
+
+import 'package:xero_talk/widgets/create_message_card.dart';
 
 String lastMessageId = "";
-
-Uint8List decodeBase64(String base64String) {
-  return convert.base64Decode(base64String);
-}
-
-class Base64ImageWidget extends StatelessWidget {
-  final List<dynamic>? base64Strings;
-
-  Base64ImageWidget({required this.base64Strings});
-
-  @override
-  Widget build(BuildContext context) {
-    if (base64Strings != null && base64Strings!.isNotEmpty){
-      Uint8List imageBytes = decodeBase64(base64Strings![0]);
-      return Container(
-        padding:const EdgeInsets.only(top:10),
-        width: MediaQuery.of(context).size.width*0.7,
-        child:ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
-          child:Image.memory(imageBytes),
-        )
-      );
-    }else{
-      return Container();
-    }
-
-  }
-}
 
 class MessageCard extends StatefulWidget {
   MessageCard({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo,required this.fieldText,required this.EditMode}) : super(key: key);
@@ -205,7 +176,7 @@ class _MessageCardState extends State<MessageCard> {
               }
               if(type == "edit_message"){
                 editWidget(messageId,content["content"]);
-                edited = true;                
+                edited = true;
               }
               final String messageContent = content["content"];
               final int timestamp = content["timestamp"];
@@ -232,166 +203,17 @@ class _MessageCardState extends State<MessageCard> {
               }
               returnWidget = []; // IDの衝突を起こすため初期化
               for (var entry in chatHistory.entries){
-                final Widget _chatWidget = Container( // メッセージウィジェットのUI部分
-                  margin: const EdgeInsets.only(bottom: 10, top: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(2000000),
-                        child: Image.network(
-                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${entry.value["author"]}",
-                          width: MediaQuery.of(context).size.height * 0.05,
-                        ),
-                      ),
-                      Container(
-                        margin: const EdgeInsets.only(left: 10),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children:[
-                                Text( // 名前
-                                  entry.value["display_name"],
-                                  style: TextStyle(
-                                    color: textColor[2],
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                  textAlign: TextAlign.left,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 7),
-                                  child:Text( // 時刻
-                                    entry.value["display_time"],
-                                    style: TextStyle(
-                                      color: textColor[0],
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 10,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  )
-                                )
-                              ]
-                            ),
-                            Column(
-                              children:[
-                                SizedBox(
-                                  width: MediaQuery.of(context).size.width*0.7,
-                                  child:RichText(
-                                    text: TextSpan(
-                                      children: getTextSpans(entry.value["content"],entry.value["edited"],textColor),
-                                      style:TextStyle(
-                                        color: textColor[1],
-                                        fontSize: 16.0
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Base64ImageWidget(base64Strings: entry.value["attachments"])
-                              ]
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-                
-                final chatWidget = GestureDetector( // メッセージのウィジェットのIDとタップイベントハンドラーを担当
-                  key:ValueKey(entry.key),
-                  onLongPress: (){
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(20.0),
-                              topRight: Radius.circular(20.0),
-                            ),
-                          ),
-                          height: MediaQuery.of(context).size.height*0.4,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top:20),
-                            child:ListView(
-                              children: [
-                                SimpleDialogOption( // メッセージ削除ボタン
-                                  padding: const EdgeInsets.all(15),
-                                  child: const Row(
-                                    children:[
-                                      Icon(Icons.delete),
-                                      Padding(
-                                        padding: EdgeInsets.only(left:5),
-                                        child: Text('メッセージを削除',style: TextStyle(fontSize: 16))
-                                      )
-                                    ]
-                                  ),
-                                  onPressed: ()async {
-                                    Navigator.pop(context);
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return SimpleDialog(
-                                          title:const Text('メッセージを削除',style: TextStyle(fontSize: 16),),
-                                          children: <Widget>[
-                                            SizedBox(
-                                              width: MediaQuery.of(context).size.width *0.8,
-                                              child:Padding(
-                                                padding:const EdgeInsets.all(10),
-                                                child:_chatWidget,
-                                              ),
-                                            ),
-                                            SimpleDialogOption(
-                                              child: const Text('削除',style: TextStyle(color: Color.fromARGB(255, 255, 10, 10)),),
-                                              onPressed: ()async {
-                                                await deleteMessage(entry.key, widget.channelInfo["id"]);
-                                                Navigator.pop(context);
-                                              }
-                                            ),
-                                            SimpleDialogOption(
-                                              child: const Text('キャンセル'),
-                                              onPressed: ()async{
-                                                Navigator.pop(context);
-                                              }
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  }
-                                ),
-                                SimpleDialogOption( // メッセージ削除ボタン
-                                  padding: const EdgeInsets.all(15),
-                                  child: const Row(
-                                    children:[
-                                      Icon(Icons.edit),
-                                      Padding(
-                                        padding: EdgeInsets.only(left:5),
-                                        child: Text('編集',style: TextStyle(fontSize: 16))
-                                      )
-                                    ]
-                                  ),
-                                  onPressed: ()async {
-                                    Navigator.pop(context);
-                                    widget.focusNode.requestFocus();
-                                    widget.fieldText.text = entry.value["content"];
-                                    widget.EditMode(entry.key,true);
-                                  }
-                                ),
-                              ],
-                            )
-                          )
-                        );
-                      },
-                    );
-                  },
-                  child: _chatWidget
+                final Widget chatWidget = getMessageCard(
+                  context, 
+                  widget, 
+                  textColor, 
+                  entry.value["display_name"], 
+                  entry.value["display_time"], 
+                  entry.value["author"], 
+                  entry.value["content"], 
+                  entry.value["edited"], 
+                  entry.value["attachments"], 
+                  entry.key
                 );
                 addWidget(chatWidget,_currentPosition);
               }
