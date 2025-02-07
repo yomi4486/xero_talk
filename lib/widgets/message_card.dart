@@ -190,6 +190,22 @@ class _MessageCardState extends State<MessageCard> {
                 chatHistory[messageId]["content"]=messageContent;
                 chatHistory[messageId]["timeStamp"]=timestamp;
                 chatHistory[messageId]["edited"]=edited;
+                returnWidget = []; // IDの衝突を起こすため初期化
+                for (var entry in chatHistory.entries){
+                  final Widget chatWidget = getMessageCard(
+                    context, 
+                    widget, 
+                    textColor, 
+                    entry.value["display_name"], 
+                    entry.value["display_time"], 
+                    entry.value["author"], 
+                    entry.value["content"], 
+                    entry.value["edited"], 
+                    entry.value["attachments"], 
+                    entry.key
+                  );
+                  addWidget(chatWidget,_currentPosition);
+                }
               }else{
                 chatHistory[messageId] = {
                   "author":content["author"],
@@ -200,23 +216,21 @@ class _MessageCardState extends State<MessageCard> {
                   "display_name":displayName,
                   "attachments":content["attachments"]
                 };
-              }
-              returnWidget = []; // IDの衝突を起こすため初期化
-              for (var entry in chatHistory.entries){
                 final Widget chatWidget = getMessageCard(
                   context, 
                   widget, 
                   textColor, 
-                  entry.value["display_name"], 
-                  entry.value["display_time"], 
-                  entry.value["author"], 
-                  entry.value["content"], 
-                  entry.value["edited"], 
-                  entry.value["attachments"], 
-                  entry.key
+                  displayName, 
+                  modifiedDateTime, 
+                  content["author"], 
+                  messageContent, 
+                  edited, 
+                  content["attachments"], 
+                  messageId
                 );
                 addWidget(chatWidget,_currentPosition);
               }
+
             }
             return Column(children: returnWidget);
           },
