@@ -63,6 +63,8 @@ class _chat extends State<chat>{
   
   @override
   Widget build(BuildContext context) {
+    final Color backgroundColor = lightenColor(instance.theme[0],.2);
+    final List<Color> textColor = instance.getTextColor(backgroundColor);
     final String displayName = channelInfo["display_name"];
     return Scaffold(
       bottomSheet: BottomAppBar(
@@ -222,8 +224,6 @@ class _chat extends State<chat>{
             ),
             GestureDetector(
               onTap:(){
-                final Color backgroundColor = lightenColor(instance.theme[0],.2);
-                final List<Color> textColor = instance.getTextColor(backgroundColor);
                 showModalBottomSheet(
                   context: context,
                   builder: (BuildContext context) {
