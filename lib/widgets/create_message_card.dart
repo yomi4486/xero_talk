@@ -32,7 +32,6 @@ class Base64ImageWidget extends StatelessWidget {
     }else{
       return Container();
     }
-
   }
 }
 
