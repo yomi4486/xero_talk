@@ -262,7 +262,6 @@ class _AccountPage extends State<AccountPage>{
                                               color: Color.fromARGB(255, 255, 255, 255),
                                               fontSize: 16,
                                             )
-                                            
                                           ),
                                           onChanged:(text){
                                             displayName = text;
@@ -271,7 +270,8 @@ class _AccountPage extends State<AccountPage>{
                                                 _showFab = true;
                                               });
                                             }
-                                          }
+                                          },
+                                          onTapOutside:(f){FocusScope.of(context).unfocus();}
                                         ),
                                       ]
                                     )
@@ -318,6 +318,7 @@ class _AccountPage extends State<AccountPage>{
                               });
                             }    
                           },
+                          onTapOutside:(f){FocusScope.of(context).unfocus();}
                         ),
                       )
                     )
