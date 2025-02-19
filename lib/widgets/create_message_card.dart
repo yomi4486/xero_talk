@@ -7,29 +7,58 @@ import 'package:xero_talk/utils/message_tools.dart';
 import 'package:xero_talk/widgets/message_card.dart';
 import 'dart:typed_data';
 import 'dart:convert' as convert;
+import 'dart:ui' as ui;
 
 Uint8List decodeBase64(String base64String) {
   return convert.base64Decode(base64String);
 }
 
-class Base64ImageWidget extends StatelessWidget {
+class Base64ImageWidget extends StatefulWidget {
   final List<dynamic>? base64Strings;
 
   Base64ImageWidget({required this.base64Strings});
 
   @override
+  _Base64ImageWidgetState createState() => _Base64ImageWidgetState();
+}
+
+class _Base64ImageWidgetState extends State<Base64ImageWidget> {
+  double? imageHeight;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.base64Strings != null && widget.base64Strings!.isNotEmpty) {
+      decodeImageSize(widget.base64Strings![0]);
+    }
+  }
+
+  Future<void> decodeImageSize(String base64String) async {
+    Uint8List imageBytes = decodeBase64(base64String);
+    ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
+    ui.FrameInfo frameInfo = await codec.getNextFrame();
+    setState(() {
+      imageHeight = frameInfo.image.height.toDouble();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (base64Strings != null && base64Strings!.isNotEmpty){
-      Uint8List imageBytes = decodeBase64(base64Strings![0]);
+    if (widget.base64Strings != null && widget.base64Strings!.isNotEmpty) {
+      Uint8List imageBytes = decodeBase64(widget.base64Strings![0]);
       return Container(
-        padding:const EdgeInsets.only(top:10),
-        width: MediaQuery.of(context).size.width*0.7,
-        child:ClipRRect(
+        padding: const EdgeInsets.only(top: 10),
+        width: MediaQuery.of(context).size.width * 0.7,
+        child: ClipRRect(
           borderRadius: BorderRadius.circular(10.0),
-          child:Image.memory(imageBytes),
-        )
+          child: Image.memory(
+            imageBytes,
+            height: imageHeight != null && imageHeight! > MediaQuery.of(context).size.height*0.2 ? MediaQuery.of(context).size.height*0.3 : null,
+            fit: BoxFit.cover,
+          ),
+        ),
       );
-    }else{
+    } else {
       return Container();
     }
   }
