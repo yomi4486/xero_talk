@@ -149,7 +149,7 @@ Widget getMessageCard(
                 children:[
                   SizedBox(
                     width: MediaQuery.of(context).size.width*0.7,
-                    child:RichText(
+                    child:content.isNotEmpty? RichText(
                       text: TextSpan(
                         children: getTextSpans(content,edited,textColor),
                         style:TextStyle(
@@ -157,7 +157,9 @@ Widget getMessageCard(
                           fontSize: 16.0
                         ),
                       ),
-                    ),
+                    )
+                    :
+                    Container(),
                   ),
                   Base64ImageWidget(base64Strings: attachments)
                 ]
