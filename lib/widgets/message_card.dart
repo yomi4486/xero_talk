@@ -230,7 +230,6 @@ class _MessageCardState extends State<MessageCard> {
                 );
                 addWidget(chatWidget,_currentPosition);
               }
-
             }
             return Column(children: returnWidget);
           },
