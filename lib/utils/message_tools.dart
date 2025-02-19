@@ -8,7 +8,7 @@ final AuthContext instance = AuthContext();
 /// メッセージの送信を行います
 void sendMessage(String? text,String channelId,{List<String>imageList=const []}) async {
   /// instanceで有効になっているソケット通信に対してメッセージを送信する
-  if (text!.isNotEmpty) {
+  if (text!.isNotEmpty||imageList.isNotEmpty) {
     final sendBody = {"type": "send_message", "content": text, "channel": channelId,"attachments":imageList};
     final String data = convert.json.encode(sendBody);
     if(instance.channel.readyState == 3){ // WebSocketが接続されていない場合
