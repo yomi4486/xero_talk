@@ -11,6 +11,7 @@ import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
+
 class AccountPage extends StatefulWidget {
   AccountPage();
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
@@ -67,7 +68,7 @@ class _AccountPage extends State<AccountPage>{
             } else if (snapshot.hasError) {
               displayName = "";
             } else if (snapshot.hasData) { // successful
-              displayName = (snapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No description";
+              displayName = (snapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "-";
               description = (snapshot.data?.data() as Map<String, dynamic>)["description"] ?? "";
             } else {
               displayName = "";
@@ -201,21 +202,20 @@ class _AccountPage extends State<AccountPage>{
                                   children: [
                                     ClipRRect( // アイコン表示（角丸）
                                       borderRadius: BorderRadius.circular(2000000),
-                                        child:Image.network(
-                                          "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${profile?['sub']}&t=${nowDt}",
-                                          width: MediaQuery.of(context).size.width *0.2,
-                                          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                            if (loadingProgress == null) {
-                                              return child; 
-                                            } else {
-                                              return Image.asset(
-                                                'assets/images/default_user_icon.png',
-                                                width: MediaQuery.of(context).size.width *0.2,
-                                              );
-                                              
-                                            } 
-                                          },
-                                        ),
+                                      child:Image.network(
+                                        "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${profile?['sub']}&t=${nowDt}",
+                                        width: MediaQuery.of(context).size.width *0.2,
+                                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          } else {
+                                            return Image.asset(
+                                              'assets/images/default_user_icon.png',
+                                              width: MediaQuery.of(context).size.width *0.2,
+                                            );
+                                          }
+                                        },
+                                      ),
                                     ),
                                     ElevatedButton.icon( // アイコン変更ボタン
                                       style: ElevatedButton.styleFrom(
@@ -321,7 +321,34 @@ class _AccountPage extends State<AccountPage>{
                           onTapOutside:(f){FocusScope.of(context).unfocus();}
                         ),
                       )
-                    )
+                    ),
+                    SizedBox(
+                      child:Container(
+                        margin: const EdgeInsets.all(30),
+                        child: GestureDetector(
+                          child:Container(
+                            decoration: const BoxDecoration(
+                              color:Color.fromARGB(16, 255, 255, 255,),
+                              borderRadius: BorderRadius.all(Radius.circular(10))
+                            ),
+                            padding: const EdgeInsets.only(left:14,right: 14),
+                            child:Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "フレンド",
+                                  style:TextStyle(
+                                    color:Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  )
+                                ),
+                                IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_forward))
+                              ],
+                            )
+                          )
+                        )
+                      )
+                    ),
                   ] //childlen 画面全体
                 )
               ),
