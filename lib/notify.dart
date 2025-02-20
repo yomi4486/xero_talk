@@ -140,11 +140,12 @@ class NotifyPage extends StatelessWidget{
                       ),
                     ] //childlen 画面全体
                   )
-              ),
-            ]
-          )
-        ],
+                ),
+              ]
+            )
+          ],
+        )
       )
-    ));
+    );
   }
 }

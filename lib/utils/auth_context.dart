@@ -34,6 +34,7 @@ class AuthContext {
   
   /// セッションの復元を行うための関数です
   Future restoreConnection() async {
+    await channel.close();
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     channel = await WebSocket.connect(
       'wss://${dotenv.env['BASE_URL']}:8092/v1',
@@ -86,13 +87,18 @@ class AuthContext {
     }
   }
 
+  Future checkConnection() async {
+    Timer.periodic(const Duration(seconds: 5), (timer) async {
+      if (channel.readyState != 1 || channel.closeCode != null) {
+        await restoreConnection();
+      }
+    });
+  }
+
   Future logout() async {
     try{
       await channel.close();
       await FirebaseAuth.instance.signOut();
-    }catch(_){
-      
-    }
-
+    }catch(_){}
   }
 }
