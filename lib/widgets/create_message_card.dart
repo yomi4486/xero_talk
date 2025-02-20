@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:xero_talk/utils/message_tools.dart';
 
-import 'package:xero_talk/widgets/message_card.dart';
+import 'package:xero_talk/widgets/message_screen.dart';
 import 'dart:typed_data';
 import 'dart:convert' as convert;
 import 'dart:ui' as ui;
@@ -118,7 +118,7 @@ List<TextSpan> getTextSpans(String text,bool edited,List<Color>textColor) {
 
 Widget getMessageCard(
   BuildContext context, 
-  MessageCard widget,
+  MessageScreen widget,
   List<Color> textColor,
   String displayName,
   String displayTime,

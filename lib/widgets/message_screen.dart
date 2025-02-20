@@ -10,18 +10,18 @@ import 'package:xero_talk/widgets/create_message_card.dart';
 
 String lastMessageId = "";
 
-class MessageCard extends StatefulWidget {
-  MessageCard({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo,required this.fieldText,required this.EditMode}) : super(key: key);
+class MessageScreen extends StatefulWidget {
+  MessageScreen({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo,required this.fieldText,required this.EditMode}) : super(key: key);
   final FocusNode focusNode; /// チャット入力欄のフォーカスノード
   final ScrollController scrollController;
   final Map channelInfo;
   final TextEditingController fieldText;
   final Function(String,bool) EditMode;
   @override
-  _MessageCardState createState() => _MessageCardState();
+  _MessageScreenState createState() => _MessageScreenState();
 }
 
-class _MessageCardState extends State<MessageCard> {
+class _MessageScreenState extends State<MessageScreen> {
   List<Widget> returnWidget = [];
   Map chatHistory = {};
   
