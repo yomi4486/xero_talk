@@ -6,6 +6,8 @@
 ## 使用技術
 <img src="https://go-skill-icons.vercel.app/api/icons?i=flutter,dart,firebase,apple" />
 
+## その他メモ
+
 <details>
   <summary>Info.plistについて</summary>
 
