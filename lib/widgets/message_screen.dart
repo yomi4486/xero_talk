@@ -5,7 +5,7 @@ import 'dart:convert' as convert;
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import 'package:provider/provider.dart';
 import 'package:xero_talk/widgets/create_message_card.dart';
 
 String lastMessageId = "";
@@ -127,9 +127,9 @@ class _MessageScreenState extends State<MessageScreen> {
     return spans;
   }
 
-  final AuthContext instance = AuthContext();
   @override
   Widget build(BuildContext context) {
+    final instance = Provider.of<AuthContext>(context);
     final Color backgroundColor = Color.lerp(instance.theme[0], instance.theme[1], .5)!;
     final List<Color> textColor = instance.getTextColor(backgroundColor);
     return StreamBuilder(
