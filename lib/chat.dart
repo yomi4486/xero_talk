@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 
-import 'package:xero_talk/widgets/message_card.dart';
+import 'package:xero_talk/widgets/message_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/message_tools.dart';
 
@@ -476,7 +476,7 @@ class _chat extends State<chat>{
                                     child:Column(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children:[
-                                        MessageCard(
+                                        MessageScreen(
                                           focusNode: focusNode,
                                           scrollController: _scrollController,
                                           channelInfo: channelInfo,
