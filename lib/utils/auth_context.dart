@@ -6,9 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:flutter/material.dart';
 /// アプリ全体の状態管理を担うクラス
-class AuthContext {
+class AuthContext extends ChangeNotifier {
   // プライベートコンストラクタ
   AuthContext._privateConstructor();
 
@@ -34,6 +34,7 @@ class AuthContext {
   
   /// セッションの復元を行うための関数です
   Future restoreConnection() async {
+    await channel.close();
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     channel = await WebSocket.connect(
       'wss://${dotenv.env['BASE_URL']}:8092/v1',
@@ -42,6 +43,7 @@ class AuthContext {
       }
     );
     bloadCast = channel.asBroadcastStream();
+    notifyListeners();
   }
 
   /// HEXカラーコードをColorオブジェクトに変換します
@@ -86,13 +88,18 @@ class AuthContext {
     }
   }
 
+  Future checkConnection() async {
+    Timer.periodic(const Duration(seconds: 5), (timer) async {
+      if (channel.readyState != 1 || channel.closeCode != null) {
+        await restoreConnection();
+      }
+    });
+  }
+
   Future logout() async {
     try{
       await channel.close();
       await FirebaseAuth.instance.signOut();
-    }catch(_){
-      
-    }
-
+    }catch(_){}
   }
 }
