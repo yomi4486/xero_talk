@@ -91,6 +91,7 @@ class _LoginPageState extends State<MyHomePage> {
       authContext.googleDriveApi = googleDriveApi;
       authContext.userCredential = userCredential;
       await authContext.getTheme();
+      await authContext.checkConnection(); // 定期的な接続チェックを行う
 
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       String deviceData;
