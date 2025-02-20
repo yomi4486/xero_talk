@@ -6,9 +6,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:flutter/material.dart';
 /// アプリ全体の状態管理を担うクラス
-class AuthContext {
+class AuthContext extends ChangeNotifier {
   // プライベートコンストラクタ
   AuthContext._privateConstructor();
 
@@ -43,6 +43,7 @@ class AuthContext {
       }
     );
     bloadCast = channel.asBroadcastStream();
+    notifyListeners();
   }
 
   /// HEXカラーコードをColorオブジェクトに変換します

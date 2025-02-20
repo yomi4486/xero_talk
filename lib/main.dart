@@ -11,6 +11,7 @@ import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sig
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:provider/provider.dart';
 
 late drive.DriveApi googleDriveApi;
 
@@ -25,7 +26,12 @@ void main() async {
   await Firebase.initializeApp();
   await dotenv.load();
   HttpOverrides.global = MyHttpOverrides();
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AuthContext(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
