@@ -1,9 +1,10 @@
-# xero_talk
-
-ちょっとセキュアなチャットツール
+# xero_talk - ちょっとセキュアなチャットツール
 
 ブログ記事
 - [ちょっとセキュアなチャットツール Part1](https://xenfo.org/blog/life/2024-07-24/)
+
+## 使用技術
+<img src="https://go-skill-icons.vercel.app/api/icons?i=flutter,dart,firebase,apple" />
 
 <details>
   <summary>Info.plistについて</summary>
