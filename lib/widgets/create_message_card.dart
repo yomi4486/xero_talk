@@ -126,7 +126,8 @@ Widget getMessageCard(
   String content,
   bool edited,
   List<dynamic> attachments,
-  String messageId
+  String messageId,
+  {Function(Uint8List,bool)? showImage}
 ){
   final Widget _chatWidget = Container( // メッセージウィジェットのUI部分
     margin: const EdgeInsets.only(bottom: 10, top: 10),
@@ -190,7 +191,12 @@ Widget getMessageCard(
                     :
                     Container(),
                   ),
-                  Base64ImageWidget(base64Strings: attachments)
+                  GestureDetector(
+                    onTap:(){
+                      showImage!(decodeBase64(attachments[0]),true);
+                    },
+                    child:Base64ImageWidget(base64Strings: attachments)
+                  )
                 ]
               ),
             ],
