@@ -36,6 +36,9 @@ class AuthContext extends ChangeNotifier {
   Future restoreConnection() async {
     await channel.close();
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    if(token == null){
+      throw "token is undefined.";
+    }
     channel = await WebSocket.connect(
       'wss://${dotenv.env['BASE_URL']}:8092/v1',
       headers: {
@@ -91,7 +94,12 @@ class AuthContext extends ChangeNotifier {
   Future checkConnection() async {
     Timer.periodic(const Duration(seconds: 5), (timer) async {
       if (channel.readyState != 1 || channel.closeCode != null) {
-        await restoreConnection();
+        try{
+          await restoreConnection();
+        }catch(_){
+          return;
+        }
+
       }
     });
   }
