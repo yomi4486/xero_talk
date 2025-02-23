@@ -26,7 +26,7 @@ class _chat extends State<chat>{
   final ScrollController _scrollController = ScrollController();
   List<String> images = [];
   bool showImage=false;
-  Uint8List? image;
+  late Uint8List image;
 
   @override
   void dispose() {
@@ -64,10 +64,10 @@ class _chat extends State<chat>{
     });
   }
 
-  void visibleImage(Uint8List image,bool mode){
+  void visibleImage(Uint8List uintimage,bool mode){
     setState((){
       showImage = mode;
-      image = image;
+      image = uintimage;
     });
   }
   
@@ -513,7 +513,7 @@ class _chat extends State<chat>{
             )
           )
         ),
-        showImage
+        showImage && image.isNotEmpty
         ? Positioned.fill(
           child: GestureDetector( 
             onTap:(){
@@ -522,10 +522,7 @@ class _chat extends State<chat>{
             child:Container(
             color: Colors.black.withOpacity(0.5), // 半透明のオーバーレイ
             child: Center(
-              child: Text(
-                '最前面のウィジェット',
-                style: TextStyle(color: Colors.white, fontSize: 32),
-              ),
+              child: Image.memory(image)
             ),
           ),)
         ):Container(),
