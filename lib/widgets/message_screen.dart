@@ -7,15 +7,16 @@ import 'package:xero_talk/utils/auth_context.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/widgets/create_message_card.dart';
-
+import 'dart:typed_data';
 String lastMessageId = "";
 
 class MessageScreen extends StatefulWidget {
-  MessageScreen({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo,required this.fieldText,required this.EditMode}) : super(key: key);
+  MessageScreen({Key? key, required this.focusNode, required this.scrollController,required this.channelInfo,required this.fieldText,required this.EditMode,required this.ImageControler}) : super(key: key);
   final FocusNode focusNode; /// チャット入力欄のフォーカスノード
   final ScrollController scrollController;
   final Map channelInfo;
   final TextEditingController fieldText;
+  final Function(Uint8List,bool) ImageControler;
   final Function(String,bool) EditMode;
   @override
   _MessageScreenState createState() => _MessageScreenState();
@@ -24,7 +25,6 @@ class MessageScreen extends StatefulWidget {
 class _MessageScreenState extends State<MessageScreen> {
   List<Widget> returnWidget = [];
   Map chatHistory = {};
-  
   void addWidget(Widget newWidget, double currentPosition) {
     returnWidget.add(newWidget); 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -202,7 +202,8 @@ class _MessageScreenState extends State<MessageScreen> {
                     entry.value["content"], 
                     entry.value["edited"], 
                     entry.value["attachments"], 
-                    entry.key
+                    entry.key,
+                    showImage:widget.ImageControler
                   );
                   addWidget(chatWidget,_currentPosition);
                 }
@@ -226,7 +227,8 @@ class _MessageScreenState extends State<MessageScreen> {
                   messageContent, 
                   edited, 
                   content["attachments"], 
-                  messageId
+                  messageId,
+                  showImage: widget.ImageControler
                 );
                 addWidget(chatWidget,_currentPosition);
               }
