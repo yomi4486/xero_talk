@@ -20,7 +20,7 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
           ClipRRect( // アイコン表示（角丸）
             borderRadius: BorderRadius.circular(2000000),
               child:Image.network(
-                "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${widget.userId}",
+                "https://${dotenv.env['BASE_URL']}/geticon?user_id=${widget.userId}",
                 width: MediaQuery.of(context).size.height *0.05,
                 loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                   if (loadingProgress == null) {
