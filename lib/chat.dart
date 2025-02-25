@@ -263,7 +263,7 @@ class _chat extends State<chat>{
                                         child:ClipRRect( // アイコン表示（角丸）
                                           borderRadius: BorderRadius.circular(200),
                                           child:Image.network(
-                                            "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["id"]}",
+                                            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${channelInfo["id"]}",
                                             fit:BoxFit.contain,
                                             loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                                               if (loadingProgress == null) {
@@ -365,7 +365,7 @@ class _chat extends State<chat>{
                               child:ClipRRect( // アイコン表示（角丸）
                                 borderRadius: BorderRadius.circular(200),
                                 child:Image.network(
-                                  "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${channelInfo["id"]}",
+                                  "https://${dotenv.env['BASE_URL']}/geticon?user_id=${channelInfo["id"]}",
                                   fit:BoxFit.contain,
                                   loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                                     if (loadingProgress == null) {
