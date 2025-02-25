@@ -62,7 +62,7 @@ class _LoginPageState extends State<MyHomePage> {
   Future<WebSocket> getSession() async{
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     final WebSocket channel = await WebSocket.connect(
-      'wss://${dotenv.env['BASE_URL']}:8092/v1',
+      'wss://${dotenv.env['BASE_URL']}/v1',
       headers: {
         'token':token
       }

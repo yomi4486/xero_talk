@@ -138,7 +138,7 @@ Widget getMessageCard(
         ClipRRect(
           borderRadius: BorderRadius.circular(2000000),
           child: Image.network(
-            "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${author}",
+            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${author}",
             width: MediaQuery.of(context).size.height * 0.05,
           ),
         ),
