@@ -40,7 +40,7 @@ class AuthContext extends ChangeNotifier {
       throw "token is undefined.";
     }
     channel = await WebSocket.connect(
-      'wss://${dotenv.env['BASE_URL']}:8092/v1',
+      'wss://${dotenv.env['BASE_URL']}/v1',
       headers: {
         'token':token
       }
