@@ -360,6 +360,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  go_router:
+    dependency: transitive
+    description:
+      name: go_router
+      sha256: "04539267a740931c6d4479a10d466717ca5901c6fdfd3fcda09391bbb8ebd651"
+      url: "https://pub.dev"
+    source: hosted
+    version: "14.8.0"
   google_identity_services_web:
     dependency: transitive
     description:
@@ -568,6 +576,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
+  logging:
+    dependency: transitive
+    description:
+      name: logging
+      sha256: c8245ada5f1717ed44271ed1c26b8ce85ca3228fd2ffdb75468ab01979309d61
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
   matcher:
     dependency: transitive
     description:
@@ -608,6 +624,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  newrelic_mobile:
+    dependency: "direct main"
+    description:
+      name: newrelic_mobile
+      sha256: "296731eb3ef010cdaf1459395ffcb8745ae6ee02fe27ee3c0eadec094edfedcf"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.8"
   path:
     dependency: transitive
     description:
