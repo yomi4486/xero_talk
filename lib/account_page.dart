@@ -11,7 +11,6 @@ import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
-
 class AccountPage extends StatefulWidget {
   AccountPage();
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
@@ -330,18 +329,37 @@ class _AccountPage extends State<AccountPage>{
                           builder: (BuildContext context) {
                             return Container(
                               decoration: const BoxDecoration(
-                                color: Colors.white70,
                                 borderRadius: BorderRadius.only(
                                   topLeft: Radius.circular(20.0),
                                   topRight: Radius.circular(20.0),
                                 ),
                               ),
-                              height: MediaQuery.of(context).size.height*0.8,
+                              height: MediaQuery.of(context).size.height*0.9,
                               child: Padding(
-                                padding: const EdgeInsets.only(top:20),
-                                child:ListView(
-                                  children: [
-                                  ],
+                                padding: const EdgeInsets.only(top:10),
+                                child:Column(
+                                  children:[
+                                    Row(
+                                      mainAxisAlignment:MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 5),
+                                          child:IconButton(
+                                            onPressed: (){
+                                              Navigator.pop(context);
+                                            }, 
+                                            icon: const Icon(Icons.close)
+                                          )
+                                        ),
+                                        const Padding(
+                                          padding: EdgeInsets.only(right:20),
+                                          child:Text(
+                                          "フレンドを追加"
+                                          )
+                                        )
+                                      ],
+                                    ),
+                                  ]
                                 )
                               )
                             );
