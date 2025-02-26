@@ -322,7 +322,32 @@ class _AccountPage extends State<AccountPage>{
                         ),
                       )
                     ),
-                    SizedBox(
+                    GestureDetector(
+                      onTap: (){
+                        showModalBottomSheet(
+                          scrollControlDisabledMaxHeightRatio:1,
+                          context: context,
+                          builder: (BuildContext context) {
+                            return Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.white70,
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(20.0),
+                                  topRight: Radius.circular(20.0),
+                                ),
+                              ),
+                              height: MediaQuery.of(context).size.height*0.8,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top:20),
+                                child:ListView(
+                                  children: [
+                                  ],
+                                )
+                              )
+                            );
+                          },
+                        );
+                      },
                       child:Container(
                         margin: const EdgeInsets.all(30),
                         child: GestureDetector(

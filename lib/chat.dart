@@ -333,8 +333,7 @@ class _chat extends State<chat>{
                                                   channelInfo["description"],
                                                   style: TextStyle(
                                                     fontSize: 16,
-                                                    color:textColor[0],
-                                                    overflow: TextOverflow.ellipsis,
+                                                    color: textColor[0],
                                                   )
                                                 )
                                               )
