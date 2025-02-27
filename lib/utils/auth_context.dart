@@ -64,12 +64,12 @@ class AuthContext extends ChangeNotifier {
     double brightness = (backgroundColor.red * 0.299 + backgroundColor.green * 0.587 + backgroundColor.blue * 0.114) /255;
     List<Color> textColor = brightness > 0.5 ? [
       const Color.fromARGB(198, 79, 79, 79),
-      const Color.fromARGB(200, 33, 33, 33),
-      const Color.fromARGB(200, 55, 55, 55),
+      const Color.fromARGB(255, 33, 33, 33), // メッセージコンテンツ等の重要な内容
+      const Color.fromARGB(255, 55, 55, 55), // 名前など
     ] : [
       const Color.fromARGB(198, 176, 176, 176),
-      const Color.fromARGB(200, 222, 222, 222),
-      const Color.fromARGB(200, 200, 200, 200),
+      const Color.fromARGB(255, 222, 222, 222), // メッセージコンテンツ等の重要な内容
+      const Color.fromARGB(255, 200, 200, 200), // 名前など
     ];
     return textColor;
   }
