@@ -2,6 +2,10 @@ import 'package:xero_talk/utils/auth_context.dart';
 import 'dart:convert' as convert;
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:gallery_saver_plus/gallery_saver.dart';
+import 'package:path_provider/path_provider.dart';
 
 final AuthContext instance = AuthContext();
 
@@ -71,4 +75,26 @@ Future<String?> pickImage() async {
     return base64Data;
   }
   return null;
+}
+
+Future<void> saveImageToGallery(String base64String) async {
+  try {
+    // Base64文字列をデコードしてバイナリデータに変換
+    final decodedBytes = base64Decode(base64String);
+
+    // 一時ディレクトリを取得
+    final tempDir = await getTemporaryDirectory();
+    final filePath = '${tempDir.path}/image.png';
+
+    // ファイルにデコードしたデータを書き込む
+    final file = File(filePath);
+    await file.writeAsBytes(decodedBytes);
+
+    // ギャラリーに保存
+    await GallerySaver.saveImage(file.path);
+
+    print('画像をギャラリーに保存しました: $filePath');
+  } catch (e) {
+    print('エラー: $e');
+  }
 }

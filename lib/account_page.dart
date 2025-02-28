@@ -24,6 +24,12 @@ class _AccountPage extends State<AccountPage>{
   var description = "";
   var displayName = "";
   final AuthContext instance = AuthContext();
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   final nowDt = DateTime.now().millisecondsSinceEpoch;
 
   Future upload(String token) async {
@@ -50,6 +56,7 @@ class _AccountPage extends State<AccountPage>{
     }
     return;
   }
+
   @override
   Widget build (BuildContext context) {
     var profile = instance.userCredential.additionalUserInfo?.profile;
@@ -202,7 +209,7 @@ class _AccountPage extends State<AccountPage>{
                                     ClipRRect( // アイコン表示（角丸）
                                       borderRadius: BorderRadius.circular(2000000),
                                       child:Image.network(
-                                        "https://${dotenv.env['BASE_URL']}/geticon?user_id=${profile?['sub']}&t=${nowDt}",
+                                        "https://${dotenv.env['BASE_URL']}/geticon?user_id=${profile?['sub']}&t=$nowDt",
                                         width: MediaQuery.of(context).size.width *0.2,
                                         loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                                           if (loadingProgress == null) {
