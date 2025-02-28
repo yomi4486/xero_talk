@@ -19,6 +19,8 @@
 <string>Access to pick a photo</string>
 <key>NSPhotoLibraryUsageDescription</key>
 <string>Access to pick a photo</string>
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>Access to save a photo</string>
 <key>LSApplicationQueriesSchemes</key>
 <array>
     <string>http</string>
