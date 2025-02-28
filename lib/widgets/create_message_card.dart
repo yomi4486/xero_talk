@@ -24,6 +24,7 @@ class Base64ImageWidget extends StatefulWidget {
 
 class _Base64ImageWidgetState extends State<Base64ImageWidget> {
   double? imageHeight;
+  double? imageWidth;
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _Base64ImageWidgetState extends State<Base64ImageWidget> {
     ui.FrameInfo frameInfo = await codec.getNextFrame();
     setState(() {
       imageHeight = frameInfo.image.height.toDouble();
+      imageWidth = frameInfo.image.width.toDouble();
     });
   }
 
@@ -53,7 +55,7 @@ class _Base64ImageWidgetState extends State<Base64ImageWidget> {
           borderRadius: BorderRadius.circular(10.0),
           child: Image.memory(
             imageBytes,
-            height: imageHeight != null && imageHeight! > MediaQuery.of(context).size.height*0.2 ? MediaQuery.of(context).size.height*0.3 : null,
+            height: imageHeight != null && imageWidth != null && imageHeight! / imageWidth! > 2 ? 400 : null,
             fit: BoxFit.cover,
           ),
         ),
