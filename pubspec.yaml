@@ -60,6 +60,8 @@ dependencies:
   provider: ^6.1.2
   photo_view: ^0.15.0
   newrelic_mobile: ^1.1.8
+  image: ^4.5.3
+  gallery_saver_plus: ^3.2.4
 
 dev_dependencies:
   flutter_test:
