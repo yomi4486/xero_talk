@@ -192,10 +192,10 @@ Widget getMessageCard(
                     Container(),
                   ),
                   GestureDetector(
+                    child:Base64ImageWidget(base64Strings: attachments),
                     onTap:(){
                       showImage!(decodeBase64(attachments[0]),true);
                     },
-                    child:Base64ImageWidget(base64Strings: attachments)
                   )
                 ]
               ),
@@ -288,6 +288,24 @@ Widget getMessageCard(
                       widget.EditMode(messageId,true);
                     }
                   ),
+                  attachments.isNotEmpty ? SimpleDialogOption(
+                    padding: const EdgeInsets.all(15),
+                    child: const Row(
+                      children:[
+                        Icon(Icons.download),
+                        Padding(
+                          padding: EdgeInsets.only(left:5),
+                          child: Text('画像を保存',style: TextStyle(fontSize: 16))
+                        )
+                      ]
+                    ),
+                    onPressed: ()async {
+                      await saveImageToGallery(attachments[0]);
+                      Navigator.pop(context);
+                    }
+                  )
+                  :
+                  Container(),
                 ],
               )
             )
