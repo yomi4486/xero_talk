@@ -3,11 +3,13 @@ import 'dart:convert' as convert;
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'package:uuid/uuid.dart';
 
 import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 
 final AuthContext instance = AuthContext();
+const Uuid uuid = Uuid();
 
 /// メッセージの送信を行います
 void sendMessage(String? text,String channelId,{List<String>imageList=const []}) async {
@@ -84,7 +86,7 @@ Future<void> saveImageToGallery(String base64String) async {
 
     // 一時ディレクトリを取得
     final tempDir = await getTemporaryDirectory();
-    final filePath = '${tempDir.path}/image.png';
+    final filePath = '${tempDir.path}/${uuid.v4()}.png';
 
     // ファイルにデコードしたデータを書き込む
     final file = File(filePath);
@@ -92,9 +94,7 @@ Future<void> saveImageToGallery(String base64String) async {
 
     // ギャラリーに保存
     await GallerySaver.saveImage(file.path);
-
-    print('画像をギャラリーに保存しました: $filePath');
   } catch (e) {
-    print('エラー: $e');
+    print(e);
   }
 }
