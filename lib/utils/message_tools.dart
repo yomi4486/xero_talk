@@ -92,9 +92,7 @@ Future<void> saveImageToGallery(String base64String) async {
 
     // ギャラリーに保存
     await GallerySaver.saveImage(file.path);
-
-    print('画像をギャラリーに保存しました: $filePath');
   } catch (e) {
-    print('エラー: $e');
+    print(e);
   }
 }
