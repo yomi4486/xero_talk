@@ -15,7 +15,7 @@ import 'package:provider/provider.dart';
 
 late drive.DriveApi googleDriveApi;
 
-class MyHttpOverrides extends HttpOverrides{ // これがないとWSS通信ができない
+class MyHttpOverrides extends HttpOverrides{ // 証明書の検証を無効
   @override
   HttpClient createHttpClient(SecurityContext? context){
     return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
