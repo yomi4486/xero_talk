@@ -5,6 +5,7 @@ import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/message_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/message_tools.dart';
+import 'package:xero_talk/widgets/image_viewer.dart';
 
 class chat extends StatefulWidget {
   const chat({Key? key, required this.channelInfo}) : super(key: key);
@@ -521,7 +522,7 @@ class _chat extends State<chat>{
             child:Container(
             color: Colors.black.withOpacity(0.5), // 半透明のオーバーレイ
             child: Center(
-              child: Image.memory(image)
+              child: ImageViewerPage(image,visibleImage)
             ),
           ),)
         ):Container(),
