@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 /// アプリ全体の状態管理を担うクラス
 class AuthContext extends ChangeNotifier {
   // プライベートコンストラクタ
@@ -30,6 +31,7 @@ class AuthContext extends ChangeNotifier {
   late Widget lastOpenedChat; // スワイプでチャット画面を行き来した際の状態管理を行う
   bool editing = false; // メッセージが編集中かどうかの状態管理を行う
   late String editingMessageId;
+  bool inHomeScreen = false;
   List<Color> theme = const [ Color.fromARGB(204, 228, 169, 114),Color.fromARGB(204, 153, 65, 216)];
   
   /// セッションの復元を行うための関数です
@@ -106,7 +108,10 @@ class AuthContext extends ChangeNotifier {
 
   Future logout() async {
     try{
+      inHomeScreen = false;
+      final googleSignIn = GoogleSignIn();
       await channel.close();
+      await googleSignIn.signOut();
       await FirebaseAuth.instance.signOut();
     }catch(_){}
   }
