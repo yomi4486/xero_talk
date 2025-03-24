@@ -15,12 +15,16 @@ import 'package:provider/provider.dart';
 
 late drive.DriveApi googleDriveApi;
 
-class MyHttpOverrides extends HttpOverrides{ // 証明書の検証を無効
+class MyHttpOverrides extends HttpOverrides {
+  // 証明書の検証を無効
   @override
-  HttpClient createHttpClient(SecurityContext? context){
-    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -43,7 +47,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Xero Talk',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 22, 22, 22)),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color.fromARGB(255, 22, 22, 22)),
         useMaterial3: true,
       ),
       home: const MyHomePage(),
@@ -59,52 +64,24 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<MyHomePage> {
-  Future<WebSocket> getSession() async{
+  Future<WebSocket> getSession() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     final WebSocket channel = await WebSocket.connect(
-      'wss://${dotenv.env['BASE_URL']}/v1',
-      headers: {
-        'token':token
-      }
-    );
+        'wss://${dotenv.env['BASE_URL']}/v1',
+        headers: {'token': token});
     return channel;
   }
-  void signInWithGoogle() async {
-    try {
-      //Google認証フローを起動する
-      final googleSignIn = GoogleSignIn(
-        scopes: [
-          drive.DriveApi.driveAppdataScope
-        ]
-      );
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      //リクエストから認証情報を取得する
-      final googleAuth = await googleUser?.authentication;
-      //firebaseAuthで認証を行う為、credentialを作成
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
-      );
-      //作成したcredentialを元にfirebaseAuthで認証を行う
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-      WebSocket channel = await getSession();
-      final httpClient = (await googleSignIn.authenticatedClient())!;
-      googleDriveApi = drive.DriveApi(httpClient);
-      final authContext = AuthContext();
-      authContext.id = userCredential.additionalUserInfo?.profile?['sub'];
-      authContext.channel = channel;
-      authContext.bloadCast = channel.asBroadcastStream();
-      authContext.googleDriveApi = googleDriveApi;
-      authContext.userCredential = userCredential;
-      await authContext.getTheme();
-      await authContext.checkConnection(); // 定期的な接続チェックを行う
 
+  void signInWithGoogle(bool isExistUser) async {
+    try {
+      final authContext = AuthContext();
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       String deviceData;
 
       if (Theme.of(context).platform == TargetPlatform.android) {
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        deviceData = 'Android ${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt}), ${androidInfo.model}';
+        deviceData =
+            'Android ${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt}), ${androidInfo.model}';
       } else if (Theme.of(context).platform == TargetPlatform.iOS) {
         /// iPhoneの内部名を表示される機種名に変換
         String getIosDeviceName(String machine) {
@@ -129,24 +106,62 @@ class _LoginPageState extends State<MyHomePage> {
           };
           return iosDeviceNames[machine] ?? machine;
         }
+
         IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-        deviceData = '${getIosDeviceName(iosInfo.utsname.machine)}, ${iosInfo.systemName} ${iosInfo.systemVersion}';
+        deviceData =
+            '${getIosDeviceName(iosInfo.utsname.machine)}, ${iosInfo.systemName} ${iosInfo.systemVersion}';
       } else {
         deviceData = 'Unsupported platform';
       }
       authContext.deviceName = deviceData;
-  
-      if (userCredential.additionalUserInfo!.isNewUser) { // 新規ユーザーの場合
+
+      //Google認証フローを起動する
+      final googleSignIn =
+          GoogleSignIn(scopes: [drive.DriveApi.driveAppdataScope]);
+      late GoogleSignInAccount? googleUser = googleSignIn.currentUser;
+      if (!isExistUser && googleUser == null) {
+        googleUser = await googleSignIn.signIn();
+      } else {
+        googleUser = await googleSignIn.signInSilently();
+      }
+      //リクエストから認証情報を取得する
+      final googleAuth = await googleUser?.authentication;
+      //firebaseAuthで認証を行う為、credentialを作成
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
+      //作成したcredentialを元にfirebaseAuthで認証を行う
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      WebSocket channel = await getSession();
+
+      final httpClient = (await googleSignIn.authenticatedClient())!;
+      googleDriveApi = drive.DriveApi(httpClient);
+      authContext.id = userCredential.additionalUserInfo?.profile?['sub'];
+      authContext.channel = channel;
+      authContext.bloadCast = channel.asBroadcastStream();
+      authContext.googleDriveApi = googleDriveApi;
+      authContext.userCredential = userCredential;
+      await authContext.getTheme();
+      if (userCredential.additionalUserInfo!.isNewUser) {
+        // 新規ユーザーの場合
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => AccountStartup()),
         );
-      } else { //既存ユーザーの場合
+      } else if (!authContext.inHomeScreen) {
+        //既存ユーザーの場合
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => chatHome()),
         );
       }
+
+      await authContext.checkConnection();
+      authContext.inHomeScreen = true;
+      // 定期的な接続チェックを行う
+      authContext.userCredential = userCredential;
     } on FirebaseException catch (e) {
       print(e.message);
     } catch (e) {
@@ -156,64 +171,67 @@ class _LoginPageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user != null) {
+        signInWithGoogle(true);
+      }
+    });
     return Scaffold(
       body: DecoratedBox(
-        decoration: const BoxDecoration(color: Color.fromARGB(255, 22, 22, 22)),
-        child:SizedBox(
-          width:MediaQuery.of(context).size.width,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Image.asset('assets/images/logo.png', fit: BoxFit.contain,width:MediaQuery.of(context).size.width *0.5),
-              Container(
-                margin: const EdgeInsets.all(10),
-                child: const Text(
-                  "Xero Talkで話そう､繋がろう!",
-                  style:(
-                    TextStyle(
-                      color: Color.fromARGB(255, 240, 240, 240),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20
-                    )
-                  )
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.all(16),
-                child:ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 231, 231, 231),
-                    foregroundColor: Colors.black,
-                    shape: const StadiumBorder(),
-                    elevation: 0, // Shadow elevation
-                    shadowColor: const Color.fromARGB(255, 255, 255, 255), // Shadow color
-                  ),
-                  onPressed: () {
-                    try{
-                      signInWithGoogle();
-                    }catch(e){
-                      print(e);
-                    }
-                  },
-                  icon: const ImageIcon(
-                    AssetImage("assets/images/google_logo.png"),
-                    color: Color.fromARGB(255, 22, 22, 22),
-                  ),
-                  label: const Text(
-                    'Googleでログイン',
-                    style:(
-                      TextStyle(
-                        color: Color.fromARGB(255, 22, 22, 22),
-                        fontSize: 16
-                      )
-                    )
-                  ),
-                ),
-              ) 
-            ],
-          ),
-        )
-      ),
+          decoration:
+              const BoxDecoration(color: Color.fromARGB(255, 22, 22, 22)),
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Image.asset('assets/images/logo.png',
+                    fit: BoxFit.contain,
+                    width: MediaQuery.of(context).size.width * 0.5),
+                (FirebaseAuth.instance.currentUser == null
+                    ? Column(children: [
+                        Container(
+                          margin: const EdgeInsets.all(10),
+                          child: const Text("Xero Talkで話そう､繋がろう!",
+                              style: (TextStyle(
+                                  color: Color.fromARGB(255, 240, 240, 240),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20))),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.all(16),
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color.fromARGB(255, 231, 231, 231),
+                              foregroundColor: Colors.black,
+                              shape: const StadiumBorder(),
+                              elevation: 0, // Shadow elevation
+                              shadowColor: const Color.fromARGB(
+                                  255, 255, 255, 255), // Shadow color
+                            ),
+                            onPressed: () {
+                              try {
+                                signInWithGoogle(false);
+                              } catch (e) {
+                                print(e);
+                              }
+                            },
+                            icon: const ImageIcon(
+                              AssetImage("assets/images/google_logo.png"),
+                              color: Color.fromARGB(255, 22, 22, 22),
+                            ),
+                            label: const Text('Googleでログイン',
+                                style: (TextStyle(
+                                    color: Color.fromARGB(255, 22, 22, 22),
+                                    fontSize: 16))),
+                          ),
+                        ),
+                      ])
+                    : Container())
+              ],
+            ),
+          )),
     );
   }
 }
