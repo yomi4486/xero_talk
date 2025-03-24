@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 class GoogleSignInButton extends StatefulWidget {
   @override
   _GoogleSignInButtonState createState() => _GoogleSignInButtonState();
@@ -28,7 +29,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                 setState(() {
                   _isSigningIn = true;
                 });
-                
+
                 // TODO: Add a method call to the Google Sign-In authentication
 
                 setState(() {

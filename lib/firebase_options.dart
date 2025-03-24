@@ -64,7 +64,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '163114823018',
     projectId: 'xero-talk',
     storageBucket: 'xero-talk.appspot.com',
-    iosClientId: '163114823018-rufpd5iuiglp79b8rgteb35orb238ouu.apps.googleusercontent.com',
+    iosClientId:
+        '163114823018-rufpd5iuiglp79b8rgteb35orb238ouu.apps.googleusercontent.com',
     iosBundleId: 'com.example.xeroTalk',
   );
 
@@ -74,7 +75,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '163114823018',
     projectId: 'xero-talk',
     storageBucket: 'xero-talk.appspot.com',
-    iosClientId: '163114823018-rufpd5iuiglp79b8rgteb35orb238ouu.apps.googleusercontent.com',
+    iosClientId:
+        '163114823018-rufpd5iuiglp79b8rgteb35orb238ouu.apps.googleusercontent.com',
     iosBundleId: 'com.example.xeroTalk',
   );
 
