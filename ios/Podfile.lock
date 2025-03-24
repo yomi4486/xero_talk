@@ -1568,7 +1568,7 @@ SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   BoringSSL-GRPC: ca6a8e5d04812fce8ffd6437810c2d46f925eaeb
   cloud_firestore: e61acbf808607d2c88ee32b00cd3aec027b38b3c
-  device_info_plus: 71ffc6ab7634ade6267c7a93088ed7e4f74e5896
+  device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   Firebase: d80354ed7f6df5f9aca55e9eb47cc4b634735eaf
   firebase_analytics: 4e93dbe66872104d28ae9750fec1800e1fd66858
   firebase_auth: 9ebbd83276bf977dea1c74dfc199acf9d2a2f42f
