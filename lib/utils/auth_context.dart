@@ -8,6 +8,7 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
 /// アプリ全体の状態管理を担うクラス
 class AuthContext extends ChangeNotifier {
   // プライベートコンストラクタ
@@ -32,21 +33,20 @@ class AuthContext extends ChangeNotifier {
   bool editing = false; // メッセージが編集中かどうかの状態管理を行う
   late String editingMessageId;
   bool inHomeScreen = false;
-  List<Color> theme = const [ Color.fromARGB(204, 228, 169, 114),Color.fromARGB(204, 153, 65, 216)];
-  
+  List<Color> theme = const [
+    Color.fromARGB(204, 228, 169, 114),
+    Color.fromARGB(204, 153, 65, 216)
+  ];
+
   /// セッションの復元を行うための関数です
   Future restoreConnection() async {
     await channel.close();
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-    if(token == null){
+    if (token == null) {
       throw "token is undefined.";
     }
-    channel = await WebSocket.connect(
-      'wss://${dotenv.env['BASE_URL']}/v1',
-      headers: {
-        'token':token
-      }
-    );
+    channel = await WebSocket.connect('wss://${dotenv.env['BASE_URL']}/v1',
+        headers: {'token': token});
     bloadCast = channel.asBroadcastStream();
     notifyListeners();
   }
@@ -61,34 +61,38 @@ class AuthContext extends ChangeNotifier {
   }
 
   ///背景色に応じてダーク、ホワイトを切り替えてカラーセットを返却します
-  List<Color> getTextColor(Color backgroundColor){
-
-    double brightness = (backgroundColor.red * 0.299 + backgroundColor.green * 0.587 + backgroundColor.blue * 0.114) /255;
-    List<Color> textColor = brightness > 0.5 ? [
-      const Color.fromARGB(198, 79, 79, 79),
-      const Color.fromARGB(255, 33, 33, 33), // メッセージコンテンツ等の重要な内容
-      const Color.fromARGB(255, 55, 55, 55), // 名前など
-    ] : [
-      const Color.fromARGB(198, 176, 176, 176),
-      const Color.fromARGB(255, 222, 222, 222), // メッセージコンテンツ等の重要な内容
-      const Color.fromARGB(255, 200, 200, 200), // 名前など
-    ];
+  List<Color> getTextColor(Color backgroundColor) {
+    double brightness = (backgroundColor.red * 0.299 +
+            backgroundColor.green * 0.587 +
+            backgroundColor.blue * 0.114) /
+        255;
+    List<Color> textColor = brightness > 0.5
+        ? [
+            const Color.fromARGB(198, 79, 79, 79),
+            const Color.fromARGB(255, 33, 33, 33), // メッセージコンテンツ等の重要な内容
+            const Color.fromARGB(255, 55, 55, 55), // 名前など
+          ]
+        : [
+            const Color.fromARGB(198, 176, 176, 176),
+            const Color.fromARGB(255, 222, 222, 222), // メッセージコンテンツ等の重要な内容
+            const Color.fromARGB(255, 200, 200, 200), // 名前など
+          ];
     return textColor;
   }
 
   /// Firestoreから自分の設定しているテーマを取得します
   Future getTheme() async {
     final themeDoc = await FirebaseFirestore.instance
-      .collection('user_account')
-      .doc(id)
-      .get();
+        .collection('user_account')
+        .doc(id)
+        .get();
     final data = themeDoc.data();
     if (data != null && data.containsKey("color_theme")) {
       final themeData = data["color_theme"];
       if (theme.isNotEmpty) {
         final oneColor = hexToColor(themeData[0]);
         final twoColor = hexToColor(themeData[1]);
-        theme = [oneColor,twoColor];
+        theme = [oneColor, twoColor];
       }
     }
   }
@@ -96,23 +100,22 @@ class AuthContext extends ChangeNotifier {
   Future checkConnection() async {
     Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (channel.readyState != 1 || channel.closeCode != null) {
-        try{
+        try {
           await restoreConnection();
-        }catch(_){
+        } catch (_) {
           return;
         }
-
       }
     });
   }
 
   Future logout() async {
-    try{
+    try {
       inHomeScreen = false;
       final googleSignIn = GoogleSignIn();
       await channel.close();
       await googleSignIn.signOut();
       await FirebaseAuth.instance.signOut();
-    }catch(_){}
+    } catch (_) {}
   }
 }
