@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
 class ImageViewerPage extends StatefulWidget {
-  ImageViewerPage(this.content,this.imageControler);
+  ImageViewerPage(this.content, this.imageControler);
 
   final Uint8List content;
-  final Function(Uint8List,bool) imageControler;
+  final Function(Uint8List, bool) imageControler;
 
   @override
   _ImageViewerPageState createState() => _ImageViewerPageState();
@@ -113,7 +113,7 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
                       size: 30.0,
                     ),
                     onPressed: () {
-                      widget.imageControler(widget.content,false);
+                      widget.imageControler(widget.content, false);
                     },
                   ),
                 ],
@@ -157,7 +157,7 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
         barsOpacity = 1.0;
       });
     } else {
-      widget.imageControler(widget.content,false);
+      widget.imageControler(widget.content, false);
     }
   }
 }
