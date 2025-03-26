@@ -32,8 +32,6 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
-/ios/Runner/Info.plist
-GoogleService-Info.plist
 # Symbolication related
 app.*.symbols
 
@@ -44,6 +42,5 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-ios1111
 
 .env
