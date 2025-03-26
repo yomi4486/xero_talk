@@ -63,6 +63,7 @@ dependencies:
   image: ^4.5.3
   gallery_saver_plus: ^3.2.4
   uuid: ^4.5.1
+  livekit_client: ^2.4.1
 
 dev_dependencies:
   flutter_test:
