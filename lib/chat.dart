@@ -19,7 +19,6 @@ class chat extends StatefulWidget {
   }
 }
 
-
 class _chat extends State<chat> {
   _chat({required this.channelInfo});
   Map channelInfo;
@@ -421,11 +420,15 @@ class _chat extends State<chat> {
                         child: Container(
                             color: const Color.fromARGB(0, 255, 255, 255),
                             child: IconButton(
-                                onPressed: () async{
+                                onPressed: () async {
                                   final String accessToken = await createRoom();
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
-                                        builder: (context) => VoiceChat(RoomInfo(token:accessToken,displayName: displayName,iconUrl: "https://${dotenv.env['BASE_URL']}/geticon?user_id=${channelInfo["id"]}"))),
+                                        builder: (context) => VoiceChat(RoomInfo(
+                                            token: accessToken,
+                                            displayName: displayName,
+                                            iconUrl:
+                                                "https://${dotenv.env['BASE_URL']}/geticon?user_id=${channelInfo["id"]}"))),
                                   );
                                 },
                                 icon: const Icon(Icons.phone,

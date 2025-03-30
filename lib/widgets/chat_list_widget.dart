@@ -65,7 +65,9 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
                       children: [
                         SizedBox(
                           child: Text(
-                            (widget.userId == instance.id ? "$displayName (自分)":displayName),
+                            (widget.userId == instance.id
+                                ? "$displayName (自分)"
+                                : displayName),
                             style: const TextStyle(
                               color: Color.fromARGB(200, 255, 255, 255),
                               fontWeight: FontWeight.bold,

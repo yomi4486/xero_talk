@@ -55,7 +55,8 @@ class RoomInfo {
   String displayName;
   String iconUrl;
 
-  RoomInfo({required this.token, required this.displayName, required this.iconUrl});
+  RoomInfo(
+      {required this.token, required this.displayName, required this.iconUrl});
 }
 
 class VoiceChat extends StatefulWidget {
@@ -100,7 +101,7 @@ class _VoiceChatState extends State<VoiceChat> {
     });
 
     try {
-      await room.connect(url,token);
+      await room.connect(url, token);
     } catch (_) {
       print('Failed : $_');
     }
@@ -133,4 +134,3 @@ class _VoiceChatState extends State<VoiceChat> {
     );
   }
 }
-
