@@ -1,33 +1,9 @@
-# xero_talk
+# xero_talk - ちょっとセキュアなチャットツール
 
-ちょっとセキュアなチャットツール
+## 使用技術
+<img src="https://go-skill-icons.vercel.app/api/icons?i=flutter,dart,firebase,apple" />
 
-ブログ記事
-- [ちょっとセキュアなチャットツール Part1](https://xenfo.org/blog/life/2024-07-24/)
-
-<details>
-  <summary>Info.plistについて</summary>
-
-`ios/Runner/Info.plist`に下記を追記してください
-```xml
-<key>NSCameraUsageDescription</key>
-<string>Access to take a photo by camera</string>
-<key>NSAppleMusicUsageDescription</key>
-<string>Access to pick a photo</string>
-<key>NSPhotoLibraryUsageDescription</key>
-<string>Access to pick a photo</string>
-<key>LSApplicationQueriesSchemes</key>
-<array>
-    <string>http</string>
-    <string>https</string>
-</array>
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <true/>
-</dict>
-```
-</details>
+## その他メモ
 
 <details>
   <summary>リリースビルド時のエラーの解決方法</summary>

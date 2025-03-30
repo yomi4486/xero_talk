@@ -9,19 +9,25 @@ import 'package:flash/flash.dart';
 import 'package:flash/flash_helper.dart';
 
 class InfoSnack extends StatelessWidget {
-  /// アプリ内通知などに使うモーダル。一般的なレベルの情報は全てこれを使用。　
-  InfoSnack({Key? key, required this.userCredential,required this.title,required this.datail}) : super(key: key);
+  /// アプリ内通知などに使うモーダル。一般的なレベルの情報は全てこれを使用。
+  InfoSnack(
+      {Key? key,
+      required this.userCredential,
+      required this.title,
+      required this.datail})
+      : super(key: key);
   final UserCredential userCredential;
   final String title;
   final String datail;
   @override
   Widget build(BuildContext context) {
     final snack = ElevatedButton(
-      child:const Text("通知(テスト)"),
+      child: const Text("通知(テスト)"),
       onPressed: () => context.showFlash<bool>(
         barrierDismissible: true,
         duration: const Duration(seconds: 3),
-        builder: (context, controller) => FlashBar( // こいつが通知ウィジェット本体
+        builder: (context, controller) => FlashBar(
+          // こいつが通知ウィジェット本体
           controller: controller,
           forwardAnimationCurve: Curves.easeInCirc,
           reverseAnimationCurve: Curves.bounceIn,
@@ -34,10 +40,13 @@ class InfoSnack extends StatelessWidget {
           content: Text(datail),
           actions: [
             TextButton(onPressed: controller.dismiss, child: Text('Cancel')),
-            TextButton(onPressed: () => controller.dismiss(true), child: Text('Ok')) // TODO:これがクリックされたら対象ユーザーのチャット画面に遷移する処理を書く
+            TextButton(
+                onPressed: () => controller.dismiss(true),
+                child: Text('Ok')) // TODO:これがクリックされたら対象ユーザーのチャット画面に遷移する処理を書く
           ],
         ),
-      ),);
+      ),
+    );
     return snack;
   }
 }
