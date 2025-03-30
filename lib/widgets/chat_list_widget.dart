@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../utils/auth_context.dart';
+
+final AuthContext instance = AuthContext();
 
 class ChatListWidget extends StatefulWidget {
   final String userId;
@@ -39,7 +42,7 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
         FutureBuilder(
             future: FirebaseFirestore.instance
                 .collection('user_account') // コレクションID
-                .doc('${widget.userId}') // ドキュメントID
+                .doc(widget.userId) // ドキュメントID
                 .get(),
             builder: (context, snapshot) {
               late String displayName = "";
@@ -62,7 +65,7 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
                       children: [
                         SizedBox(
                           child: Text(
-                            displayName,
+                            (widget.userId == instance.id ? "$displayName (自分)":displayName),
                             style: const TextStyle(
                               color: Color.fromARGB(200, 255, 255, 255),
                               fontWeight: FontWeight.bold,
