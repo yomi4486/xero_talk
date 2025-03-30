@@ -86,8 +86,8 @@ class _VoiceChatState extends State<VoiceChat> {
   }
 
   connectToLivekit() async {
-    const url = 'wss://xerotalk-zhj3ofry.livekit.cloud';
-    String token = widget.roomInfo.token;
+    const String url = 'wss://xerotalk-zhj3ofry.livekit.cloud';
+    final String token = widget.roomInfo.token;
     final room = Room(roomOptions: roomOptions);
     roomstate = room;
 
@@ -100,7 +100,7 @@ class _VoiceChatState extends State<VoiceChat> {
     });
 
     try {
-      await room.connect(url, token);
+      await room.connect(url,token);
     } catch (_) {
       print('Failed : $_');
     }
