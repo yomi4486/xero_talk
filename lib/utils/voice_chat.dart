@@ -20,6 +20,6 @@ Future<String> createRoom() async {
   if (response.statusCode != 200) {
     print('Request failed with status: ${response.statusCode}');
   }
-  print(response.body);
-  return response.body;
+  print(response.body.toString());
+  return response.body.toString();
 }
