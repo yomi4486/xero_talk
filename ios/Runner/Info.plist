@@ -66,8 +66,6 @@
 	<string>Access to pick a photo</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Access to pick a photo</string>
-	<key>NSCameraUsageDescription</key>
-	<string>XeroTalk uses your camera</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>XeroTalk uses your microphone</string>
 	<key>LSApplicationQueriesSchemes</key>
