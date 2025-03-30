@@ -6,32 +6,6 @@
 ## その他メモ
 
 <details>
-  <summary>Info.plistについて</summary>
-
-`ios/Runner/Info.plist`に下記を追記してください
-```xml
-<key>NSCameraUsageDescription</key>
-<string>Access to take a photo by camera</string>
-<key>NSAppleMusicUsageDescription</key>
-<string>Access to pick a photo</string>
-<key>NSPhotoLibraryUsageDescription</key>
-<string>Access to pick a photo</string>
-<key>NSPhotoLibraryAddUsageDescription</key>
-<string>Access to save a photo</string>
-<key>LSApplicationQueriesSchemes</key>
-<array>
-    <string>http</string>
-    <string>https</string>
-</array>
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <true/>
-</dict>
-```
-</details>
-
-<details>
   <summary>リリースビルド時のエラーの解決方法</summary>
 
 下記エラーが出た場合は`ios/Runner.xcworkspace`を開いてタブの`Product > Build`をタップしてからまたコマンドを実行すれば治る。証明書の問題っぽい
