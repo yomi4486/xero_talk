@@ -1,4 +1,4 @@
-.PHONY: android, release, ios, clean, cache_clear, cache_clean
+.PHONY: android, release, ios, clean, cache_clear, cache_clean,format
 android:
 	@cd android \
 	&& flutter build appbundle \
@@ -31,3 +31,6 @@ cache_clear:
 
 cache_clean:
 	@make cache_clear
+	
+format:
+	@dart format lib
