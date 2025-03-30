@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ParticipantWidget extends StatefulWidget {
   final Participant participant;
@@ -86,6 +87,22 @@ class _VoiceChatState extends State<VoiceChat> {
     connectToLivekit();
   }
 
+  Future<void> requestPermissions() async {
+    var status = await Permission.camera.request();
+    if (status.isGranted) {
+      print("Camera permission granted");
+    } else {
+      print("Camera permission denied");
+    }
+
+    status = await Permission.microphone.request();
+    if (status.isGranted) {
+      print("Microphone permission granted");
+    } else {
+      print("Microphone permission denied");
+    }
+  }
+
   connectToLivekit() async {
     const String url = 'wss://xerotalk-zhj3ofry.livekit.cloud';
     final room = Room(roomOptions: roomOptions);
@@ -101,17 +118,19 @@ class _VoiceChatState extends State<VoiceChat> {
     });
 
     try {
+      await requestPermissions();
       await room.connect('wss://xerotalk-zhj3ofry.livekit.cloud',widget.roomInfo.token);
     } catch (_) {
       print('Failed : $_');
     }
+    await room.localParticipant?.setCameraEnabled(true); //カメラの接続
+    await room.localParticipant?.setMicrophoneEnabled(true); //マイクの接続
 
     setState(() {
       localParticipant = room.localParticipant;
     });
 
-    await room.localParticipant?.setCameraEnabled(true); //カメラの接続
-    await room.localParticipant?.setMicrophoneEnabled(true); //マイクの接続
+
   }
 
   @override
