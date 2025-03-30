@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xero_talk/utils/auth_context.dart';
+import 'package:xero_talk/utils/voice_chat.dart';
+import 'package:xero_talk/voice_chat.dart';
 
 import 'package:xero_talk/widgets/message_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -16,6 +18,7 @@ class chat extends StatefulWidget {
     return _chat(channelInfo: channelInfo);
   }
 }
+
 
 class _chat extends State<chat> {
   _chat({required this.channelInfo});
@@ -418,7 +421,13 @@ class _chat extends State<chat> {
                         child: Container(
                             color: const Color.fromARGB(0, 255, 255, 255),
                             child: IconButton(
-                                onPressed: () {},
+                                onPressed: () async{
+                                  final String accessToken = await createRoom();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (context) => VoiceChat(RoomInfo(token:accessToken,displayName: displayName,iconUrl: "https://${dotenv.env['BASE_URL']}/geticon?user_id=${channelInfo["id"]}"))),
+                                  );
+                                },
                                 icon: const Icon(Icons.phone,
                                     color:
                                         Color.fromARGB(128, 255, 255, 255)))),
