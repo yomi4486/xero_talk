@@ -14,6 +14,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
 
 late drive.DriveApi googleDriveApi;
+bool failed = false;
 
 class MyHttpOverrides extends HttpOverrides {
   // 証明書の検証を無効
@@ -166,13 +167,16 @@ class _LoginPageState extends State<MyHomePage> {
       print(e.message);
     } catch (e) {
       print(e);
+      setState(() {
+        failed = true;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user != null) {
+      if (user != null&&!failed) {
         signInWithGoogle(true);
       }
     });
@@ -188,7 +192,7 @@ class _LoginPageState extends State<MyHomePage> {
                 Image.asset('assets/images/logo.png',
                     fit: BoxFit.contain,
                     width: MediaQuery.of(context).size.width * 0.5),
-                (FirebaseAuth.instance.currentUser == null
+                (FirebaseAuth.instance.currentUser == null || failed
                     ? Column(children: [
                         Container(
                           margin: const EdgeInsets.all(10),

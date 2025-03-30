@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ParticipantWidget extends StatefulWidget {
   final Participant participant;
@@ -55,7 +56,8 @@ class RoomInfo {
   String displayName;
   String iconUrl;
 
-  RoomInfo({required this.token, required this.displayName, required this.iconUrl});
+  RoomInfo(
+      {required this.token, required this.displayName, required this.iconUrl});
 }
 
 class VoiceChat extends StatefulWidget {
@@ -85,11 +87,26 @@ class _VoiceChatState extends State<VoiceChat> {
     connectToLivekit();
   }
 
+  Future<void> requestPermissions() async {
+    var status = await Permission.camera.request();
+    if (status.isGranted) {
+      print("Camera permission granted");
+    } else {
+      print("Camera permission denied");
+    }
+
+    status = await Permission.microphone.request();
+    if (status.isGranted) {
+      print("Microphone permission granted");
+    } else {
+      print("Microphone permission denied");
+    }
+  }
+
   connectToLivekit() async {
-    const url = 'wss://xerotalk-zhj3ofry.livekit.cloud';
-    String token = widget.roomInfo.token;
     final room = Room(roomOptions: roomOptions);
     roomstate = room;
+    print(widget.roomInfo.token);
 
     room.createListener().on<TrackSubscribedEvent>((event) {
       //他の参加者の接続
@@ -100,17 +117,19 @@ class _VoiceChatState extends State<VoiceChat> {
     });
 
     try {
-      await room.connect(url, token);
+      await requestPermissions();
+      await room.connect('wss://xerotalk-zhj3ofry.livekit.cloud',widget.roomInfo.token);
     } catch (_) {
       print('Failed : $_');
     }
+    await room.localParticipant?.setCameraEnabled(true); //カメラの接続
+    await room.localParticipant?.setMicrophoneEnabled(true); //マイクの接続
 
     setState(() {
-      localParticipant = room.localParticipant!;
+      localParticipant = room.localParticipant;
     });
 
-    await room.localParticipant!.setCameraEnabled(true); //カメラの接続
-    await room.localParticipant!.setMicrophoneEnabled(true); //マイクの接続
+
   }
 
   @override
@@ -133,4 +152,3 @@ class _VoiceChatState extends State<VoiceChat> {
     );
   }
 }
-
