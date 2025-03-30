@@ -166,7 +166,7 @@ class _LoginPageState extends State<MyHomePage> {
     } on FirebaseException catch (e) {
       print(e.message);
     } catch (e) {
-      print("kore: $e");
+      print(e);
       setState(() {
         failed = true;
       });
