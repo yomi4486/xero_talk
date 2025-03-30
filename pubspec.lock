@@ -101,18 +101,18 @@ packages:
     dependency: transitive
     description:
       name: connectivity_plus
-      sha256: "04bf81bb0b77de31557b58d052b24b3eee33f09a6e7a8c68a3e247c7df19ec27"
+      sha256: "224a77051d52a11fbad53dd57827594d3bd24f945af28bd70bab376d68d437f0"
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.3"
+    version: "5.0.2"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
       name: connectivity_plus_platform_interface
-      sha256: "42657c1715d48b167930d5f34d00222ac100475f73d10162ddf43e714932f204"
+      sha256: cf1d1c28f4416f8c654d7dc3cd638ec586076255d407cef3ddbdaf178272a71a
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.1"
+    version: "1.2.4"
   cross_file:
     dependency: transitive
     description:
@@ -129,6 +129,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.6"
+  cryptography:
+    dependency: transitive
+    description:
+      name: cryptography
+      sha256: d146b76d33d94548cf035233fbc2f4338c1242fa119013bead807d033fc4ae05
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.7.0"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -141,10 +149,10 @@ packages:
     dependency: transitive
     description:
       name: dart_webrtc
-      sha256: "8565f1f1f412b8a6fd862f3a157560811e61eeeac26741c735a5d2ff409a0202"
+      sha256: "5897a3bdd6c7fded07e80e250260ca4c9cd61f9080911aa308b516e1206745a9"
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.3"
+    version: "1.1.3"
   dbus:
     dependency: transitive
     description:
@@ -366,6 +374,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_background:
+    dependency: "direct main"
+    description:
+      name: flutter_background
+      sha256: "8dad66e3102da2b4046cc3adcf70625578809827170bd78e36e5890c074287d2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0+1"
   flutter_colorpicker:
     dependency: "direct main"
     description:
@@ -412,10 +428,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_webrtc
-      sha256: b832dc76c0d1577f14aaf35e9c38d4ed7667cbc89c492b7bf4505d8d5f62e08b
+      sha256: "577216727181cb13776a65d3e7cb33e783e740c5496335011aed4a038b28c3fe"
       url: "https://pub.dev"
     source: hosted
-    version: "0.12.12+hotfix.1"
+    version: "0.9.47"
   gallery_saver_plus:
     dependency: "direct main"
     description:
@@ -620,10 +636,10 @@ packages:
     dependency: transitive
     description:
       name: js
-      sha256: "53385261521cc4a0c4658fd0ad07a7d14591cf8fc33abbceae306ddb974888dc"
+      sha256: f2c445dce49627136094980615a031419f7f3eb393237e4ecd97ac15dea343f3
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.2"
+    version: "0.6.7"
   leak_tracker:
     dependency: transitive
     description:
@@ -660,10 +676,10 @@ packages:
     dependency: "direct main"
     description:
       name: livekit_client
-      sha256: "7f489fa415253d8d99c649b7efc95a733c5e5ac38dcfb02362ced99feb139376"
+      sha256: e56294ac4b837f00dfeb16a814ee6d5290cb2ad6230714ce8722cbeed85bff3e
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.1"
+    version: "1.5.6"
   logging:
     dependency: transitive
     description:
@@ -808,6 +824,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.6"
+  platform_detect:
+    dependency: transitive
+    description:
+      name: platform_detect
+      sha256: "7394dc1d884e652785a37c3ff25c54e503c6d9fa2f35b55d5efc0a133dec122c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.5"
   plugin_platform_interface:
     dependency: transitive
     description:
@@ -840,6 +864,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.2"
+  pub_semver:
+    dependency: transitive
+    description:
+      name: pub_semver
+      sha256: "5bfcf68ca79ef689f8990d1160781b4bad40a3bd5e5218ad4076ddb7f4081585"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
   rxdart:
     dependency: "direct main"
     description:
@@ -1033,10 +1065,10 @@ packages:
     dependency: transitive
     description:
       name: webrtc_interface
-      sha256: e92afec11152a9ccb5c9f35482754edd99696e886ab6acaf90c06dd2d09f09eb
+      sha256: "2efbd3e4e5ebeb2914253bcc51dafd3053c4b87b43f3076c74835a9deecbae3a"
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.2+hotfix.1"
+    version: "1.1.2"
   win32:
     dependency: transitive
     description:
