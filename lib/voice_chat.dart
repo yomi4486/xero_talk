@@ -88,9 +88,9 @@ class _VoiceChatState extends State<VoiceChat> {
 
   connectToLivekit() async {
     const String url = 'wss://xerotalk-zhj3ofry.livekit.cloud';
-    final String token = widget.roomInfo.token;
     final room = Room(roomOptions: roomOptions);
     roomstate = room;
+    print(widget.roomInfo.token);
 
     room.createListener().on<TrackSubscribedEvent>((event) {
       //他の参加者の接続
@@ -101,17 +101,17 @@ class _VoiceChatState extends State<VoiceChat> {
     });
 
     try {
-      await room.connect(url, token);
+      await room.connect('wss://xerotalk-zhj3ofry.livekit.cloud',widget.roomInfo.token);
     } catch (_) {
       print('Failed : $_');
     }
 
     setState(() {
-      localParticipant = room.localParticipant!;
+      localParticipant = room.localParticipant;
     });
 
-    await room.localParticipant!.setCameraEnabled(true); //カメラの接続
-    await room.localParticipant!.setMicrophoneEnabled(true); //マイクの接続
+    await room.localParticipant?.setCameraEnabled(true); //カメラの接続
+    await room.localParticipant?.setMicrophoneEnabled(true); //マイクの接続
   }
 
   @override
