@@ -322,7 +322,7 @@ Widget getMessageCard(
   return chatWidget;
 }
 
-Widget getVoiceWidget(BuildContext context,String roomId){
+Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> content){
   return GestureDetector(child: Container(child:Text("通話に参加"),),onTap: ()async{
     final token = await getRoom(roomId);
     Navigator.of(context).push(
@@ -330,7 +330,7 @@ Widget getVoiceWidget(BuildContext context,String roomId){
           builder: (context) => VoiceChat(RoomInfo(
               token: token,
               displayName: "",
-              iconUrl:""))),
+              userId:content["author"]))),
     );
   },);
 }
