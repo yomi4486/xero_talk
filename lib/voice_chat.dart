@@ -136,18 +136,23 @@ class _VoiceChatState extends State<VoiceChat> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
+        child:Stack(
           children: [
-            // local video
-            localParticipant != null
-                ? Expanded(child: ParticipantWidget(localParticipant!))
-                : const CircularProgressIndicator(),
-            // remote video
-            remoteParticipant != null
-                ? Expanded(child: ParticipantWidget(remoteParticipant!))
-                : const CircularProgressIndicator(),
+            Column(
+              children: [
+                // local video
+                localParticipant != null
+                    ? Expanded(child: ParticipantWidget(localParticipant!))
+                    : const CircularProgressIndicator(),
+                // remote video
+                remoteParticipant != null
+                    ? Expanded(child: ParticipantWidget(remoteParticipant!))
+                    : const CircularProgressIndicator(),
+              ],
+            ),
+            SizedBox(child: IconButton(onPressed: (){}, icon: Icon(Icons.video_camera_back,color: Colors.black,),))
           ],
-        ),
+        )
       ),
     );
   }

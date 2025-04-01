@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/widgets/create_message_card.dart';
 import 'dart:typed_data';
+import '../voice_chat.dart';
 
 String lastMessageId = "";
 
@@ -193,7 +194,20 @@ class _MessageScreenState extends State<MessageScreen> {
                       as Map<String, dynamic>)["display_name"] ??
                   "No Name";
               final String type = content["type"];
-              final String messageId = content["id"];
+
+              late String messageId;
+
+              if (type == "call"){
+                messageId = content["room_id"];
+              }else{
+                messageId = content["id"];
+              }
+              
+              final String? messageContent = content["content"];
+              final int timestamp = content["timestamp"];
+              final DateTime dateTime =
+                  DateTime.fromMillisecondsSinceEpoch(timestamp);
+              final String modifiedDateTime = getTimeStringFormat(dateTime);
               bool edited = false;
               if (type == "delete_message") {
                 removeWidget(messageId);
@@ -203,12 +217,8 @@ class _MessageScreenState extends State<MessageScreen> {
                 editWidget(messageId, content["content"]);
                 edited = true;
               }
-              final String messageContent = content["content"];
-              final int timestamp = content["timestamp"];
-              final DateTime dateTime =
-                  DateTime.fromMillisecondsSinceEpoch(timestamp);
-              final String modifiedDateTime = getTimeStringFormat(dateTime);
-              if (type == "send_message" && lastMessageId == messageId) {
+
+              if ((type == "send_message" || type == "call") && lastMessageId == messageId) { //　同じストリームが流れてきた時は無視
                 return Column(
                   children: returnWidget,
                 );
@@ -220,19 +230,51 @@ class _MessageScreenState extends State<MessageScreen> {
                 chatHistory[messageId]["edited"] = edited;
                 returnWidget = []; // IDの衝突を起こすため初期化
                 for (var entry in chatHistory.entries) {
-                  final Widget chatWidget = getMessageCard(
-                      context,
-                      widget,
-                      textColor,
-                      entry.value["display_name"],
-                      entry.value["display_time"],
-                      entry.value["author"],
-                      entry.value["content"],
-                      entry.value["edited"],
-                      entry.value["attachments"],
-                      entry.key,
-                      showImage: widget.ImageControler);
-                  addWidget(chatWidget, _currentPosition);
+                  if (entry.value["voice"] == true){
+                    final voiceWidget = getVoiceWidget(context, entry.key);
+                    addWidget(voiceWidget, _currentPosition);
+                  }else{
+                    final Widget chatWidget = getMessageCard(
+                        context,
+                        widget,
+                        textColor,
+                        entry.value["display_name"],
+                        entry.value["display_time"],
+                        entry.value["author"],
+                        entry.value["content"],
+                        entry.value["edited"],
+                        entry.value["attachments"],
+                        entry.key,
+                        showImage: widget.ImageControler);
+                    addWidget(chatWidget, _currentPosition);
+                  }
+                }
+              }else if(type == "call"){
+                chatHistory[messageId] = {
+                  "author": content["author"],
+                  "timeStamp": timestamp,
+                  "display_time": modifiedDateTime,
+                  "voice":true
+                };
+                final Widget chatWidget = getVoiceWidget(
+                  context,
+                  messageId
+                );
+                addWidget(chatWidget, _currentPosition);
+                if(content.containsKey("token")){
+                  changeRoute() async {
+                    await Future.delayed(Duration(milliseconds: 300), () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                        builder: (context) => VoiceChat(RoomInfo(
+                            token: content["token"],
+                            displayName: "",
+                            iconUrl:""))),
+                      );
+                    });
+                  }
+                  changeRoute();
                 }
               } else {
                 chatHistory[messageId] = {
@@ -242,7 +284,8 @@ class _MessageScreenState extends State<MessageScreen> {
                   "display_time": modifiedDateTime,
                   "edited": edited,
                   "display_name": displayName,
-                  "attachments": content["attachments"]
+                  "attachments": content["attachments"],
+                  "voice": false
                 };
                 final Widget chatWidget = getMessageCard(
                     context,
@@ -251,7 +294,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     displayName,
                     modifiedDateTime,
                     content["author"],
-                    messageContent,
+                    messageContent!,
                     edited,
                     content["attachments"],
                     messageId,
