@@ -47,16 +47,16 @@ class _ParticipantState extends State<ParticipantWidget> {
     if (videoPub != null) {
       return VideoTrackRenderer(videoPub!.track as VideoTrack);
     } else {
-      return Stack(children:[
-        Container(
-        color: Colors.grey,
-        child:Container(
-          margin: EdgeInsets.all(100),
-          child:ClipRRect(
-            borderRadius: BorderRadius.circular(100.0), 
-            child: Image.network("https://${dotenv.env['BASE_URL']}/geticon?user_id=${widget.userId}"),
-          )
-        ),)]
+      return Stack(
+        children:[
+          Container(
+            margin: EdgeInsets.all(100),
+            child:ClipRRect(
+              borderRadius: BorderRadius.circular(100.0), 
+              child: Image.network("https://${dotenv.env['BASE_URL']}/geticon?user_id=${widget.userId}"),
+            )
+          ),
+        ]
       );
     }
   }
