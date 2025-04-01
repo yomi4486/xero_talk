@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'package:xero_talk/widgets/create_message_card.dart';
 import 'dart:typed_data';
 import '../voice_chat.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:xero_talk/utils/voice_chat.dart';
 
 String lastMessageId = "";
 
@@ -219,6 +221,7 @@ class _MessageScreenState extends State<MessageScreen> {
               }
 
               if ((type == "send_message" || type == "call") && lastMessageId == messageId) { //　同じストリームが流れてきた時は無視
+                print("二重受信です");
                 return Column(
                   children: returnWidget,
                 );
@@ -231,7 +234,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 returnWidget = []; // IDの衝突を起こすため初期化
                 for (var entry in chatHistory.entries) {
                   if (entry.value["voice"] == true){
-                    final voiceWidget = getVoiceWidget(context, entry.key);
+                    final voiceWidget = getVoiceWidget(context, entry.key,content);
                     addWidget(voiceWidget, _currentPosition);
                   }else{
                     final Widget chatWidget = getMessageCard(
@@ -258,24 +261,32 @@ class _MessageScreenState extends State<MessageScreen> {
                 };
                 final Widget chatWidget = getVoiceWidget(
                   context,
-                  messageId
+                  messageId,
+                  content
                 );
                 addWidget(chatWidget, _currentPosition);
-                if(content.containsKey("token")){
-                  changeRoute() async {
-                    await Future.delayed(Duration(milliseconds: 300), () {
+                print("電話かかってきた");
+                print(content);
+     
+                rootChange() async {
+                  print("OK");
+                  final String accessToken = await getRoom(content["room_id"]);
+                  if(content["author"]! == instance.id){
+                    await Future.delayed(Duration(milliseconds: 0), () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                         builder: (context) => VoiceChat(RoomInfo(
-                            token: content["token"],
+                            token: accessToken,
                             displayName: "",
-                            iconUrl:""))),
+                            userId:"https://${dotenv.env['BASE_URL']}/geticon?user_id=${content["author"]}"))),
                       );
                     });
+                  }else{
+                    print("あはい");
                   }
-                  changeRoute();
                 }
+                rootChange();
               } else {
                 chatHistory[messageId] = {
                   "author": content["author"],
