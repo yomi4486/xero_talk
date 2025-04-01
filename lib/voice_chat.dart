@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:permission_handler/permission_handler.dart';
+import './utils/auth_context.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ParticipantWidget extends StatefulWidget {
   final Participant participant;
-  ParticipantWidget(this.participant);
+  final String userId;
+  ParticipantWidget(this.participant,this.userId);
 
   @override
   State<StatefulWidget> createState() {
@@ -44,8 +47,16 @@ class _ParticipantState extends State<ParticipantWidget> {
     if (videoPub != null) {
       return VideoTrackRenderer(videoPub!.track as VideoTrack);
     } else {
-      return Container(
-        color: Colors.grey,
+      return Stack(
+        children:[
+          Container(
+            margin: EdgeInsets.all(100),
+            child:ClipRRect(
+              borderRadius: BorderRadius.circular(100.0), 
+              child: Image.network("https://${dotenv.env['BASE_URL']}/geticon?user_id=${widget.userId}"),
+            )
+          ),
+        ]
       );
     }
   }
@@ -54,10 +65,10 @@ class _ParticipantState extends State<ParticipantWidget> {
 class RoomInfo {
   String token;
   String displayName;
-  String iconUrl;
+  String userId;
 
   RoomInfo(
-      {required this.token, required this.displayName, required this.iconUrl});
+      {required this.token, required this.displayName, required this.userId});
 }
 
 class VoiceChat extends StatefulWidget {
@@ -72,6 +83,7 @@ class VoiceChat extends StatefulWidget {
 }
 
 class _VoiceChatState extends State<VoiceChat> {
+  final instance = AuthContext();
   final roomOptions = const RoomOptions(
     adaptiveStream: true,
     dynacast: true,
@@ -79,12 +91,18 @@ class _VoiceChatState extends State<VoiceChat> {
 
   Participant<TrackPublication<Track>>? localParticipant; //自分側
   Participant<TrackPublication<Track>>? remoteParticipant; //相手側
-  Room? roomstate;
 
   @override
   void initState() {
     super.initState();
     connectToLivekit();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    instance.room.disconnect();
+    print("OK");
   }
 
   Future<void> requestPermissions() async {
@@ -104,11 +122,9 @@ class _VoiceChatState extends State<VoiceChat> {
   }
 
   connectToLivekit() async {
-    final room = Room(roomOptions: roomOptions);
-    roomstate = room;
-    print(widget.roomInfo.token);
+    instance.room = Room(roomOptions: roomOptions);
 
-    room.createListener().on<TrackSubscribedEvent>((event) {
+    instance.room.createListener().on<TrackSubscribedEvent>((event) {
       //他の参加者の接続
       print('-----track event : $event');
       setState(() {
@@ -118,18 +134,16 @@ class _VoiceChatState extends State<VoiceChat> {
 
     try {
       await requestPermissions();
-      await room.connect('wss://xerotalk-zhj3ofry.livekit.cloud',widget.roomInfo.token);
+      await instance.room.connect('wss://xerotalk-zhj3ofry.livekit.cloud',widget.roomInfo.token);
     } catch (_) {
       print('Failed : $_');
     }
-    await room.localParticipant?.setCameraEnabled(true); //カメラの接続
-    await room.localParticipant?.setMicrophoneEnabled(true); //マイクの接続
+    await instance.room.localParticipant?.setCameraEnabled(false); //カメラの接続
+    await instance.room.localParticipant?.setMicrophoneEnabled(true); //マイクの接続
 
     setState(() {
-      localParticipant = room.localParticipant;
+      localParticipant = instance.room.localParticipant;
     });
-
-
   }
 
   @override
@@ -142,15 +156,15 @@ class _VoiceChatState extends State<VoiceChat> {
               children: [
                 // local video
                 localParticipant != null
-                    ? Expanded(child: ParticipantWidget(localParticipant!))
-                    : const CircularProgressIndicator(),
+                    ? Expanded(child: ParticipantWidget(localParticipant!,instance.id))
+                    : Container(),
                 // remote video
                 remoteParticipant != null
-                    ? Expanded(child: ParticipantWidget(remoteParticipant!))
-                    : const CircularProgressIndicator(),
+                    ? Expanded(child: ParticipantWidget(remoteParticipant!,widget.roomInfo.userId))
+                    : Container(),
               ],
             ),
-            SizedBox(child: IconButton(onPressed: (){}, icon: Icon(Icons.video_camera_back,color: Colors.black,),))
+            // SizedBox(child: IconButton(onPressed: (){}, icon: Icon(Icons.video_camera_back,color: Colors.black,size: 100,),)),
           ],
         )
       ),

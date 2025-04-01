@@ -8,6 +8,7 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:livekit_client/livekit_client.dart';
 
 /// アプリ全体の状態管理を担うクラス
 class AuthContext extends ChangeNotifier {
@@ -32,6 +33,7 @@ class AuthContext extends ChangeNotifier {
   late Widget lastOpenedChat; // スワイプでチャット画面を行き来した際の状態管理を行う
   bool editing = false; // メッセージが編集中かどうかの状態管理を行う
   late String editingMessageId;
+  late Room room;
   bool inHomeScreen = false;
   List<Color> theme = const [
     Color.fromARGB(204, 228, 169, 114),
