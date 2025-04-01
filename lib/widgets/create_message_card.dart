@@ -8,6 +8,8 @@ import 'package:xero_talk/widgets/message_screen.dart';
 import 'dart:typed_data';
 import 'dart:convert' as convert;
 import 'dart:ui' as ui;
+import '../utils/voice_chat.dart';
+import '../voice_chat.dart';
 
 Uint8List decodeBase64(String base64String) {
   return convert.base64Decode(base64String);
@@ -318,4 +320,17 @@ Widget getMessageCard(
       },
       child: _chatWidget);
   return chatWidget;
+}
+
+Widget getVoiceWidget(BuildContext context,String roomId){
+  return GestureDetector(child: Container(child:Text("通話に参加"),),onTap: ()async{
+    final token = await getRoom(roomId);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (context) => VoiceChat(RoomInfo(
+              token: token,
+              displayName: "",
+              iconUrl:""))),
+    );
+  },);
 }
