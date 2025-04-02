@@ -89,6 +89,9 @@ class _VoiceChatState extends State<VoiceChat> {
     dynacast: true,
   );
 
+  bool micAvailable = false; 
+  bool cameraAvailable = false;
+
   Participant<TrackPublication<Track>>? localParticipant; //自分側
   Participant<TrackPublication<Track>>? remoteParticipant; //相手側
 
@@ -102,22 +105,16 @@ class _VoiceChatState extends State<VoiceChat> {
   void dispose() {
     super.dispose();
     instance.room.disconnect();
-    print("OK");
   }
 
   Future<void> requestPermissions() async {
     var status = await Permission.camera.request();
     if (status.isGranted) {
-      print("Camera permission granted");
-    } else {
-      print("Camera permission denied");
+      cameraAvailable=true;
     }
-
     status = await Permission.microphone.request();
     if (status.isGranted) {
-      print("Microphone permission granted");
-    } else {
-      print("Microphone permission denied");
+      micAvailable=true;
     }
   }
 
@@ -164,7 +161,91 @@ class _VoiceChatState extends State<VoiceChat> {
                     : Container(),
               ],
             ),
-            // SizedBox(child: IconButton(onPressed: (){}, icon: Icon(Icons.video_camera_back,color: Colors.black,size: 100,),)),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                padding: EdgeInsets.only(left: 40,right: 40,bottom: 60),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  ClipRRect( // camera
+                    borderRadius: BorderRadius.circular(100.0), 
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.15,
+                      height: MediaQuery.of(context).size.width * 0.15,
+                      color:Colors.black,
+                      child:IconButton(
+                      onPressed: (){}, 
+                      icon: cameraAvailable ? Icon(
+                        Icons.video_camera_back,
+                        color: Colors.white,
+                      )
+                      :
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(Icons.video_camera_back,color: Colors.white), // メインアイコン
+                          Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
+                        ],
+                      ),
+                      )
+                    )
+                  ),
+                  ClipRRect( // disconnect
+                    borderRadius: BorderRadius.circular(100.0), 
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.15,
+                      height: MediaQuery.of(context).size.width * 0.15,
+                      color:Colors.red,
+                      child:IconButton(
+                      onPressed: (){
+                        Navigator.of(context).pop();
+                      }, 
+                      icon: Icon(
+                        Icons.close,
+                        color: Colors.white,
+                      ),
+                      )
+                    )
+                  ),
+                  ClipRRect( // mute button
+                    borderRadius: BorderRadius.circular(100.0), 
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.15,
+                      height: MediaQuery.of(context).size.width * 0.15,
+                      color: Colors.black,
+                      child:IconButton(
+                      onPressed: ()async{
+                        print(instance.room.localParticipant!.isMuted);
+                        if(micAvailable){
+                          return;
+                        }
+                        if(instance.room.localParticipant!.isMuted){
+                          await instance.room.localParticipant?.setMicrophoneEnabled(true);
+                        }else{
+                          await instance.room.localParticipant?.setMicrophoneEnabled(false);
+                        }
+                        setState(() {});
+                      }, 
+                      icon: micAvailable? 
+                      Icon(
+                        instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic,
+                        color: Colors.white,
+                      )
+                      :
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(Icons.mic,color: Colors.white), // メインアイコン
+                          Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
+                        ],
+                      ),
+                      )
+                    )
+                  ),
+                ],)
+              ),
+            ),
           ],
         )
       ),
