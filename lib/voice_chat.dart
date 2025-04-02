@@ -176,20 +176,21 @@ class _VoiceChatState extends State<VoiceChat> {
                       color:Colors.black,
                       child:IconButton(
                       onPressed: (){}, 
-                      icon: cameraAvailable ? Stack(
+                      icon: cameraAvailable ? Icon(
+                        Icons.video_camera_back,
+                        color: Colors.white,
+                      )
+                      :
+                      Stack(
                         alignment: Alignment.center,
                         children: [
                           Icon(Icons.video_camera_back,color: Colors.white), // メインアイコン
                           Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
                         ],
-                      )
-                      : 
-                      Icon(
-                        cameraAvailable?Icons.block:Icons.video_camera_back,
-                        color: Colors.white,
                       ),
+                      )
                     )
-                  )),
+                  ),
                   ClipRRect( // disconnect
                     borderRadius: BorderRadius.circular(100.0), 
                     child: Container(
@@ -204,8 +205,9 @@ class _VoiceChatState extends State<VoiceChat> {
                         Icons.close,
                         color: Colors.white,
                       ),
+                      )
                     )
-                  )),
+                  ),
                   ClipRRect( // mute button
                     borderRadius: BorderRadius.circular(100.0), 
                     child: Container(
@@ -225,20 +227,22 @@ class _VoiceChatState extends State<VoiceChat> {
                         }
                         setState(() {});
                       }, 
-                      icon: micAvailable? Stack(
+                      icon: micAvailable? 
+                      Icon(
+                        instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic,
+                        color: Colors.white,
+                      )
+                      :
+                      Stack(
                         alignment: Alignment.center,
                         children: [
                           Icon(Icons.mic,color: Colors.white), // メインアイコン
                           Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
                         ],
-                      )
-                      :
-                      Icon(
-                        instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic,
-                        color: Colors.white,
                       ),
+                      )
                     )
-                  )),
+                  ),
                 ],)
               ),
             ),
