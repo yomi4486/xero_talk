@@ -89,8 +89,8 @@ class _VoiceChatState extends State<VoiceChat> {
     dynacast: true,
   );
 
-  bool mic_available = false; 
-  bool camera_available = false;
+  bool micAvailable = false; 
+  bool cameraAvailable = false;
 
   Participant<TrackPublication<Track>>? localParticipant; //自分側
   Participant<TrackPublication<Track>>? remoteParticipant; //相手側
@@ -110,11 +110,11 @@ class _VoiceChatState extends State<VoiceChat> {
   Future<void> requestPermissions() async {
     var status = await Permission.camera.request();
     if (status.isGranted) {
-      camera_available=true;
+      cameraAvailable=true;
     }
     status = await Permission.microphone.request();
     if (status.isGranted) {
-      mic_available=true;
+      micAvailable=true;
     }
   }
 
@@ -176,7 +176,7 @@ class _VoiceChatState extends State<VoiceChat> {
                       color:Colors.black,
                       child:IconButton(
                       onPressed: (){}, 
-                      icon: camera_available ? Stack(
+                      icon: cameraAvailable ? Stack(
                         alignment: Alignment.center,
                         children: [
                           Icon(Icons.video_camera_back,color: Colors.white), // メインアイコン
@@ -185,7 +185,7 @@ class _VoiceChatState extends State<VoiceChat> {
                       )
                       : 
                       Icon(
-                        camera_available?Icons.block:Icons.video_camera_back,
+                        cameraAvailable?Icons.block:Icons.video_camera_back,
                         color: Colors.white,
                       ),
                     )
@@ -215,7 +215,7 @@ class _VoiceChatState extends State<VoiceChat> {
                       child:IconButton(
                       onPressed: ()async{
                         print(instance.room.localParticipant!.isMuted);
-                        if(mic_available){
+                        if(micAvailable){
                           return;
                         }
                         if(instance.room.localParticipant!.isMuted){
@@ -225,7 +225,7 @@ class _VoiceChatState extends State<VoiceChat> {
                         }
                         setState(() {});
                       }, 
-                      icon: mic_available? Stack(
+                      icon: micAvailable? Stack(
                         alignment: Alignment.center,
                         children: [
                           Icon(Icons.mic,color: Colors.white), // メインアイコン
