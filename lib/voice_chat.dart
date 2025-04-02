@@ -170,7 +170,7 @@ class _VoiceChatState extends State<VoiceChat> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                  ClipRRect(
+                  ClipRRect( // camera
                     borderRadius: BorderRadius.circular(100.0), 
                     child: Container(
                       width: MediaQuery.of(context).size.width * 0.15,
@@ -184,7 +184,7 @@ class _VoiceChatState extends State<VoiceChat> {
                       ),
                     )
                   )),
-                  ClipRRect(
+                  ClipRRect( // disconnect
                     borderRadius: BorderRadius.circular(100.0), 
                     child: Container(
                       width: MediaQuery.of(context).size.width * 0.15,
@@ -200,16 +200,25 @@ class _VoiceChatState extends State<VoiceChat> {
                       ),
                     )
                   )),
-                  ClipRRect(
+                  ClipRRect( // mute button
                     borderRadius: BorderRadius.circular(100.0), 
                     child: Container(
                       width: MediaQuery.of(context).size.width * 0.15,
                       height: MediaQuery.of(context).size.width * 0.15,
                       color: Colors.black,
                       child:IconButton(
-                      onPressed: (){}, 
+                      onPressed: ()async{
+                        print("OK");
+                        print(instance.room.localParticipant!.isMuted);
+                        if(instance.room.localParticipant!.isMuted){
+                          await instance.room.localParticipant?.setMicrophoneEnabled(true);
+                        }else{
+                          await instance.room.localParticipant?.setMicrophoneEnabled(false);
+                        }
+                        setState(() {});
+                      }, 
                       icon: Icon(
-                        Icons.mic_off,
+                        (instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic),
                         color: Colors.white,
                       ),
                     )
@@ -217,7 +226,6 @@ class _VoiceChatState extends State<VoiceChat> {
                 ],)
               ),
             ),
-            
           ],
         )
       ),
