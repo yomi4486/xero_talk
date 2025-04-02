@@ -208,7 +208,6 @@ class _VoiceChatState extends State<VoiceChat> {
                       color: Colors.black,
                       child:IconButton(
                       onPressed: ()async{
-                        print("OK");
                         print(instance.room.localParticipant!.isMuted);
                         if(instance.room.localParticipant!.isMuted){
                           await instance.room.localParticipant?.setMicrophoneEnabled(true);
