@@ -102,7 +102,6 @@ class _VoiceChatState extends State<VoiceChat> {
   void dispose() {
     super.dispose();
     instance.room.disconnect();
-    print("OK");
   }
 
   Future<void> requestPermissions() async {
@@ -192,7 +191,9 @@ class _VoiceChatState extends State<VoiceChat> {
                       height: MediaQuery.of(context).size.width * 0.15,
                       color:Colors.red,
                       child:IconButton(
-                      onPressed: (){}, 
+                      onPressed: (){
+                        Navigator.of(context).pop();
+                      }, 
                       icon: Icon(
                         Icons.close,
                         color: Colors.white,
