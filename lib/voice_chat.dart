@@ -207,6 +207,9 @@ class _VoiceChatState extends State<VoiceChat> {
                       child:IconButton(
                       onPressed: ()async{
                         print(instance.room.localParticipant!.isMuted);
+                        if(mic_available){
+                          return;
+                        }
                         if(instance.room.localParticipant!.isMuted){
                           await instance.room.localParticipant?.setMicrophoneEnabled(true);
                         }else{
@@ -214,8 +217,16 @@ class _VoiceChatState extends State<VoiceChat> {
                         }
                         setState(() {});
                       }, 
-                      icon: Icon(
-                        (mic_available?Icons.block:(instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic)),
+                      icon: mic_available? Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(Icons.mic,color: Colors.white), // メインアイコン
+                          Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
+                        ],
+                      )
+                      :
+                      Icon(
+                        instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic,
                         color: Colors.white,
                       ),
                     )
