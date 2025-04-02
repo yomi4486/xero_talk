@@ -176,7 +176,15 @@ class _VoiceChatState extends State<VoiceChat> {
                       color:Colors.black,
                       child:IconButton(
                       onPressed: (){}, 
-                      icon: Icon(
+                      icon: camera_available ? Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(Icons.video_camera_back,color: Colors.white), // メインアイコン
+                          Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
+                        ],
+                      )
+                      : 
+                      Icon(
                         camera_available?Icons.block:Icons.video_camera_back,
                         color: Colors.white,
                       ),
