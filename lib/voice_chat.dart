@@ -89,6 +89,9 @@ class _VoiceChatState extends State<VoiceChat> {
     dynacast: true,
   );
 
+  bool mic_available = false; 
+  bool camera_available = false;
+
   Participant<TrackPublication<Track>>? localParticipant; //自分側
   Participant<TrackPublication<Track>>? remoteParticipant; //相手側
 
@@ -107,16 +110,11 @@ class _VoiceChatState extends State<VoiceChat> {
   Future<void> requestPermissions() async {
     var status = await Permission.camera.request();
     if (status.isGranted) {
-      print("Camera permission granted");
-    } else {
-      print("Camera permission denied");
+      camera_available=true;
     }
-
     status = await Permission.microphone.request();
     if (status.isGranted) {
-      print("Microphone permission granted");
-    } else {
-      print("Microphone permission denied");
+      mic_available=true;
     }
   }
 
@@ -179,7 +177,7 @@ class _VoiceChatState extends State<VoiceChat> {
                       child:IconButton(
                       onPressed: (){}, 
                       icon: Icon(
-                        Icons.video_camera_back,
+                        camera_available?Icons.block:Icons.video_camera_back,
                         color: Colors.white,
                       ),
                     )
@@ -217,7 +215,7 @@ class _VoiceChatState extends State<VoiceChat> {
                         setState(() {});
                       }, 
                       icon: Icon(
-                        (instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic),
+                        (mic_available?Icons.block:(instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic)),
                         color: Colors.white,
                       ),
                     )
