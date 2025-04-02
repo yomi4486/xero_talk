@@ -217,7 +217,7 @@ class _VoiceChatState extends State<VoiceChat> {
                         setState(() {});
                       }, 
                       icon: Icon(
-                        (instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic),
+                        (instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic),
                         color: Colors.white,
                       ),
                     )
