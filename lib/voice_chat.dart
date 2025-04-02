@@ -164,7 +164,59 @@ class _VoiceChatState extends State<VoiceChat> {
                     : Container(),
               ],
             ),
-            // SizedBox(child: IconButton(onPressed: (){}, icon: Icon(Icons.video_camera_back,color: Colors.black,size: 100,),)),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                padding: EdgeInsets.only(left: 40,right: 40,bottom: 60),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100.0), 
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.15,
+                      height: MediaQuery.of(context).size.width * 0.15,
+                      color:Colors.black,
+                      child:IconButton(
+                      onPressed: (){}, 
+                      icon: Icon(
+                        Icons.video_camera_back,
+                        color: Colors.white,
+                      ),
+                    )
+                  )),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100.0), 
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.15,
+                      height: MediaQuery.of(context).size.width * 0.15,
+                      color:Colors.red,
+                      child:IconButton(
+                      onPressed: (){}, 
+                      icon: Icon(
+                        Icons.close,
+                        color: Colors.white,
+                      ),
+                    )
+                  )),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(100.0), 
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.15,
+                      height: MediaQuery.of(context).size.width * 0.15,
+                      color: Colors.black,
+                      child:IconButton(
+                      onPressed: (){}, 
+                      icon: Icon(
+                        Icons.mic_off,
+                        color: Colors.white,
+                      ),
+                    )
+                  )),
+                ],)
+              ),
+            ),
+            
           ],
         )
       ),
