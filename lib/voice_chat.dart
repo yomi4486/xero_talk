@@ -145,8 +145,23 @@ class _VoiceChatState extends State<VoiceChat> {
 
   @override
   Widget build(BuildContext context) {
+    final Color backgroundColor =
+      Color.lerp(instance.theme[0], instance.theme[1], .5)!;
+    final List<Color> textColor = instance.getTextColor(backgroundColor);
     return Scaffold(
-      body: Center(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: FractionalOffset.topLeft,
+            end: FractionalOffset.bottomRight,
+            colors: instance.theme,
+            stops: const [
+              0.0,
+              1.0,
+            ],
+          ),
+        ),
+        child:Center(
         child:Stack(
           children: [
             Column(
@@ -168,80 +183,93 @@ class _VoiceChatState extends State<VoiceChat> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                  ClipRRect( // camera
-                    borderRadius: BorderRadius.circular(100.0), 
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.15,
-                      height: MediaQuery.of(context).size.width * 0.15,
-                      color:Colors.black,
-                      child:IconButton(
-                      onPressed: (){}, 
-                      icon: cameraAvailable ? Icon(
-                        Icons.video_camera_back,
-                        color: Colors.white,
+                  Material(
+                    color:Colors.black.withOpacity(.5),
+                    elevation: 12, // 影をより強く
+                    shape: CircleBorder(),
+                    child: ClipRRect( // camera
+                      borderRadius: BorderRadius.circular(100.0), 
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.15,
+                        height: MediaQuery.of(context).size.width * 0.15,
+                        color:textColor[0].withOpacity(.5),
+                        child:IconButton(
+                        onPressed: (){}, 
+                        icon: cameraAvailable ? Icon(
+                          Icons.video_camera_back,
+                          color: Colors.white,
+                        )
+                        :
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Icon(Icons.video_camera_back,color: Colors.white), // メインアイコン
+                            Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
+                          ],
+                        ),
+                        )
                       )
-                      :
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(Icons.video_camera_back,color: Colors.white), // メインアイコン
-                          Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
-                        ],
+                    ),
+                  ),
+                  Material(
+                    elevation: 12, // 影をより強く
+                    shape: CircleBorder(),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(100.0),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.15,
+                        height: MediaQuery.of(context).size.width * 0.15,
+                        color: Colors.red.withOpacity(.8),
+                        child: IconButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          }, 
+                          icon: Icon(
+                            Icons.close,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
+                    ),
+                  ),
+                  Material(
+                    color:Colors.black.withOpacity(.5),
+                    elevation: 12, // 影をより強く
+                    shape: CircleBorder(),
+                    child: ClipRRect( // mute button
+                      borderRadius: BorderRadius.circular(100.0), 
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.15,
+                        height: MediaQuery.of(context).size.width * 0.15,
+                        color: textColor[0].withOpacity(.8),
+                        child:IconButton(
+                        onPressed: ()async{
+                          if(!micAvailable){
+                            return;
+                          }
+                          if(instance.room.localParticipant!.isMuted){
+                            await instance.room.localParticipant?.setMicrophoneEnabled(true);
+                          }else{
+                            await instance.room.localParticipant?.setMicrophoneEnabled(false);
+                          }
+                          setState(() {});
+                        }, 
+                        icon: micAvailable? 
+                        Icon(
+                          instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic,
+                          color: Colors.white,
+                        )
+                        :
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Icon(Icons.mic,color: Colors.white), // メインアイコン
+                            Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
+                          ],
+                        ),
                       )
                     )
                   ),
-                  ClipRRect( // disconnect
-                    borderRadius: BorderRadius.circular(100.0), 
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.15,
-                      height: MediaQuery.of(context).size.width * 0.15,
-                      color:Colors.red,
-                      child:IconButton(
-                      onPressed: (){
-                        Navigator.of(context).pop();
-                      }, 
-                      icon: Icon(
-                        Icons.close,
-                        color: Colors.white,
-                      ),
-                      )
-                    )
-                  ),
-                  ClipRRect( // mute button
-                    borderRadius: BorderRadius.circular(100.0), 
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.15,
-                      height: MediaQuery.of(context).size.width * 0.15,
-                      color: Colors.black,
-                      child:IconButton(
-                      onPressed: ()async{
-                        print(instance.room.localParticipant!.isMuted);
-                        if(!micAvailable){
-                          return;
-                        }
-                        if(instance.room.localParticipant!.isMuted){
-                          await instance.room.localParticipant?.setMicrophoneEnabled(true);
-                        }else{
-                          await instance.room.localParticipant?.setMicrophoneEnabled(false);
-                        }
-                        setState(() {});
-                      }, 
-                      icon: micAvailable? 
-                      Icon(
-                        instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic,
-                        color: Colors.white,
-                      )
-                      :
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(Icons.mic,color: Colors.white), // メインアイコン
-                          Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
-                        ],
-                      ),
-                      )
-                    )
                   ),
                 ],)
               ),
@@ -249,6 +277,6 @@ class _VoiceChatState extends State<VoiceChat> {
           ],
         )
       ),
-    );
+    ));
   }
 }

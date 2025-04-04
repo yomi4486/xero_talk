@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import '../voice_chat.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/voice_chat.dart';
+import 'package:xero_talk/utils/message_tools.dart';
 
 String lastMessageId = "";
 
@@ -69,21 +70,6 @@ class _MessageScreenState extends State<MessageScreen> {
     } catch (e) {
       print(e);
     }
-  }
-
-  String getTimeStringFormat(DateTime dateTime) {
-    final DateTime nowDate = DateTime.now();
-    late String today;
-    if (dateTime.year == nowDate.year &&
-        dateTime.month == nowDate.month &&
-        dateTime.day == nowDate.day) {
-      today = "今日";
-    } else {
-      today = "${dateTime.year}/${dateTime.month}/${dateTime.day}";
-    }
-    final String modifiedDateTime =
-        "$today, ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
-    return modifiedDateTime;
   }
 
   @override
@@ -221,7 +207,6 @@ class _MessageScreenState extends State<MessageScreen> {
               }
 
               if ((type == "send_message" || type == "call") && lastMessageId == messageId) { //　同じストリームが流れてきた時は無視
-                print("二重受信です");
                 return Column(
                   children: returnWidget,
                 );
@@ -234,7 +219,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 returnWidget = []; // IDの衝突を起こすため初期化
                 for (var entry in chatHistory.entries) {
                   if (entry.value["voice"] == true){
-                    final voiceWidget = getVoiceWidget(context, entry.key,content);
+                    final voiceWidget = getVoiceWidget(context, entry.key,content,textColor);
                     addWidget(voiceWidget, _currentPosition);
                   }else{
                     final Widget chatWidget = getMessageCard(
@@ -262,14 +247,11 @@ class _MessageScreenState extends State<MessageScreen> {
                 final Widget chatWidget = getVoiceWidget(
                   context,
                   messageId,
-                  content
+                  content,
+                  textColor
                 );
                 addWidget(chatWidget, _currentPosition);
-                print("電話かかってきた");
-                print(content);
-     
                 rootChange() async {
-                  print("OK");
                   final String accessToken = await getRoom(content["room_id"]);
                   if(content["author"]! == instance.id){
                     await Future.delayed(Duration(milliseconds: 0), () {
@@ -282,8 +264,6 @@ class _MessageScreenState extends State<MessageScreen> {
                             userId:"https://${dotenv.env['BASE_URL']}/geticon?user_id=${content["author"]}"))),
                       );
                     });
-                  }else{
-                    print("あはい");
                   }
                 }
                 rootChange();

@@ -322,15 +322,71 @@ Widget getMessageCard(
   return chatWidget;
 }
 
-Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> content){
-  return GestureDetector(child: Container(child:Text("通話に参加"),),onTap: ()async{
-    final token = await getRoom(roomId);
-    Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (context) => VoiceChat(RoomInfo(
-              token: token,
-              displayName: "",
-              userId:content["author"]))),
-    );
-  },);
+Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> content,List<Color> textColor){
+  bool isNavigating = false;
+  final int timestamp = content["timestamp"];
+  final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  final String stringDateTime = getTimeStringFormat(dateTime);
+  return GestureDetector(
+    child: Container(
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 5, top: 5),
+      width: MediaQuery.of(context).size.width,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color:Color.fromARGB(50, 255, 255, 255),
+      ),
+      child:Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children:[
+          Row(
+            spacing: 10,
+            children: [
+              Icon(Icons.call,color: textColor[2],),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "通話に参加",
+                    style: TextStyle(
+                      color: textColor[2],
+                    )
+                  ),
+                  Text(
+                    stringDateTime,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: textColor[0],
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+          ClipRRect(
+          borderRadius: BorderRadius.circular(2000000),
+          child: Image.network(
+            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${content["author"]}",
+            width: 30,
+            height: 30,
+            )
+        ),
+        ]
+      ),
+    ),
+    onTap: () async {
+      if (isNavigating) return; // 二回目以降のクリックを無視
+      isNavigating = true; 
+      final token = await getRoom(roomId);
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) => VoiceChat(RoomInfo(
+                token: token,
+                displayName: "",
+                userId:content["author"]))),
+      );
+      isNavigating = false;
+    },
+  );
 }
