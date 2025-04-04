@@ -116,3 +116,18 @@ Future<void> saveImageToGallery(String base64String) async {
     print(e);
   }
 }
+
+String getTimeStringFormat(DateTime dateTime) {
+  final DateTime nowDate = DateTime.now();
+  late String today;
+  if (dateTime.year == nowDate.year &&
+      dateTime.month == nowDate.month &&
+      dateTime.day == nowDate.day) {
+    today = "今日";
+  } else {
+    today = "${dateTime.year}/${dateTime.month}/${dateTime.day}";
+  }
+  final String modifiedDateTime =
+      "$today, ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}";
+  return modifiedDateTime;
+}
