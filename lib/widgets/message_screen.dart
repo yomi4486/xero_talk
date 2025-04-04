@@ -265,9 +265,6 @@ class _MessageScreenState extends State<MessageScreen> {
                   content
                 );
                 addWidget(chatWidget, _currentPosition);
-                print("電話かかってきた");
-                print(content);
-     
                 rootChange() async {
                   print("OK");
                   final String accessToken = await getRoom(content["room_id"]);
