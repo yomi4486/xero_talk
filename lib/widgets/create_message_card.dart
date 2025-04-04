@@ -322,8 +322,11 @@ Widget getMessageCard(
   return chatWidget;
 }
 
-Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> content){
+Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> content,List<Color> textColor){
   bool isNavigating = false;
+  final int timestamp = content["timestamp"];
+  final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+  final String stringDateTime = getTimeStringFormat(dateTime);
   return GestureDetector(
     child: Container(
       padding: const EdgeInsets.all(10),
@@ -339,8 +342,26 @@ Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> co
           Row(
             spacing: 10,
             children: [
-              Icon(Icons.call),
-              Text("通話に参加")
+              Icon(Icons.call,color: textColor[2],),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "通話に参加",
+                    style: TextStyle(
+                      color: textColor[2],
+                    )
+                  ),
+                  Text(
+                    stringDateTime,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: textColor[0],
+                    ),
+                  ),
+                ],
+              )
             ],
           ),
           ClipRRect(
