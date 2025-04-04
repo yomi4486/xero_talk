@@ -323,14 +323,18 @@ Widget getMessageCard(
 }
 
 Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> content){
+  bool isNavigating = false;
   return GestureDetector(child: Container(child:Text("通話に参加"),),onTap: ()async{
+    if (isNavigating) return; // 二回目以降のクリックを無視
+    isNavigating = true; 
     final token = await getRoom(roomId);
-    Navigator.of(context).push(
+    await Navigator.of(context).push(
       MaterialPageRoute(
           builder: (context) => VoiceChat(RoomInfo(
               token: token,
               displayName: "",
               userId:content["author"]))),
     );
+    isNavigating = false;
   },);
 }
