@@ -146,7 +146,19 @@ class _VoiceChatState extends State<VoiceChat> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: FractionalOffset.topLeft,
+            end: FractionalOffset.bottomRight,
+            colors: instance.theme,
+            stops: const [
+              0.0,
+              1.0,
+            ],
+          ),
+        ),
+        child:Center(
         child:Stack(
           children: [
             Column(
@@ -248,6 +260,6 @@ class _VoiceChatState extends State<VoiceChat> {
           ],
         )
       ),
-    );
+    ));
   }
 }
