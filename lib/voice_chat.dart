@@ -216,7 +216,6 @@ class _VoiceChatState extends State<VoiceChat> {
                       color: Colors.black,
                       child:IconButton(
                       onPressed: ()async{
-                        print(instance.room.localParticipant!.isMuted);
                         if(!micAvailable){
                           return;
                         }
