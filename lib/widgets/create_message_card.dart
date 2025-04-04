@@ -324,17 +324,48 @@ Widget getMessageCard(
 
 Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> content){
   bool isNavigating = false;
-  return GestureDetector(child: Container(child:Text("通話に参加"),),onTap: ()async{
-    if (isNavigating) return; // 二回目以降のクリックを無視
-    isNavigating = true; 
-    final token = await getRoom(roomId);
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (context) => VoiceChat(RoomInfo(
-              token: token,
-              displayName: "",
-              userId:content["author"]))),
-    );
-    isNavigating = false;
-  },);
+  return GestureDetector(
+    child: Container(
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 5, top: 5),
+      width: MediaQuery.of(context).size.width,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color:Color.fromARGB(50, 255, 255, 255),
+      ),
+      child:Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children:[
+          Row(
+            spacing: 10,
+            children: [
+              Icon(Icons.call),
+              Text("通話に参加")
+            ],
+          ),
+          ClipRRect(
+          borderRadius: BorderRadius.circular(2000000),
+          child: Image.network(
+            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${content["author"]}",
+            width: 30,
+            height: 30,
+            )
+        ),
+        ]
+      ),
+    ),
+    onTap: () async {
+      if (isNavigating) return; // 二回目以降のクリックを無視
+      isNavigating = true; 
+      final token = await getRoom(roomId);
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) => VoiceChat(RoomInfo(
+                token: token,
+                displayName: "",
+                userId:content["author"]))),
+      );
+      isNavigating = false;
+    },
+  );
 }
