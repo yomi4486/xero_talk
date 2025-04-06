@@ -113,6 +113,10 @@ class AuthContext extends ChangeNotifier {
     });
   }
 
+  void notify(){
+    notifyListeners();
+  }
+
   Future logout() async {
     try {
       inHomeScreen = false;

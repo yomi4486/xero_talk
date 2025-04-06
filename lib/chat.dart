@@ -82,7 +82,7 @@ class _chat extends State<chat> {
         instance.editingMessageId = messageId;
       });
     }
-    
+
     return Stack(children: [
       Scaffold(
           bottomSheet: BottomAppBar(
@@ -159,10 +159,10 @@ class _chat extends State<chat> {
                                 setState(() {
                                   instance.editing = false;
                                 });
-                                editMessage(instance.editingMessageId,
+                                editMessage(instance,instance.editingMessageId,
                                     channelInfo["id"], chatText);
                               } else {
-                                sendMessage(chatText, channelInfo["id"],
+                                sendMessage(instance,chatText, channelInfo["id"],
                                     imageList: images);
                               }
                               chatText = "";
