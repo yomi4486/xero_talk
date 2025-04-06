@@ -4,13 +4,13 @@
 // info: アプリ内通知などに使うモーダル。一般的なレベルの情報は全てこれを使用。　進捗50％
 // debug: debugモードを有効にしている場合により詳細な情報を表示する。
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash/flash.dart';
 import 'package:flash/flash_helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:xero_talk/utils/auth_context.dart';
+// import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
-import 'package:xero_talk/chat.dart';
+// import 'package:xero_talk/chat.dart';
 
 Future<void> showInfoSnack(
     BuildContext context, {
