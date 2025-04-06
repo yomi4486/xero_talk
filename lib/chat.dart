@@ -8,6 +8,7 @@ import 'package:xero_talk/widgets/message_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/message_tools.dart';
 import 'package:xero_talk/widgets/image_viewer.dart';
+import 'package:provider/provider.dart';
 
 class chat extends StatefulWidget {
   const chat({Key? key, required this.channelInfo,required this.snapshot,required this.showChatScreen}) : super(key: key);
@@ -25,7 +26,6 @@ class _chat extends State<chat> {
   _chat({required this.channelInfo});
   Map channelInfo;
   String chatText = "";
-  final AuthContext instance = AuthContext();
   final fieldText = TextEditingController();
   FocusNode focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
@@ -62,13 +62,6 @@ class _chat extends State<chat> {
     return Color.fromARGB(color.alpha, red, green, blue);
   }
 
-  void editMode(String messageId, bool mode) {
-    setState(() {
-      instance.editing = mode;
-      instance.editingMessageId = messageId;
-    });
-  }
-
   void visibleImage(Uint8List uintimage, bool mode) {
     setState(() {
       showImage = mode;
@@ -78,9 +71,18 @@ class _chat extends State<chat> {
 
   @override
   Widget build(BuildContext context) {
+    final instance = Provider.of<AuthContext>(context);
     final Color backgroundColor = lightenColor(instance.theme[0], .2);
     final List<Color> textColor = instance.getTextColor(backgroundColor);
-    final String displayName = channelInfo["display_name"];
+    final String displayName = channelInfo["display_name"] ?? "-";
+
+    void editMode(String messageId, bool mode) {
+      setState(() {
+        instance.editing = mode;
+        instance.editingMessageId = messageId;
+      });
+    }
+    
     return Stack(children: [
       Scaffold(
           bottomSheet: BottomAppBar(
