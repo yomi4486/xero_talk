@@ -385,7 +385,7 @@ class _AccountPage extends State<AccountPage> {
                                             const Padding(
                                                 padding:
                                                     EdgeInsets.only(right: 20),
-                                                child: Text("フレンドを追加"))
+                                                child: Icon(Icons.person_add))
                                           ],
                                         ),
                                       ])));
@@ -406,7 +406,7 @@ class _AccountPage extends State<AccountPage> {
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(10))),
                                     padding: const EdgeInsets.only(
-                                        left: 14, right: 14),
+                                        left: 14, right: 14,top:12,bottom:12),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
@@ -416,10 +416,10 @@ class _AccountPage extends State<AccountPage> {
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
                                             )),
-                                        IconButton(
-                                            onPressed: () {},
-                                            icon:
-                                                const Icon(Icons.arrow_forward))
+                                        Icon(
+                                          Icons.arrow_forward,
+                                          color: Colors.white.withOpacity(.5),
+                                        )
                                       ],
                                     ))))),
                   ] //childlen 画面全体
