@@ -218,53 +218,62 @@ class _AccountPage extends State<AccountPage> {
                               children: [
                                 Column(
                                   children: [
-                                    ClipRRect(
-                                      // アイコン表示（角丸）
-                                      borderRadius:
-                                          BorderRadius.circular(2000000),
-                                      child: Image.network(
-                                        "https://${dotenv.env['BASE_URL']}/geticon?user_id=${profile?['sub']}&t=$nowDt",
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.2,
-                                        loadingBuilder: (BuildContext context,
-                                            Widget child,
-                                            ImageChunkEvent? loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          } else {
-                                            return Image.asset(
-                                              'assets/images/default_user_icon.png',
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.2,
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                    ElevatedButton.icon(
-                                      // アイコン変更ボタン
-                                      style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color.fromARGB(
-                                              255, 231, 231, 231),
-                                          foregroundColor: Colors.black,
-                                          minimumSize: const Size(0, 0),
-                                          maximumSize: Size.fromWidth(
-                                            MediaQuery.of(context).size.width *
-                                                0.2,
-                                          )),
-                                      onPressed: () async {
+                                    GestureDetector(
+                                      onTap: () async {
                                         String? token = await FirebaseAuth
                                             .instance.currentUser
                                             ?.getIdToken();
                                         upload('$token');
                                       },
-                                      label: const Text('変更',
-                                          style: (TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 15))),
+                                      child:
+                                      Stack(children:[
+                                      ClipRRect(
+                                        // アイコン表示（角丸）
+                                        borderRadius:
+                                            BorderRadius.circular(2000000),
+                                        child: Image.network(
+                                          "https://${dotenv.env['BASE_URL']}/geticon?user_id=${profile?['sub']}&t=$nowDt",
+                                          width:
+                                              MediaQuery.of(context).size.width *
+                                                  0.2,
+                                          loadingBuilder: (BuildContext context,
+                                              Widget child,
+                                              ImageChunkEvent? loadingProgress) {
+                                            if (loadingProgress == null) {
+                                              return child;
+                                            } else {
+                                              return Image.asset(
+                                                'assets/images/default_user_icon.png',
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.2,
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: Material(
+                                        color:Colors.black,
+                                        elevation:4,
+                                        shape: CircleBorder(),
+                                        child:Container(
+                                            padding: const EdgeInsets.all(3),
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Color.fromARGB(255, 222, 222, 222),
+                                            ),
+                                            child: const Icon(
+                                              Icons.edit,
+                                              color: Color.fromARGB(255, 0, 0, 0),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ]),
                                     ),
                                   ],
                                 ),
