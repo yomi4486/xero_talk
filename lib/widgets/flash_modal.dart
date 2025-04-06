@@ -95,7 +95,7 @@ class _ProgressFlashState extends State<ProgressFlash> {
                           // アイコン表示（角丸）
                           borderRadius: BorderRadius.circular(1000),
                           child: Image.network(
-                            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${widget.userProfile['id']}",
+                            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${widget.content['author']}",
                             width: MediaQuery.of(context).size.width * 0.1,
                           ),
                         ),
