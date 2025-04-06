@@ -5,31 +5,94 @@ import 'package:xero_talk/notify.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
+import 'dart:convert' as convert;
+import 'package:xero_talk/widgets/flash_modal.dart';
+import 'package:provider/provider.dart';
 
-class chatHome extends StatelessWidget {
+String lastMessageId = "";
+
+class chatHome extends StatefulWidget {
   chatHome();
-  final AuthContext instance = AuthContext();
+  @override
+  _chatHomeState createState() => _chatHomeState();
+}
+
+class _chatHomeState extends State<chatHome> {
+  Map<String, dynamic> userData = {};
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+
+  @override // 限界まで足掻いた人生は想像よりも狂っているらしい
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
+      final instance = Provider.of<AuthContext>(context,listen: true);
+      Future<void> showChatScreen({String? id})async{
+        if(id == null){
+          setState((){
+            instance.visibleChatScreen = false;
+          });
+          return;
+        }
+        userData = await getUserProfile(id);
+        setState((){
+          instance.visibleChatScreen = !instance.visibleChatScreen;
+          instance.showChatId = id;
+        });
+      }
+      return WillPopScope(
         onWillPop: () async => false,
-        child: GestureDetector(
+        child: StreamBuilder(
+      stream: instance.bloadCast,
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        var content = {};
+        try {
+          if (snapshot.data != null) {
+            content = convert.json.decode(snapshot.data);
+          }
+          final String type = content['type'];
+          late String messageId;
+
+          if (type == "call"){
+            messageId = content["room_id"];
+          }else{
+            messageId = content["id"];
+          }
+
+          if(type == 'send_message' && lastMessageId != messageId){
+            if(instance.id != content['author']){
+              showInfoSnack(context, content: content);
+            }     
+          }
+
+          lastMessageId = messageId;
+        } catch (e) {
+          // print(e);
+        }
+
+        return GestureDetector(
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < 0) {
-                try {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (context) => instance.lastOpenedChat),
-                  );
-                } catch (e) {
-                  //初期化されてない場合
-                  print("前の会話はありません");
-                }
+                // try {
+                //   Navigator.of(context).push(
+                //     MaterialPageRoute(
+                //         builder: (context) => instance.lastOpenedChat),
+                //   );
+                // } catch (e) {
+                //   //初期化されてない場合
+                //   print("前の会話はありません");
+                // }
               }
             },
-            child: Scaffold(
+            child: Stack(children:[
+              Scaffold(
                 bottomNavigationBar: BottomNavigationBar(
                   enableFeedback: false,
                   onTap: (value) {
@@ -137,40 +200,42 @@ class chatHome extends StatelessWidget {
                                         children: [
                                           GestureDetector(
                                               onTap: () async {
-                                                final Map<String, dynamic>
-                                                    userData =
-                                                    await getUserProfile(
-                                                        '106017943896753291176');
-                                                final Widget openWidget =
-                                                    chat(channelInfo: userData);
-                                                instance.lastOpenedChat =
-                                                    openWidget;
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          openWidget),
-                                                );
+                                                // final Map<String, dynamic>
+                                                //     userData =
+                                                //     await getUserProfile(
+                                                //         '106017943896753291176');
+                                                // final Widget openWidget =
+                                                //     chat(channelInfo: userData,snapshot: snapshot,);
+                                                // instance.lastOpenedChat =
+                                                //     openWidget;
+                                                // Navigator.push(
+                                                //   context,
+                                                //   MaterialPageRoute(
+                                                //       builder: (context) =>
+                                                //           openWidget),
+                                                // );
+                                                showChatScreen(id:'106017943896753291176');
                                               },
                                               child: ChatListWidget(
                                                 userId: '106017943896753291176',
                                               )),
                                           GestureDetector(
                                               onTap: () async {
-                                                final Map<String, dynamic>
-                                                    userData =
-                                                    await getUserProfile(
-                                                        '112905252227299870586');
-                                                final Widget openWidget =
-                                                    chat(channelInfo: userData);
-                                                instance.lastOpenedChat =
-                                                    openWidget;
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          openWidget),
-                                                );
+                                                // final Map<String, dynamic>
+                                                //     userData =
+                                                //     await getUserProfile(
+                                                //         '112905252227299870586');
+                                                // final Widget openWidget =
+                                                //     chat(channelInfo: userData,snapshot: snapshot,);
+                                                // instance.lastOpenedChat =
+                                                //     openWidget;
+                                                // Navigator.push(
+                                                //   context,
+                                                //   MaterialPageRoute(
+                                                //       builder: (context) =>
+                                                //           openWidget),
+                                                // );
+                                                showChatScreen(id:'112905252227299870586');
                                               },
                                               child: ChatListWidget(
                                                   userId:
@@ -245,6 +310,20 @@ class chatHome extends StatelessWidget {
                       ),
                     ])
                   ],
-                ))));
+                )
+                ),
+                instance.visibleChatScreen ? chat(
+                  channelInfo: userData,
+                  snapshot: snapshot,
+                  showChatScreen: showChatScreen,
+                )
+                :
+                Container()
+              ]
+            )
+          );
+        },
+      ),
+    );
   }
 }

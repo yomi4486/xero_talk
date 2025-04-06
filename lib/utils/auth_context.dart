@@ -35,6 +35,8 @@ class AuthContext extends ChangeNotifier {
   late String editingMessageId;
   late Room room;
   bool inHomeScreen = false;
+  bool visibleChatScreen = false;
+  late String showChatId;
   List<Color> theme = const [
     Color.fromARGB(204, 228, 169, 114),
     Color.fromARGB(204, 153, 65, 216)
@@ -109,6 +111,10 @@ class AuthContext extends ChangeNotifier {
         }
       }
     });
+  }
+
+  void notify(){
+    notifyListeners();
   }
 
   Future logout() async {

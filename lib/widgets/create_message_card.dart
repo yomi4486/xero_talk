@@ -268,7 +268,7 @@ Widget getMessageCard(
                                                     255, 255, 10, 10)),
                                           ),
                                           onPressed: () async {
-                                            await deleteMessage(messageId,
+                                            await deleteMessage(instance,messageId,
                                                 widget.channelInfo["id"]);
                                             Navigator.pop(context);
                                           }),

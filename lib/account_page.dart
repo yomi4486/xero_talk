@@ -11,6 +11,7 @@ import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
+import 'package:provider/provider.dart';
 
 class AccountPage extends StatefulWidget {
   AccountPage();
@@ -24,7 +25,6 @@ class _AccountPage extends State<AccountPage> {
   bool _showFab = false; // falseなら未編集、trueなら編集済み
   var description = "";
   var displayName = "";
-  final AuthContext instance = AuthContext();
 
   @override
   void dispose() {
@@ -60,6 +60,7 @@ class _AccountPage extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    final instance = Provider.of<AuthContext>(context);
     var profile = instance.userCredential.additionalUserInfo?.profile;
     return WillPopScope(
       onWillPop: () async => true,
@@ -218,53 +219,62 @@ class _AccountPage extends State<AccountPage> {
                               children: [
                                 Column(
                                   children: [
-                                    ClipRRect(
-                                      // アイコン表示（角丸）
-                                      borderRadius:
-                                          BorderRadius.circular(2000000),
-                                      child: Image.network(
-                                        "https://${dotenv.env['BASE_URL']}/geticon?user_id=${profile?['sub']}&t=$nowDt",
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.2,
-                                        loadingBuilder: (BuildContext context,
-                                            Widget child,
-                                            ImageChunkEvent? loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          } else {
-                                            return Image.asset(
-                                              'assets/images/default_user_icon.png',
-                                              width: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.2,
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                    ElevatedButton.icon(
-                                      // アイコン変更ボタン
-                                      style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color.fromARGB(
-                                              255, 231, 231, 231),
-                                          foregroundColor: Colors.black,
-                                          minimumSize: const Size(0, 0),
-                                          maximumSize: Size.fromWidth(
-                                            MediaQuery.of(context).size.width *
-                                                0.2,
-                                          )),
-                                      onPressed: () async {
+                                    GestureDetector(
+                                      onTap: () async {
                                         String? token = await FirebaseAuth
                                             .instance.currentUser
                                             ?.getIdToken();
                                         upload('$token');
                                       },
-                                      label: const Text('変更',
-                                          style: (TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 15))),
+                                      child:
+                                      Stack(children:[
+                                      ClipRRect(
+                                        // アイコン表示（角丸）
+                                        borderRadius:
+                                            BorderRadius.circular(2000000),
+                                        child: Image.network(
+                                          "https://${dotenv.env['BASE_URL']}/geticon?user_id=${profile?['sub']}&t=$nowDt",
+                                          width:
+                                              MediaQuery.of(context).size.width *
+                                                  0.2,
+                                          loadingBuilder: (BuildContext context,
+                                              Widget child,
+                                              ImageChunkEvent? loadingProgress) {
+                                            if (loadingProgress == null) {
+                                              return child;
+                                            } else {
+                                              return Image.asset(
+                                                'assets/images/default_user_icon.png',
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width *
+                                                    0.2,
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: Material(
+                                        color:Colors.black,
+                                        elevation:4,
+                                        shape: CircleBorder(),
+                                        child:Container(
+                                            padding: const EdgeInsets.all(3),
+                                            decoration: const BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Color.fromARGB(255, 222, 222, 222),
+                                            ),
+                                            child: const Icon(
+                                              Icons.edit,
+                                              color: Color.fromARGB(255, 0, 0, 0),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ]),
                                     ),
                                   ],
                                 ),
@@ -385,7 +395,7 @@ class _AccountPage extends State<AccountPage> {
                                             const Padding(
                                                 padding:
                                                     EdgeInsets.only(right: 20),
-                                                child: Text("フレンドを追加"))
+                                                child: Icon(Icons.person_add))
                                           ],
                                         ),
                                       ])));
@@ -406,7 +416,7 @@ class _AccountPage extends State<AccountPage> {
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(10))),
                                     padding: const EdgeInsets.only(
-                                        left: 14, right: 14),
+                                        left: 14, right: 14,top:12,bottom:12),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
@@ -416,10 +426,10 @@ class _AccountPage extends State<AccountPage> {
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold,
                                             )),
-                                        IconButton(
-                                            onPressed: () {},
-                                            icon:
-                                                const Icon(Icons.arrow_forward))
+                                        Icon(
+                                          Icons.arrow_forward,
+                                          color: Colors.white.withOpacity(.5),
+                                        )
                                       ],
                                     ))))),
                   ] //childlen 画面全体
