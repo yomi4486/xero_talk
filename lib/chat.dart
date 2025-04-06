@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:xero_talk/home.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/voice_chat.dart';
 
@@ -9,9 +10,10 @@ import 'package:xero_talk/utils/message_tools.dart';
 import 'package:xero_talk/widgets/image_viewer.dart';
 
 class chat extends StatefulWidget {
-  const chat({Key? key, required this.channelInfo,required this.snapshot}) : super(key: key);
+  const chat({Key? key, required this.channelInfo,required this.snapshot,required this.showChatScreen}) : super(key: key);
   final Map channelInfo;
   final AsyncSnapshot snapshot ;
+  final Function({String? id}) showChatScreen;
 
   @override
   State<chat> createState() {
@@ -227,7 +229,7 @@ class _chat extends State<chat> {
             title: Row(children: [
               IconButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    widget.showChatScreen();
                   },
                   icon: const Icon(Icons.arrow_back,
                       color: Color.fromARGB(128, 255, 255, 255))),

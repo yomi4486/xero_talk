@@ -12,54 +12,11 @@ import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
 import 'package:xero_talk/chat.dart';
 
-class InfoSnack extends StatelessWidget {
-  /// アプリ内通知などに使うモーダル。一般的なレベルの情報は全てこれを使用。
-  InfoSnack(
-      {Key? key,
-      required this.userCredential,
-      required this.title,
-      required this.datail})
-      : super(key: key);
-  final UserCredential userCredential;
-  final String title;
-  final String datail;
-  @override
-  Widget build(BuildContext context) {
-    final snack = ElevatedButton(
-      child: const Text("通知(テスト)"),
-      onPressed: () => context.showFlash<bool>(
-        barrierDismissible: true,
-        duration: const Duration(seconds: 3),
-        builder: (context, controller) => FlashBar(
-          // こいつが通知ウィジェット本体
-          controller: controller,
-          forwardAnimationCurve: Curves.easeInCirc,
-          reverseAnimationCurve: Curves.bounceIn,
-          position: FlashPosition.top,
-          indicatorColor: const Color.fromARGB(255, 140, 206, 74),
-          icon: ImageIcon(
-            NetworkImage("${userCredential.user!.photoURL}"),
-          ),
-          title: Text(title),
-          content: Text(datail),
-          actions: [
-            TextButton(onPressed: controller.dismiss, child: Text('Cancel')),
-            TextButton(
-                onPressed: () => controller.dismiss(true),
-                child: Text('Ok')) // TODO:これがクリックされたら対象ユーザーのチャット画面に遷移する処理を書く
-          ],
-        ),
-      ),
-    );
-    return snack;
-  }
-}
-
 Future<void> showInfoSnack(
     BuildContext context, {
     required Map<dynamic,dynamic> content
   }) async {
-  final instance = AuthContext();
+  // final instance = AuthContext();
   final userProfile = await getUserProfile(content['author']);
   context.showFlash<bool>(
     builder: (context, controller) => FlashBar(
