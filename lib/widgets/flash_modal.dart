@@ -70,6 +70,14 @@ class _ProgressFlashState extends State<ProgressFlash> {
           decoration: BoxDecoration(
             color: Color.fromARGB(255, 22, 22, 22),
             borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5), // 影の色と透明度
+                spreadRadius: 2, // 影の広がり
+                blurRadius: 5, // ぼかしの強さ
+                offset: Offset(3, 3), // 影の位置 (x, y)
+              ),
+            ],
           ),
           margin: EdgeInsets.only(top: 60,left: 20,right: 20),
           child:Wrap(
