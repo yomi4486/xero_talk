@@ -9,6 +9,7 @@ import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/flash_modal.dart';
 import 'package:provider/provider.dart';
 
+String lastMessageId = "";
 
 class chatHome extends StatefulWidget {
   chatHome();
@@ -27,7 +28,6 @@ class _chatHomeState extends State<chatHome> {
 
   @override
   void dispose() {
-    print("dispose");
     super.dispose();
   }
 
@@ -52,23 +52,34 @@ class _chatHomeState extends State<chatHome> {
         child: StreamBuilder(
       stream: instance.bloadCast,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        print("OK");
         var content = {};
+
         try {
           if (snapshot.data != null) {
             content = convert.json.decode(snapshot.data);
           }
+          final String type = content['type'];
+          late String messageId;
+
+          if (type == "call"){
+            messageId = content["room_id"];
+          }else{
+            messageId = content["id"];
+          }
+
+          if(type == 'send_message' && lastMessageId != messageId){
+            if(instance.id != content['author']){
+              showInfoSnack(context, content: content);
+            }     
+          }
+
+          lastMessageId = messageId;
         } catch (e) {
           print(e);
         }
-        if(content['type'] == 'send_message'){
-          print("send_message");
-          if(instance.id != content['author']){
-            showInfoSnack(context, content: content);
-          }     
-        }else{
-          print(content['type']);
-        }
+
+
+
         return GestureDetector(
           
             onHorizontalDragEnd: (details) {
