@@ -11,6 +11,7 @@ import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
+import 'package:provider/provider.dart';
 
 class AccountPage extends StatefulWidget {
   AccountPage();
@@ -24,7 +25,6 @@ class _AccountPage extends State<AccountPage> {
   bool _showFab = false; // falseなら未編集、trueなら編集済み
   var description = "";
   var displayName = "";
-  final AuthContext instance = AuthContext();
 
   @override
   void dispose() {
@@ -60,6 +60,7 @@ class _AccountPage extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    final instance = Provider.of<AuthContext>(context);
     var profile = instance.userCredential.additionalUserInfo?.profile;
     return WillPopScope(
       onWillPop: () async => true,

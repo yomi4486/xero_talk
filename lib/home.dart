@@ -53,7 +53,6 @@ class _chatHomeState extends State<chatHome> {
       stream: instance.bloadCast,
       builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
         var content = {};
-
         try {
           if (snapshot.data != null) {
             content = convert.json.decode(snapshot.data);
@@ -75,13 +74,10 @@ class _chatHomeState extends State<chatHome> {
 
           lastMessageId = messageId;
         } catch (e) {
-          print(e);
+          // print(e);
         }
 
-
-
         return GestureDetector(
-          
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < 0) {
                 // try {
@@ -316,7 +312,13 @@ class _chatHomeState extends State<chatHome> {
                   ],
                 )
                 ),
-                instance.visibleChatScreen ? chat(channelInfo: userData,snapshot: snapshot,showChatScreen: showChatScreen,):Container()
+                instance.visibleChatScreen ? chat(
+                  channelInfo: userData,
+                  snapshot: snapshot,
+                  showChatScreen: showChatScreen,
+                )
+                :
+                Container()
               ]
             )
           );
