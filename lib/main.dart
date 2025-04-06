@@ -155,9 +155,7 @@ class _LoginPageState extends State<MyHomePage> {
         //既存ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ChangeNotifierProvider(
-            create: (context) => AuthContext(),
-            child:chatHome()),),
+          MaterialPageRoute(builder: (context) => chatHome()),
         );
       }
 
