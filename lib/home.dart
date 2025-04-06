@@ -7,10 +7,8 @@ import 'package:xero_talk/widgets/chat_list_widget.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
 import 'dart:convert' as convert;
 import 'package:xero_talk/widgets/flash_modal.dart';
+import 'package:provider/provider.dart';
 
-bool visibleChatScreen = false;
-String showChatId = "";
-Map<String, dynamic> userData = {};
 
 class chatHome extends StatefulWidget {
   chatHome();
@@ -19,7 +17,7 @@ class chatHome extends StatefulWidget {
 }
 
 class _chatHomeState extends State<chatHome> {
-  final AuthContext instance = AuthContext();
+  Map<String, dynamic> userData = {};
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
 
   @override // 限界まで足掻いた人生は想像よりも狂っているらしい
@@ -35,13 +33,18 @@ class _chatHomeState extends State<chatHome> {
 
   @override
   Widget build(BuildContext context) {
-      Future<void> showChatScreen(String id)async{
+      final instance = Provider.of<AuthContext>(context);
+      Future<void> showChatScreen({String? id})async{
+        if(id == null){
+          setState((){
+            instance.visibleChatScreen = false;
+          });
+          return;
+        }
         userData = await getUserProfile(id);
         setState((){
-          print("ready");
-          print(userData);
-          visibleChatScreen = true;
-          showChatId = id;
+          instance.visibleChatScreen = !instance.visibleChatScreen;
+          instance.showChatId = id;
         });
       }
       return WillPopScope(
@@ -204,7 +207,7 @@ class _chatHomeState extends State<chatHome> {
                                                 //       builder: (context) =>
                                                 //           openWidget),
                                                 // );
-                                                showChatScreen('106017943896753291176');
+                                                showChatScreen(id:'106017943896753291176');
                                               },
                                               child: ChatListWidget(
                                                 userId: '106017943896753291176',
@@ -225,7 +228,7 @@ class _chatHomeState extends State<chatHome> {
                                                 //       builder: (context) =>
                                                 //           openWidget),
                                                 // );
-                                                showChatScreen('112905252227299870586');
+                                                showChatScreen(id:'112905252227299870586');
                                               },
                                               child: ChatListWidget(
                                                   userId:
@@ -302,7 +305,7 @@ class _chatHomeState extends State<chatHome> {
                   ],
                 )
                 ),
-                visibleChatScreen ? chat(channelInfo: userData,snapshot: snapshot,):Container()
+                instance.visibleChatScreen ? chat(channelInfo: userData,snapshot: snapshot,showChatScreen: showChatScreen,):Container()
               ]
             )
           );

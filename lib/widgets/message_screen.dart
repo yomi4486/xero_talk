@@ -141,7 +141,6 @@ class _MessageScreenState extends State<MessageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("再描画");
     final instance = Provider.of<AuthContext>(context);
     final Color backgroundColor =
         Color.lerp(instance.theme[0], instance.theme[1], .5)!;
@@ -281,7 +280,5 @@ class _MessageScreenState extends State<MessageScreen> {
             return Column(children: returnWidget);
           },
         );
-      
-    
   }
 }
