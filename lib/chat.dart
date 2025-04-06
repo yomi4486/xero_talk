@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+// import 'package:xero_talk/home.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/voice_chat.dart';
 
@@ -7,10 +8,13 @@ import 'package:xero_talk/widgets/message_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/message_tools.dart';
 import 'package:xero_talk/widgets/image_viewer.dart';
+import 'package:provider/provider.dart';
 
 class chat extends StatefulWidget {
-  const chat({Key? key, required this.channelInfo}) : super(key: key);
+  const chat({Key? key, required this.channelInfo,required this.snapshot,required this.showChatScreen}) : super(key: key);
   final Map channelInfo;
+  final AsyncSnapshot snapshot ;
+  final Function({String? id}) showChatScreen;
 
   @override
   State<chat> createState() {
@@ -22,7 +26,6 @@ class _chat extends State<chat> {
   _chat({required this.channelInfo});
   Map channelInfo;
   String chatText = "";
-  final AuthContext instance = AuthContext();
   final fieldText = TextEditingController();
   FocusNode focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
@@ -59,13 +62,6 @@ class _chat extends State<chat> {
     return Color.fromARGB(color.alpha, red, green, blue);
   }
 
-  void editMode(String messageId, bool mode) {
-    setState(() {
-      instance.editing = mode;
-      instance.editingMessageId = messageId;
-    });
-  }
-
   void visibleImage(Uint8List uintimage, bool mode) {
     setState(() {
       showImage = mode;
@@ -75,9 +71,18 @@ class _chat extends State<chat> {
 
   @override
   Widget build(BuildContext context) {
+    final instance = Provider.of<AuthContext>(context);
     final Color backgroundColor = lightenColor(instance.theme[0], .2);
     final List<Color> textColor = instance.getTextColor(backgroundColor);
-    final String displayName = channelInfo["display_name"];
+    final String displayName = channelInfo["display_name"] ?? "-";
+
+    void editMode(String messageId, bool mode) {
+      setState(() {
+        instance.editing = mode;
+        instance.editingMessageId = messageId;
+      });
+    }
+
     return Stack(children: [
       Scaffold(
           bottomSheet: BottomAppBar(
@@ -154,10 +159,10 @@ class _chat extends State<chat> {
                                 setState(() {
                                   instance.editing = false;
                                 });
-                                editMessage(instance.editingMessageId,
+                                editMessage(instance,instance.editingMessageId,
                                     channelInfo["id"], chatText);
                               } else {
-                                sendMessage(chatText, channelInfo["id"],
+                                sendMessage(instance,chatText, channelInfo["id"],
                                     imageList: images);
                               }
                               chatText = "";
@@ -226,7 +231,7 @@ class _chat extends State<chat> {
             title: Row(children: [
               IconButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    widget.showChatScreen();
                   },
                   icon: const Icon(Icons.arrow_back,
                       color: Color.fromARGB(128, 255, 255, 255))),
@@ -501,7 +506,8 @@ class _chat extends State<chat> {
                                                       fieldText: fieldText,
                                                       EditMode: editMode,
                                                       ImageControler:
-                                                          visibleImage) // コントローラーやノードの状態をストリームの描画部分と共有
+                                                          visibleImage,
+                                                      snapshot: widget.snapshot,) // コントローラーやノードの状態をストリームの描画部分と共有
                                                 ]),
                                           ),
                                         );

@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
-import 'package:googleapis/drive/v3.dart' as drive;
+// import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
@@ -23,7 +23,8 @@ class MessageScreen extends StatefulWidget {
       required this.channelInfo,
       required this.fieldText,
       required this.EditMode,
-      required this.ImageControler})
+      required this.ImageControler,
+      required this.snapshot})
       : super(key: key);
   final FocusNode focusNode;
 
@@ -33,6 +34,7 @@ class MessageScreen extends StatefulWidget {
   final TextEditingController fieldText;
   final Function(Uint8List, bool) ImageControler;
   final Function(String, bool) EditMode;
+  final AsyncSnapshot snapshot;
   @override
   _MessageScreenState createState() => _MessageScreenState();
 }
@@ -143,34 +145,16 @@ class _MessageScreenState extends State<MessageScreen> {
     final Color backgroundColor =
         Color.lerp(instance.theme[0], instance.theme[1], .5)!;
     final List<Color> textColor = instance.getTextColor(backgroundColor);
-    return StreamBuilder(
-      stream: instance.bloadCast,
-      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        var displayName = "";
-        var content = {};
-        try {
-          if (snapshot.data != null) {
-            content = convert.json.decode(snapshot.data);
-          } else {
-            return Column(children: returnWidget);
-          }
-        } catch (e) {
-          print(e);
-          return Column(children: returnWidget);
-        }
-        final a = FirebaseFirestore.instance
+    late String displayName;
+    if(widget.snapshot.data == null) {
+      return Column(children: returnWidget);
+    }
+    final content = convert.json.decode(widget.snapshot.data);
+    final a = FirebaseFirestore.instance
             .collection('user_account')
             .doc('${content["author"]}');
-        () async {
-          // 会話に変更があった場合ファイルに書き込み
-          final uploadFile = drive.File();
-          uploadFile.name = "testfile.txt";
-          await instance.googleDriveApi.files.create(
-            uploadFile,
-          );
-        };
-        final _currentPosition = widget.scrollController.position.pixels;
-        return FutureBuilder(
+    final currentPosition = widget.scrollController.position.pixels;
+    return FutureBuilder(
           future: a.get(),
           builder: (context, AsyncSnapshot<DocumentSnapshot> docSnapshot) {
             if (docSnapshot.connectionState == ConnectionState.waiting) {
@@ -213,30 +197,36 @@ class _MessageScreenState extends State<MessageScreen> {
               }
               lastMessageId = messageId; // 最終受信を上書き
               if (type == "edit_message") {
-                chatHistory[messageId]["content"] = messageContent;
-                chatHistory[messageId]["timeStamp"] = timestamp;
-                chatHistory[messageId]["edited"] = edited;
-                returnWidget = []; // IDの衝突を起こすため初期化
-                for (var entry in chatHistory.entries) {
-                  if (entry.value["voice"] == true){
-                    final voiceWidget = getVoiceWidget(context, entry.key,content,textColor);
-                    addWidget(voiceWidget, _currentPosition);
-                  }else{
-                    final Widget chatWidget = getMessageCard(
-                        context,
-                        widget,
-                        textColor,
-                        entry.value["display_name"],
-                        entry.value["display_time"],
-                        entry.value["author"],
-                        entry.value["content"],
-                        entry.value["edited"],
-                        entry.value["attachments"],
-                        entry.key,
-                        showImage: widget.ImageControler);
-                    addWidget(chatWidget, _currentPosition);
+                try{
+                  chatHistory[messageId]["content"] = messageContent;
+                  chatHistory[messageId]["timeStamp"] = timestamp;
+                  chatHistory[messageId]["edited"] = edited;
+                  returnWidget = []; // IDの衝突を起こすため初期化
+                  for (var entry in chatHistory.entries) {
+                    if (entry.value["voice"] == true){
+                      final voiceWidget = getVoiceWidget(context, entry.key,content,textColor);
+                      addWidget(voiceWidget, currentPosition);
+                    }else{
+                      final Widget chatWidget = getMessageCard(
+                          context,
+                          widget,
+                          textColor,
+                          entry.value["display_name"],
+                          entry.value["display_time"],
+                          entry.value["author"],
+                          entry.value["content"],
+                          entry.value["edited"],
+                          entry.value["attachments"],
+                          entry.key,
+                          showImage: widget.ImageControler);
+                      addWidget(chatWidget, currentPosition);
+                    }
                   }
+                }catch(e){
+                  chatHistory={};
+                  return Column(children: returnWidget);
                 }
+                
               }else if(type == "call"){
                 chatHistory[messageId] = {
                   "author": content["author"],
@@ -250,7 +240,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   content,
                   textColor
                 );
-                addWidget(chatWidget, _currentPosition);
+                addWidget(chatWidget, currentPosition);
                 rootChange() async {
                   final String accessToken = await getRoom(content["room_id"]);
                   if(content["author"]! == instance.id){
@@ -290,13 +280,11 @@ class _MessageScreenState extends State<MessageScreen> {
                     content["attachments"],
                     messageId,
                     showImage: widget.ImageControler);
-                addWidget(chatWidget, _currentPosition);
+                addWidget(chatWidget, currentPosition);
               }
             }
             return Column(children: returnWidget);
           },
         );
-      },
-    );
   }
 }
