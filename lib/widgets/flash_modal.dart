@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flash/flash.dart';
 import 'package:flash/flash_helper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import 'package:xero_talk/utils/auth_context.dart';
+import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
 // import 'package:xero_talk/chat.dart';
 
@@ -19,37 +19,111 @@ Future<void> showInfoSnack(
   // final instance = AuthContext();
   final userProfile = await getUserProfile(content['author']);
   context.showFlash<bool>(
-    builder: (context, controller) => FlashBar(
-      controller: controller,
-      forwardAnimationCurve: Curves.easeInCirc,
-      reverseAnimationCurve: Curves.bounceIn,
-      position: FlashPosition.top,
-      indicatorColor: const Color.fromARGB(255, 140, 206, 74),
-      icon: ImageIcon(
-        NetworkImage("https://${dotenv.env['BASE_URL']}/geticon?user_id=${content['author']}"),
-      ),
-      title: Text(userProfile['display_name']),
-      content: Text(content['content']),
-      actions: [
-        TextButton(onPressed: controller.dismiss, child: Text('Cancel')),
-        TextButton(
-            onPressed: ()async{
-              // final Map<String, dynamic>
-              //     userData =
-              //     await getUserProfile(content['author']);
-              // final Widget openWidget =
-              //     chat(channelInfo: userData,);
-              // instance.lastOpenedChat =
-              //     openWidget;
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //       builder: (context) =>
-              //           openWidget),
-              // );                             
-            },
-            child: Text('開く'))
-      ],
-    ),
+    duration: Duration(seconds: 5),
+    builder: (context, controller){
+      return Flash(
+        controller: controller,
+        position: FlashPosition.top,
+        child: ProgressFlash(controller: controller,content: content,userProfile: userProfile,),
+      );
+    }
   );
+}
+
+class ProgressFlash extends StatefulWidget {
+  final FlashController controller;
+  final Map<dynamic,dynamic> content;
+  final Map<String,dynamic> userProfile;
+  ProgressFlash({required this.controller,required this.content,required this.userProfile});
+
+  @override
+  _ProgressFlashState createState() => _ProgressFlashState();
+}
+
+class _ProgressFlashState extends State<ProgressFlash> {
+  final instance = AuthContext();
+  double _progress = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _startProgress();
+  }
+
+  void _startProgress() {
+    Future.delayed(Duration(milliseconds: 100), () async {
+      for (int i = 0; i <= 100; i++) {
+        await Future.delayed(Duration(milliseconds: 50));
+        if (!mounted) return;
+        setState(() => _progress = i / 100);
+      }
+      widget.controller.dismiss(); // バーが最大になったら閉じる
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children:[
+        Container(
+          decoration: BoxDecoration(
+            color: Color.fromARGB(255, 22, 22, 22),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: EdgeInsets.only(top: 60,left: 20,right: 20),
+          child:Wrap(
+            children: [
+              Padding(      
+                padding: EdgeInsets.all(22),
+                child:Row(
+                  spacing: 10,
+                  children:[
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          // アイコン表示（角丸）
+                          borderRadius: BorderRadius.circular(1000),
+                          child: Image.network(
+                            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${widget.userProfile['id']}",
+                            width: MediaQuery.of(context).size.width * 0.1,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.userProfile['display_name'],
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          widget.content['content'],
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                  ),
+                ]
+              )),
+              LinearProgressIndicator(
+                minHeight: 5,
+                value: _progress,
+                backgroundColor: Color.fromARGB(0, 22, 22, 22),
+                valueColor: AlwaysStoppedAnimation<Color>(instance.theme[0]),
+              ),
+            ],
+          )
+        ),
+      ]
+    );
+  }
 }
