@@ -454,7 +454,7 @@ class _chat extends State<chat> {
                   onHorizontalDragEnd: (details) {
                     if (details.primaryVelocity! > 0) {
                       // 左スワイプ
-                      Navigator.of(context).pop();
+                      widget.showChatScreen();
                     }
                   },
                   child: Container(
