@@ -197,30 +197,36 @@ class _MessageScreenState extends State<MessageScreen> {
               }
               lastMessageId = messageId; // 最終受信を上書き
               if (type == "edit_message") {
-                chatHistory[messageId]["content"] = messageContent;
-                chatHistory[messageId]["timeStamp"] = timestamp;
-                chatHistory[messageId]["edited"] = edited;
-                returnWidget = []; // IDの衝突を起こすため初期化
-                for (var entry in chatHistory.entries) {
-                  if (entry.value["voice"] == true){
-                    final voiceWidget = getVoiceWidget(context, entry.key,content,textColor);
-                    addWidget(voiceWidget, currentPosition);
-                  }else{
-                    final Widget chatWidget = getMessageCard(
-                        context,
-                        widget,
-                        textColor,
-                        entry.value["display_name"],
-                        entry.value["display_time"],
-                        entry.value["author"],
-                        entry.value["content"],
-                        entry.value["edited"],
-                        entry.value["attachments"],
-                        entry.key,
-                        showImage: widget.ImageControler);
-                    addWidget(chatWidget, currentPosition);
+                try{
+                  chatHistory[messageId]["content"] = messageContent;
+                  chatHistory[messageId]["timeStamp"] = timestamp;
+                  chatHistory[messageId]["edited"] = edited;
+                  returnWidget = []; // IDの衝突を起こすため初期化
+                  for (var entry in chatHistory.entries) {
+                    if (entry.value["voice"] == true){
+                      final voiceWidget = getVoiceWidget(context, entry.key,content,textColor);
+                      addWidget(voiceWidget, currentPosition);
+                    }else{
+                      final Widget chatWidget = getMessageCard(
+                          context,
+                          widget,
+                          textColor,
+                          entry.value["display_name"],
+                          entry.value["display_time"],
+                          entry.value["author"],
+                          entry.value["content"],
+                          entry.value["edited"],
+                          entry.value["attachments"],
+                          entry.key,
+                          showImage: widget.ImageControler);
+                      addWidget(chatWidget, currentPosition);
+                    }
                   }
+                }catch(e){
+                  chatHistory={};
+                  return Column(children: returnWidget);
                 }
+                
               }else if(type == "call"){
                 chatHistory[messageId] = {
                   "author": content["author"],
