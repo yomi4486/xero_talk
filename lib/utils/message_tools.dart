@@ -8,14 +8,14 @@ import 'package:uuid/uuid.dart';
 import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 
-final AuthContext instance = AuthContext();
 const Uuid uuid = Uuid();
 
 /// メッセージの送信を行います
-void sendMessage(String? text, String channelId,
+void sendMessage(AuthContext instance,String? text, String channelId,
     {List<String> imageList = const []}) async {
   /// instanceで有効になっているソケット通信に対してメッセージを送信する
   if (text!.isNotEmpty || imageList.isNotEmpty) {
+    instance.notify();
     final sendBody = {
       "type": "send_message",
       "content": text,
@@ -38,7 +38,8 @@ void sendMessage(String? text, String channelId,
 }
 
 /// メッセージの削除を行います。
-Future deleteMessage(String messageId, String channelId) async {
+Future deleteMessage(AuthContext instance,String messageId, String channelId) async {
+  instance.notify();
   final sendBody = {
     "type": "delete_message",
     "id": messageId,
@@ -60,7 +61,8 @@ Future deleteMessage(String messageId, String channelId) async {
 }
 
 /// 自分のメッセージを編集できます
-Future editMessage(String messageId, String channelId, String content) async {
+Future editMessage(AuthContext instance,String messageId, String channelId, String content) async {
+  instance.notify();
   if (content.isNotEmpty) {
     final sendBody = {
       "type": "edit_message",

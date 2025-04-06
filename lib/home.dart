@@ -33,7 +33,7 @@ class _chatHomeState extends State<chatHome> {
 
   @override
   Widget build(BuildContext context) {
-      final instance = Provider.of<AuthContext>(context);
+      final instance = Provider.of<AuthContext>(context,listen: true);
       Future<void> showChatScreen({String? id})async{
         if(id == null){
           setState((){
