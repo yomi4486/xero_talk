@@ -9,8 +9,9 @@ import 'package:xero_talk/utils/message_tools.dart';
 import 'package:xero_talk/widgets/image_viewer.dart';
 
 class chat extends StatefulWidget {
-  const chat({Key? key, required this.channelInfo}) : super(key: key);
+  const chat({Key? key, required this.channelInfo,required this.snapshot}) : super(key: key);
   final Map channelInfo;
+  final AsyncSnapshot snapshot ;
 
   @override
   State<chat> createState() {
@@ -501,7 +502,8 @@ class _chat extends State<chat> {
                                                       fieldText: fieldText,
                                                       EditMode: editMode,
                                                       ImageControler:
-                                                          visibleImage) // コントローラーやノードの状態をストリームの描画部分と共有
+                                                          visibleImage,
+                                                      snapshot: widget.snapshot,) // コントローラーやノードの状態をストリームの描画部分と共有
                                                 ]),
                                           ),
                                         );

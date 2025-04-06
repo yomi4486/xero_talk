@@ -23,7 +23,8 @@ class MessageScreen extends StatefulWidget {
       required this.channelInfo,
       required this.fieldText,
       required this.EditMode,
-      required this.ImageControler})
+      required this.ImageControler,
+      required this.snapshot})
       : super(key: key);
   final FocusNode focusNode;
 
@@ -33,6 +34,7 @@ class MessageScreen extends StatefulWidget {
   final TextEditingController fieldText;
   final Function(Uint8List, bool) ImageControler;
   final Function(String, bool) EditMode;
+  final AsyncSnapshot snapshot;
   @override
   _MessageScreenState createState() => _MessageScreenState();
 }
@@ -139,38 +141,21 @@ class _MessageScreenState extends State<MessageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("再描画");
     final instance = Provider.of<AuthContext>(context);
     final Color backgroundColor =
         Color.lerp(instance.theme[0], instance.theme[1], .5)!;
     final List<Color> textColor = instance.getTextColor(backgroundColor);
-    return StreamBuilder(
-      stream: instance.bloadCast,
-      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        var displayName = "";
-        var content = {};
-        try {
-          if (snapshot.data != null) {
-            content = convert.json.decode(snapshot.data);
-          } else {
-            return Column(children: returnWidget);
-          }
-        } catch (e) {
-          print(e);
-          return Column(children: returnWidget);
-        }
-        final a = FirebaseFirestore.instance
+    late String displayName;
+    if(widget.snapshot.data == null) {
+      return Column(children: returnWidget);
+    }
+    final content = convert.json.decode(widget.snapshot.data);
+    final a = FirebaseFirestore.instance
             .collection('user_account')
             .doc('${content["author"]}');
-        () async {
-          // 会話に変更があった場合ファイルに書き込み
-          final uploadFile = drive.File();
-          uploadFile.name = "testfile.txt";
-          await instance.googleDriveApi.files.create(
-            uploadFile,
-          );
-        };
-        final _currentPosition = widget.scrollController.position.pixels;
-        return FutureBuilder(
+    final currentPosition = widget.scrollController.position.pixels;
+    return FutureBuilder(
           future: a.get(),
           builder: (context, AsyncSnapshot<DocumentSnapshot> docSnapshot) {
             if (docSnapshot.connectionState == ConnectionState.waiting) {
@@ -220,7 +205,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 for (var entry in chatHistory.entries) {
                   if (entry.value["voice"] == true){
                     final voiceWidget = getVoiceWidget(context, entry.key,content,textColor);
-                    addWidget(voiceWidget, _currentPosition);
+                    addWidget(voiceWidget, currentPosition);
                   }else{
                     final Widget chatWidget = getMessageCard(
                         context,
@@ -234,7 +219,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         entry.value["attachments"],
                         entry.key,
                         showImage: widget.ImageControler);
-                    addWidget(chatWidget, _currentPosition);
+                    addWidget(chatWidget, currentPosition);
                   }
                 }
               }else if(type == "call"){
@@ -250,7 +235,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   content,
                   textColor
                 );
-                addWidget(chatWidget, _currentPosition);
+                addWidget(chatWidget, currentPosition);
                 rootChange() async {
                   final String accessToken = await getRoom(content["room_id"]);
                   if(content["author"]! == instance.id){
@@ -290,13 +275,13 @@ class _MessageScreenState extends State<MessageScreen> {
                     content["attachments"],
                     messageId,
                     showImage: widget.ImageControler);
-                addWidget(chatWidget, _currentPosition);
+                addWidget(chatWidget, currentPosition);
               }
             }
             return Column(children: returnWidget);
           },
         );
-      },
-    );
+      
+    
   }
 }
