@@ -6,16 +6,34 @@ import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
 
-class chatHome extends StatelessWidget {
+class chatHome extends StatefulWidget {
   chatHome();
+  @override
+  _chatHomeState createState() => _chatHomeState();
+}
+
+class _chatHomeState extends State<chatHome> {
   final AuthContext instance = AuthContext();
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
 
+  @override // 限界まで足掻いた人生は想像よりも狂っているらしい
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
+        return WillPopScope(
         onWillPop: () async => false,
-        child: GestureDetector(
+        child: StreamBuilder(
+      stream: instance.bloadCast,
+      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+        return GestureDetector(
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < 0) {
                 try {
@@ -245,6 +263,6 @@ class chatHome extends StatelessWidget {
                       ),
                     ])
                   ],
-                ))));
+                )));},),);
   }
 }
