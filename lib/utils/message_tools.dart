@@ -15,7 +15,6 @@ void sendMessage(AuthContext instance,String? text, String channelId,
     {List<String> imageList = const []}) async {
   /// instanceで有効になっているソケット通信に対してメッセージを送信する
   if (text!.isNotEmpty || imageList.isNotEmpty) {
-    instance.notify();
     final sendBody = {
       "type": "send_message",
       "content": text,
@@ -39,7 +38,6 @@ void sendMessage(AuthContext instance,String? text, String channelId,
 
 /// メッセージの削除を行います。
 Future deleteMessage(AuthContext instance,String messageId, String channelId) async {
-  instance.notify();
   final sendBody = {
     "type": "delete_message",
     "id": messageId,
@@ -62,7 +60,6 @@ Future deleteMessage(AuthContext instance,String messageId, String channelId) as
 
 /// 自分のメッセージを編集できます
 Future editMessage(AuthContext instance,String messageId, String channelId, String content) async {
-  instance.notify();
   if (content.isNotEmpty) {
     final sendBody = {
       "type": "edit_message",

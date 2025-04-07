@@ -17,9 +17,12 @@ class chatHome extends StatefulWidget {
   _chatHomeState createState() => _chatHomeState();
 }
 
-class _chatHomeState extends State<chatHome> {
+class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<chatHome> {
   Map<String, dynamic> userData = {};
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override // 限界まで足掻いた人生は想像よりも狂っているらしい
   void initState() {
@@ -47,6 +50,7 @@ class _chatHomeState extends State<chatHome> {
           instance.showChatId = id;
         });
       }
+      super.build(context);
       return WillPopScope(
         onWillPop: () async => false,
         child: StreamBuilder(
@@ -71,12 +75,10 @@ class _chatHomeState extends State<chatHome> {
               showInfoSnack(context, content: content);
             }     
           }
-
           lastMessageId = messageId;
         } catch (e) {
           // print(e);
         }
-
         return GestureDetector(
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < 0) {
