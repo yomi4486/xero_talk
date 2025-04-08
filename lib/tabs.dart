@@ -6,27 +6,33 @@ import 'package:xero_talk/tabs/account_page.dart';
 import 'package:xero_talk/tabs/home.dart';
 import 'package:xero_talk/widgets/flash_modal.dart';
 import 'package:provider/provider.dart';
+import 'package:xero_talk/chat.dart';
+import 'package:xero_talk/utils/get_user_profile.dart';
 
 import 'dart:convert' as convert;
 
 class TabsProvider with ChangeNotifier {
-  bool visibleNavigationBar = true;
-
-  void hideNavigationBar({bool? throwNotify}) {
-    visibleNavigationBar = false;
-    if(throwNotify == null || throwNotify == false)notifyListeners();
-  }
-
-  void showNavigationBar({bool? throwNotify}) {
-    visibleNavigationBar = true;
-    // notifyL9õuįyhistener/s(); <= 猫がやりました
-    if(throwNotify == null || throwNotify == false)notifyListeners();
-  }
+  Map<String,dynamic> userData = {};
 
   int selectedIndex = 0;
 
   void setSelectedIndex(int index) {
     selectedIndex = index;
+    notifyListeners();
+  }
+
+  bool visibleChatScreen = false;
+  String showId = "";
+
+  Future<void> showChatScreen({String? id})async{
+    if(id == null){
+      visibleChatScreen = false;
+      notifyListeners();
+      return;
+    }
+    userData = await getUserProfile(id);
+    visibleChatScreen = !visibleChatScreen;
+    showId = id;
     notifyListeners();
   }
 
@@ -73,8 +79,6 @@ class _TabsScreen extends State<TabsScreen> {
       create: (_) => Provider.of<TabsProvider>(context,listen: true),
       child: Consumer<TabsProvider>(
         builder: (context, provider, child) { 
-          print("selectedIndex: ${provider.selectedIndex}");
-          print("visibleNavigationBar: ${provider.visibleNavigationBar}");
           return FutureBuilder(
             future: FirebaseFirestore.instance
                 .collection('user_account') // コレクションID
@@ -122,8 +126,8 @@ class _TabsScreen extends State<TabsScreen> {
                   } catch (e) {
                     // print(e);
                   }
-                  return Scaffold(
-                    bottomNavigationBar:provider.visibleNavigationBar ? BottomNavigationBar(
+                  return Stack(children:[Scaffold(
+                    bottomNavigationBar:BottomNavigationBar(
                       currentIndex: provider.selectedIndex,
                       enableFeedback: false,
                       onTap: (value) {
@@ -151,20 +155,25 @@ class _TabsScreen extends State<TabsScreen> {
                         ),
                       ],
                       backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-                    )
-                    :
-                    Container(height: 0,),
+                    ),
                     body: IndexedStack(
                       index:provider.selectedIndex,
                       children:[
                         chatHome(
-                          tabsProvider: provider,
                           snapshot: snapshot,
                         ),
                         NotifyPage(),
                         AccountPage(),
                       ]
                     ),
+                  ),
+                  provider.visibleChatScreen ? chat(
+                    channelInfo: provider.userData,
+                    snapshot: snapshot,
+                  )
+                  :
+                  Container()
+                  ]
                   );
                 },
               );

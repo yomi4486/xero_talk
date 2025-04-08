@@ -34,7 +34,6 @@ class AuthContext extends ChangeNotifier {
   late String editingMessageId;
   late Room room;
   bool inHomeScreen = false;
-  bool visibleChatScreen = false;
   late String showChatId;
   bool showBottomBar = true;
   List<Color> theme = const [
