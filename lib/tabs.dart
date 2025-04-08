@@ -8,7 +8,6 @@ import 'package:xero_talk/widgets/flash_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
-
 import 'dart:convert' as convert;
 
 class TabsProvider with ChangeNotifier {
@@ -70,6 +69,11 @@ class _TabsScreen extends State<TabsScreen> {
     super.initState();
     oneColor = instance.theme[0];
     twoColor = instance.theme[1];
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
