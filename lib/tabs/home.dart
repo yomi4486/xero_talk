@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
-import 'package:xero_talk/utils/get_user_profile.dart';
 import 'package:provider/provider.dart';
 
 String lastMessageId = "";
 
 class chatHome extends StatefulWidget {
   final AsyncSnapshot snapshot;
-  final TabsProvider tabsProvider;
-  const chatHome({Key? key, required this.snapshot,required this.tabsProvider}) : super(key: key);
+  const chatHome({Key? key, required this.snapshot}) : super(key: key);
   @override
   _chatHomeState createState() => _chatHomeState();
 }
@@ -36,26 +33,7 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
   @override
   Widget build(BuildContext context) {
       final instance = Provider.of<AuthContext>(context,listen: true);
-      Future<void> showChatScreen({String? id})async{
-        if(instance.visibleChatScreen){
-          Provider.of<TabsProvider>(context, listen: false).showNavigationBar();
-        }else{
-          Provider.of<TabsProvider>(context, listen: false).hideNavigationBar();
-        }
-        if(id == null){
-          setState((){
-            instance.visibleChatScreen = false;
-          });
-          return;
-        }
-
-        
-        userData = await getUserProfile(id);
-        setState((){
-          instance.visibleChatScreen = !instance.visibleChatScreen;
-          instance.showChatId = id;
-        });
-      }
+      final tabsProvider = Provider.of<TabsProvider>(context, listen: true);
       super.build(context);
       return WillPopScope(
         onWillPop: () async => false,
@@ -143,7 +121,7 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                                 //       builder: (context) =>
                                                 //           openWidget),
                                                 // );
-                                                showChatScreen(id:'106017943896753291176');
+                                                tabsProvider.showChatScreen(id:'106017943896753291176');
                                               },
                                               child: ChatListWidget(
                                                 userId: '106017943896753291176',
@@ -164,7 +142,7 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                                 //       builder: (context) =>
                                                 //           openWidget),
                                                 // );
-                                                showChatScreen(id:'112905252227299870586');
+                                                tabsProvider.showChatScreen(id:'112905252227299870586');
                                               },
                                               child: ChatListWidget(
                                                   userId:
@@ -241,14 +219,6 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                   ],
                 )
                 ),
-                instance.visibleChatScreen ? chat(
-                  channelInfo: userData,
-                  snapshot: widget.snapshot,
-                  showChatScreen: showChatScreen,
-                  tabsProvider: widget.tabsProvider,
-                )
-                :
-                Container()
               ]
             )
           )

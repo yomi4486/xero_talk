@@ -12,11 +12,9 @@ import 'package:provider/provider.dart';
 import 'package:xero_talk/tabs.dart';
 
 class chat extends StatefulWidget {
-  const chat({Key? key, required this.channelInfo,required this.snapshot,required this.showChatScreen,required this.tabsProvider}) : super(key: key);
+  const chat({Key? key, required this.channelInfo,required this.snapshot}) : super(key: key);
   final Map channelInfo;
-  final AsyncSnapshot snapshot ;
-  final TabsProvider tabsProvider;
-  final Function({String? id}) showChatScreen;
+  final AsyncSnapshot snapshot;
 
   @override
   State<chat> createState() {
@@ -85,6 +83,7 @@ class _chat extends State<chat> {
   @override
   Widget build(BuildContext context) {
     final instance = Provider.of<AuthContext>(context);
+    final provider = Provider.of<TabsProvider>(context);
     final Color backgroundColor = lightenColor(instance.theme[0], .2);
     final List<Color> textColor = instance.getTextColor(backgroundColor);
     final String displayName = channelInfo["display_name"] ?? "-";
@@ -243,7 +242,7 @@ class _chat extends State<chat> {
             title: Row(children: [
               IconButton(
                   onPressed: () {
-                    widget.showChatScreen();
+                    provider.showChatScreen();
                   },
                   icon: const Icon(Icons.arrow_back,
                       color: Color.fromARGB(128, 255, 255, 255))),
@@ -466,7 +465,7 @@ class _chat extends State<chat> {
                   onHorizontalDragEnd: (details) {
                     if (details.primaryVelocity! > 0) {
                       // 左スワイプ
-                      widget.showChatScreen();
+                      provider.showChatScreen();
                     }
                   },
                   child: Container(
