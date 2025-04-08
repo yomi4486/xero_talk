@@ -124,9 +124,4 @@ class AuthContext extends ChangeNotifier {
       await FirebaseAuth.instance.signOut();
     } catch (_) {}
   }
-
-  void switchVisibleBottomBar(){
-    showBottomBar = !showBottomBar;
-    notifyListeners();
-  }
 }
