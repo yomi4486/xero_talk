@@ -3,12 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:xero_talk/account_startup.dart';
-import 'package:xero_talk/home.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -32,9 +32,12 @@ void main() async {
   await dotenv.load();
   HttpOverrides.global = MyHttpOverrides();
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => AuthContext(),
-      child: const MyApp(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => TabsProvider()),
+        ChangeNotifierProvider(create:(_) => AuthContext()),
+      ],
+      child: MyApp(),
     ),
   );
 }
@@ -155,7 +158,7 @@ class _LoginPageState extends State<MyHomePage> {
         //既存ユーザーの場合
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => chatHome()),
+          MaterialPageRoute(builder: (context) => TabsScreen()),
         );
       }
 

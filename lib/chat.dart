@@ -9,11 +9,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/message_tools.dart';
 import 'package:xero_talk/widgets/image_viewer.dart';
 import 'package:provider/provider.dart';
+import 'package:xero_talk/tabs.dart';
 
 class chat extends StatefulWidget {
-  const chat({Key? key, required this.channelInfo,required this.snapshot,required this.showChatScreen}) : super(key: key);
+  const chat({Key? key, required this.channelInfo,required this.snapshot,required this.showChatScreen,required this.tabsProvider}) : super(key: key);
   final Map channelInfo;
   final AsyncSnapshot snapshot ;
+  final TabsProvider tabsProvider;
   final Function({String? id}) showChatScreen;
 
   @override
@@ -32,9 +34,20 @@ class _chat extends State<chat> {
   List<String> images = [];
   bool showImage = false;
   late Uint8List image;
+  // late final TabsProvider controller;
+
+  @override
+  void initState(){
+    super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   controller = Provider.of<TabsProvider>(context, listen: false);
+    //   controller.hideNavigationBar();
+    // });
+  }
 
   @override
   void dispose() {
+    // controller.hideNavigationBar();
     fieldText.dispose();
     super.dispose();
   }
@@ -82,7 +95,6 @@ class _chat extends State<chat> {
         instance.editingMessageId = messageId;
       });
     }
-
     return Stack(children: [
       Scaffold(
           bottomSheet: BottomAppBar(
