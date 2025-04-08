@@ -37,6 +37,7 @@ class AuthContext extends ChangeNotifier {
   bool inHomeScreen = false;
   bool visibleChatScreen = false;
   late String showChatId;
+  bool showBottomBar = true;
   List<Color> theme = const [
     Color.fromARGB(204, 228, 169, 114),
     Color.fromARGB(204, 153, 65, 216)
@@ -125,5 +126,10 @@ class AuthContext extends ChangeNotifier {
       await googleSignIn.signOut();
       await FirebaseAuth.instance.signOut();
     } catch (_) {}
+  }
+
+  void switchVisibleBottomBar(){
+    showBottomBar = !showBottomBar;
+    notifyListeners();
   }
 }

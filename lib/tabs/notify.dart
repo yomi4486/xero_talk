@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:xero_talk/account_page.dart';
-import 'package:xero_talk/home.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 
@@ -12,60 +10,6 @@ class NotifyPage extends StatelessWidget {
     return WillPopScope(
         onWillPop: () async => false,
         child: Scaffold(
-            bottomNavigationBar: BottomNavigationBar(
-              enableFeedback: false,
-              currentIndex: 1,
-              onTap: (value) {
-                if (value == 0) {
-                  Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => chatHome(),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          }));
-                } else if (value == 2) {
-                  Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => AccountPage(),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          }));
-                }
-              },
-              unselectedLabelStyle:
-                  const TextStyle(color: Color.fromARGB(255, 200, 200, 200)),
-              unselectedItemColor: const Color.fromARGB(255, 200, 200, 200),
-              selectedLabelStyle: TextStyle(color: instance.theme[1]),
-              selectedItemColor: instance.theme[1],
-              items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'ホーム',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.notifications),
-                  label: '通知',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(
-                    Icons.person,
-                    color: Color.fromARGB(255, 200, 200, 200),
-                  ),
-                  label: 'アカウント',
-                ),
-              ],
-              backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-            ),
             appBar: AppBar(
               centerTitle: false,
               automaticallyImplyLeading: false,
@@ -98,31 +42,6 @@ class NotifyPage extends StatelessWidget {
                                     Column(
                                       children: [
                                         GestureDetector(
-                                          onTap: () {
-                                            Navigator.push(
-                                                context,
-                                                PageRouteBuilder(
-                                                  pageBuilder: (context,
-                                                          animation,
-                                                          secondaryAnimation) =>
-                                                      chatHome(),
-                                                  transitionsBuilder: (context,
-                                                      animation,
-                                                      secondaryAnimation,
-                                                      child) {
-                                                    return const FadeUpwardsPageTransitionsBuilder()
-                                                        .buildTransitions(
-                                                            MaterialPageRoute(
-                                                                builder:
-                                                                    (context) =>
-                                                                        chatHome()),
-                                                            context,
-                                                            animation,
-                                                            secondaryAnimation,
-                                                            child);
-                                                  },
-                                                ));
-                                          },
                                           child: Container(
                                             decoration: const BoxDecoration(
                                                 color: Color.fromARGB(

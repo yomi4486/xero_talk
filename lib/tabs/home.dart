@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:xero_talk/account_page.dart';
 import 'package:xero_talk/chat.dart';
-import 'package:xero_talk/notify.dart';
+import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
-import 'dart:convert' as convert;
-import 'package:xero_talk/widgets/flash_modal.dart';
 import 'package:provider/provider.dart';
 
 String lastMessageId = "";
 
 class chatHome extends StatefulWidget {
-  chatHome();
+  final AsyncSnapshot snapshot;
+  final TabsProvider tabsProvider;
+  const chatHome({Key? key, required this.snapshot,required this.tabsProvider}) : super(key: key);
   @override
   _chatHomeState createState() => _chatHomeState();
 }
@@ -38,12 +37,19 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
   Widget build(BuildContext context) {
       final instance = Provider.of<AuthContext>(context,listen: true);
       Future<void> showChatScreen({String? id})async{
+        if(instance.visibleChatScreen){
+          Provider.of<TabsProvider>(context, listen: false).showNavigationBar();
+        }else{
+          Provider.of<TabsProvider>(context, listen: false).hideNavigationBar();
+        }
         if(id == null){
           setState((){
             instance.visibleChatScreen = false;
           });
           return;
         }
+
+        
         userData = await getUserProfile(id);
         setState((){
           instance.visibleChatScreen = !instance.visibleChatScreen;
@@ -53,33 +59,7 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
       super.build(context);
       return WillPopScope(
         onWillPop: () async => false,
-        child: StreamBuilder(
-      stream: instance.bloadCast,
-      builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-        var content = {};
-        try {
-          if (snapshot.data != null) {
-            content = convert.json.decode(snapshot.data);
-          }
-          final String type = content['type'];
-          late String messageId;
-
-          if (type == "call"){
-            messageId = content["room_id"];
-          }else{
-            messageId = content["id"];
-          }
-
-          if(type == 'send_message' && lastMessageId != messageId){
-            if(instance.id != content['author']){
-              showInfoSnack(context, content: content);
-            }     
-          }
-          lastMessageId = messageId;
-        } catch (e) {
-          // print(e);
-        }
-        return GestureDetector(
+        child: GestureDetector(
             onHorizontalDragEnd: (details) {
               if (details.primaryVelocity! < 0) {
                 // try {
@@ -95,59 +75,6 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
             },
             child: Stack(children:[
               Scaffold(
-                bottomNavigationBar: BottomNavigationBar(
-                  enableFeedback: false,
-                  onTap: (value) {
-                    if (value == 1) {
-                      Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                              pageBuilder: (_, __, ___) => NotifyPage(),
-                              transitionsBuilder: (context, animation,
-                                  secondaryAnimation, child) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                );
-                              }));
-                    } else if (value == 2) {
-                      Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                              pageBuilder: (_, __, ___) => AccountPage(),
-                              transitionsBuilder: (context, animation,
-                                  secondaryAnimation, child) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                );
-                              }));
-                    }
-                  },
-                  unselectedLabelStyle: const TextStyle(
-                      color: Color.fromARGB(255, 200, 200, 200)),
-                  unselectedItemColor: const Color.fromARGB(255, 200, 200, 200),
-                  selectedLabelStyle: TextStyle(color: instance.theme[1]),
-                  selectedItemColor: instance.theme[1],
-                  items: const <BottomNavigationBarItem>[
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.home),
-                      label: 'ホーム',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.notifications),
-                      label: '通知',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(
-                        Icons.person,
-                        color: Color.fromARGB(255, 200, 200, 200),
-                      ),
-                      label: 'アカウント',
-                    ),
-                  ],
-                  backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-                ),
                 appBar: AppBar(
                   centerTitle: false,
                   automaticallyImplyLeading: false,
@@ -316,16 +243,15 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                 ),
                 instance.visibleChatScreen ? chat(
                   channelInfo: userData,
-                  snapshot: snapshot,
+                  snapshot: widget.snapshot,
                   showChatScreen: showChatScreen,
+                  tabsProvider: widget.tabsProvider,
                 )
                 :
                 Container()
               ]
             )
-          );
-        },
-      ),
+          )
     );
   }
 }
