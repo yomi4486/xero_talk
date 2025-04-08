@@ -144,7 +144,6 @@ class _LoginPageState extends State<MyHomePage> {
       googleDriveApi = drive.DriveApi(httpClient);
       authContext.id = userCredential.additionalUserInfo?.profile?['sub'];
       authContext.channel = channel;
-      authContext.bloadCast = channel.asBroadcastStream();
       authContext.googleDriveApi = googleDriveApi;
       authContext.userCredential = userCredential;
       await authContext.getTheme();
