@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/tabs/notify.dart';
 import 'package:xero_talk/tabs/account_page.dart';
@@ -34,7 +33,6 @@ class TabsProvider with ChangeNotifier {
     showId = id;
     notifyListeners();
   }
-
 }
 
 class TabsScreen extends StatefulWidget {
@@ -46,7 +44,6 @@ class TabsScreen extends StatefulWidget {
 
 class _TabsScreen extends State<TabsScreen> {
   _TabsScreen();
-  bool _showFab = false; // falseなら未編集、trueなら編集済み
   final AuthContext instance = AuthContext();
   late List<dynamic> theme;
   String colorToHex(Color color) {
@@ -78,110 +75,88 @@ class _TabsScreen extends State<TabsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = instance.userCredential.additionalUserInfo?.profile;
-    final provider = Provider.of<TabsProvider>(context,listen: true);
-    return ChangeNotifierProvider(
-      create: (_) => Provider.of<TabsProvider>(context,listen: true),
-      child: FutureBuilder(
-        future: FirebaseFirestore.instance
-            .collection('user_account') // コレクションID
-            .doc('${profile?["sub"]}') // ドキュメントID
-            .get(),
-        builder: (context, snapshot) {
-          if (!_showFab) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-            } else if (snapshot.hasError) {
-            } else if (snapshot.hasData) {
-              // successful
-              final data = snapshot.data?.data();
-              if (data != null && data.containsKey("color_theme")) {
-                theme = data["color_theme"];
-                if (theme.isNotEmpty) {
-                  oneColor = hexToColor(theme[0]);
-                  twoColor = hexToColor(theme[1]);
-                }
+    return Consumer<AuthContext>(
+      builder: (context,asyncProvider,child){
+        return StreamBuilder(
+          stream:asyncProvider.channel,
+          builder:(context,snapshot){
+            final provider = Provider.of<TabsProvider>(context,listen: true);
+            var content = {};
+            try {
+              if (snapshot.data != null) {
+                content = convert.json.decode(snapshot.data);
               }
-            } else {}
-          }
-          return StreamBuilder(
-            stream: instance.channel,
-            builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-              var content = {};
-              try {
-                if (snapshot.data != null) {
-                  content = convert.json.decode(snapshot.data);
-                }
-                final String type = content['type'];
-                late String messageId;
+              final String type = content['type'];
+              late String messageId;
 
-                if (type == "call"){
-                  messageId = content["room_id"];
-                }else{
-                  messageId = content["id"];
-                }
-
-                if(type == 'send_message' && lastMessageId != messageId){
-                  if(instance.id != content['author']){
-                    showInfoSnack(context, content: content);
-                  }     
-                }
-                lastMessageId = messageId;
-              } catch (e) {
-                // print(e);
+              if (type == "call"){
+                messageId = content["room_id"];
+              }else{
+                messageId = content["id"];
               }
-              return Stack(children:[Scaffold(
-                bottomNavigationBar:BottomNavigationBar(
-                  currentIndex: provider.selectedIndex,
-                  enableFeedback: false,
-                  onTap: (value) {
-                    provider.setSelectedIndex(value);
-                  },
-                  unselectedLabelStyle: const TextStyle(
-                      color: Color.fromARGB(255, 200, 200, 200)),
-                  unselectedItemColor: const Color.fromARGB(255, 200, 200, 200),
-                  selectedLabelStyle: TextStyle(color: instance.theme[1]),
-                  selectedItemColor: instance.theme[1],
-                  items: const <BottomNavigationBarItem>[
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.home),
-                      label: 'ホーム',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.notifications),
-                      label: '通知',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(
-                        Icons.person,
+              if(type == 'send_message' && lastMessageId != messageId){
+                if(instance.id != content['author']){
+                  showInfoSnack(context, content: content);
+                }     
+              }
+              lastMessageId = messageId;
+            } catch (e) {
+              // print(e);
+            }
+            return Stack(
+              children:[
+                Scaffold(
+                  bottomNavigationBar:BottomNavigationBar(
+                    currentIndex: provider.selectedIndex,
+                    enableFeedback: false,
+                    onTap: (value) {
+                      provider.setSelectedIndex(value);
+                    },
+                    unselectedLabelStyle: const TextStyle(
+                        color: Color.fromARGB(255, 200, 200, 200)),
+                    unselectedItemColor: const Color.fromARGB(255, 200, 200, 200),
+                    selectedLabelStyle: TextStyle(color: instance.theme[1]),
+                    selectedItemColor: instance.theme[1],
+                    items: const <BottomNavigationBarItem>[
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.home),
+                        label: 'ホーム',
                       ),
-                      label: 'アカウント',
-                    ),
-                  ],
-                  backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.notifications),
+                        label: '通知',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(
+                          Icons.person,
+                        ),
+                        label: 'アカウント',
+                      ),
+                    ],
+                    backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+                  ),
+                  body: IndexedStack(
+                    index:provider.selectedIndex,
+                    children:[
+                      chatHome(
+                        snapshot: snapshot,
+                      ),
+                      NotifyPage(),
+                      AccountPage(),
+                    ]
+                  ),
                 ),
-                body: IndexedStack(
-                  index:provider.selectedIndex,
-                  children:[
-                    chatHome(
-                      snapshot: snapshot,
-                    ),
-                    NotifyPage(),
-                    AccountPage(),
-                  ]
-                ),
-              ),
-              provider.visibleChatScreen ? chat(
-                channelInfo: provider.userData,
-                snapshot: snapshot,
-              )
-              :
-              Container()
+                provider.visibleChatScreen ? chat(
+                  channelInfo: provider.userData,
+                  snapshot: snapshot,
+                )
+                :
+                Container()
               ]
-              );
-            },
-          );
-        },
-      ),
+            );
+          }
+        );
+      },
     );
   }
 }

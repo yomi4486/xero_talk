@@ -11,6 +11,34 @@ import 'package:xero_talk/widgets/image_viewer.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/tabs.dart';
 
+class chatProvider with ChangeNotifier {
+  bool showImage = false;
+  late Uint8List image;
+  void visibleImage(Uint8List uintimage, bool mode) {
+    showImage = mode;
+    image = uintimage;
+    notifyListeners();
+  }
+  void hideImage() {
+    showImage = false;
+    notifyListeners();
+  }
+
+  bool editing = false;
+  String editingMessageId = "";
+
+  void editMode(String messageId, bool mode) {
+    editing = mode;
+    editingMessageId = messageId;
+    notifyListeners();
+  }
+
+  void toggleEditMode(){
+    editing = !editing;
+    notifyListeners();
+  }
+}
+
 class chat extends StatefulWidget {
   const chat({Key? key, required this.channelInfo,required this.snapshot}) : super(key: key);
   final Map channelInfo;
@@ -30,22 +58,14 @@ class _chat extends State<chat> {
   FocusNode focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   List<String> images = [];
-  bool showImage = false;
-  late Uint8List image;
-  // late final TabsProvider controller;
 
   @override
   void initState(){
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   controller = Provider.of<TabsProvider>(context, listen: false);
-    //   controller.hideNavigationBar();
-    // });
   }
 
   @override
   void dispose() {
-    // controller.hideNavigationBar();
     fieldText.dispose();
     super.dispose();
   }
@@ -73,27 +93,15 @@ class _chat extends State<chat> {
     return Color.fromARGB(color.alpha, red, green, blue);
   }
 
-  void visibleImage(Uint8List uintimage, bool mode) {
-    setState(() {
-      showImage = mode;
-      image = uintimage;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final instance = Provider.of<AuthContext>(context);
     final provider = Provider.of<TabsProvider>(context);
+    final chatProvider chatScreenProvider = Provider.of<chatProvider>(context);
     final Color backgroundColor = lightenColor(instance.theme[0], .2);
     final List<Color> textColor = instance.getTextColor(backgroundColor);
     final String displayName = channelInfo["display_name"] ?? "-";
 
-    void editMode(String messageId, bool mode) {
-      setState(() {
-        instance.editing = mode;
-        instance.editingMessageId = messageId;
-      });
-    }
     return Stack(children: [
       Scaffold(
         bottomSheet: BottomAppBar(
@@ -167,14 +175,12 @@ class _chat extends State<chat> {
                               Colors.transparent),
                         ),
                         onPressed: () async {
-                          if (instance.editing) {
-                            setState(() {
-                              instance.editing = false;
-                            });
-                            editMessage(instance,instance.editingMessageId,
+                          if (chatScreenProvider.editing) {
+                            chatScreenProvider.toggleEditMode();
+                            await editMessage(chatScreenProvider.editingMessageId,
                                 channelInfo["id"], chatText);
                           } else {
-                            sendMessage(instance,chatText, channelInfo["id"],
+                            await sendMessage(chatText, channelInfo["id"],
                                 imageList: images);
                           }
                           chatText = "";
@@ -194,7 +200,7 @@ class _chat extends State<chat> {
                             ),
                             shape: BoxShape.circle,
                           ),
-                          child: instance.editing
+                          child: chatScreenProvider.editing
                             ? const Icon(
                                 Icons.edit,
                                 color: Color.fromARGB(255, 255, 255, 255),
@@ -538,9 +544,9 @@ class _chat extends State<chat> {
                                                     _scrollController,
                                                 channelInfo: channelInfo,
                                                 fieldText: fieldText,
-                                                EditMode: editMode,
+                                                EditMode: chatScreenProvider.editMode,
                                                 ImageControler:
-                                                    visibleImage,
+                                                    chatScreenProvider.visibleImage,
                                                 snapshot: widget.snapshot
                                             ) // コントローラーやノードの状態をストリームの描画部分と共有
                                           ]
@@ -561,17 +567,15 @@ class _chat extends State<chat> {
             )
           )
         ),
-        showImage && image.isNotEmpty
+        chatScreenProvider.showImage && chatScreenProvider.image.isNotEmpty
         ? Positioned.fill(
             child: GestureDetector(
             onTap: () {
-              setState(() {
-                showImage = false;
-              });
+              chatScreenProvider.hideImage();
             },
             child: Container(
               color: Colors.black.withOpacity(0.5), // 半透明のオーバーレイ
-              child: Center(child: ImageViewerPage(image, visibleImage)),
+              child: Center(child: ImageViewerPage(chatScreenProvider.image, chatScreenProvider.visibleImage)),
             ),
           )
         )
