@@ -70,6 +70,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<MyHomePage> {
+  
   Future<WebSocket> getSession() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
     final WebSocket channel = await WebSocket.connect(
@@ -140,32 +141,35 @@ class _LoginPageState extends State<MyHomePage> {
       //作成したcredentialを元にfirebaseAuthで認証を行う
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
-      WebSocket channel = await getSession();
-
       final httpClient = (await googleSignIn.authenticatedClient())!;
       googleDriveApi = drive.DriveApi(httpClient);
       authContext.id = userCredential.additionalUserInfo?.profile?['sub'];
-      authContext.channel = channel;
+      
       authContext.googleDriveApi = googleDriveApi;
       authContext.userCredential = userCredential;
       await authContext.getTheme();
       if (userCredential.additionalUserInfo!.isNewUser) {
         // 新規ユーザーの場合
+        // 定期的な接続チェックを行う
+        await authContext.checkConnection();
+        WebSocket channel = await getSession();
+        authContext.channel = channel;
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => AccountStartup()),
         );
       } else if (!authContext.inHomeScreen) {
         //既存ユーザーの場合
+        // 定期的な接続チェックを行う
+        await authContext.checkConnection();
+        WebSocket channel = await getSession();
+        authContext.channel = channel;
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => TabsScreen()),
         );
       }
-
-      await authContext.checkConnection();
       authContext.inHomeScreen = true;
-      // 定期的な接続チェックを行う
       authContext.userCredential = userCredential;
     } on FirebaseException catch (e) {
       print(e.message);
