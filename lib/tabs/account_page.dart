@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:xero_talk/home.dart';
-import 'package:xero_talk/notify.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:xero_talk/setting.dart';
@@ -88,59 +86,6 @@ class _AccountPage extends State<AccountPage> {
             }
           }
           return Scaffold(
-            bottomNavigationBar: BottomNavigationBar(
-              enableFeedback: false,
-              currentIndex: 2,
-              onTap: (value) {
-                if (value == 0) {
-                  Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => chatHome(),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          }));
-                } else if (value == 1) {
-                  Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => NotifyPage(),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          }));
-                }
-              },
-              unselectedLabelStyle:
-                  const TextStyle(color: Color.fromARGB(255, 200, 200, 200)),
-              unselectedItemColor: const Color.fromARGB(255, 200, 200, 200),
-              selectedLabelStyle: TextStyle(color: instance.theme[1]),
-              selectedItemColor: instance.theme[1],
-              items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: 'ホーム',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.notifications),
-                  label: '通知',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(
-                    Icons.person,
-                  ),
-                  label: 'アカウント',
-                ),
-              ],
-              backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-            ),
             appBar: AppBar(
               centerTitle: false,
               automaticallyImplyLeading: false,

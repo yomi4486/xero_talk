@@ -27,7 +27,6 @@ class AuthContext extends ChangeNotifier {
   late String id; // 現在ログインしているユーザーのサービス内でのID
   late WebSocket channel; // サーバーとのWebSocket接続
   late UserCredential userCredential; // Firebaseのログインインスタンス
-  late Stream<dynamic> bloadCast; // メッセージのストリーミングを行うためのブロードキャストオブジェクト
   late drive.DriveApi googleDriveApi; // GoogleDriveにデータを書き込むためのインスタンス
   late String deviceName; // アプリが動作しているデバイスの機種名を保管
   late Widget lastOpenedChat; // スワイプでチャット画面を行き来した際の状態管理を行う
@@ -35,8 +34,8 @@ class AuthContext extends ChangeNotifier {
   late String editingMessageId;
   late Room room;
   bool inHomeScreen = false;
-  bool visibleChatScreen = false;
   late String showChatId;
+  bool showBottomBar = true;
   List<Color> theme = const [
     Color.fromARGB(204, 228, 169, 114),
     Color.fromARGB(204, 153, 65, 216)
@@ -51,7 +50,6 @@ class AuthContext extends ChangeNotifier {
     }
     channel = await WebSocket.connect('wss://${dotenv.env['BASE_URL']}/v1',
         headers: {'token': token});
-    bloadCast = channel.asBroadcastStream();
     notifyListeners();
   }
 
@@ -103,7 +101,7 @@ class AuthContext extends ChangeNotifier {
 
   Future checkConnection() async {
     Timer.periodic(const Duration(seconds: 1), (timer) async {
-      if (channel.readyState != 1 || channel.closeCode != null) {
+      if (channel.readyState != 1) {
         try {
           await restoreConnection();
         } catch (_) {

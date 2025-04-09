@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:xero_talk/home.dart';
+import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -37,7 +37,7 @@ class AccountStartup extends StatelessWidget {
               'name': name,
             }).then((value) {
               Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => chatHome()));
+                  context, MaterialPageRoute(builder: (context) => TabsScreen()));
             }).catchError((err) {
               print(err);
             });
