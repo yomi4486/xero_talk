@@ -101,7 +101,7 @@ class AuthContext extends ChangeNotifier {
 
   Future checkConnection() async {
     Timer.periodic(const Duration(seconds: 1), (timer) async {
-      if (channel.readyState != 1 || channel.closeCode != null) {
+      if (channel.readyState != 1) {
         try {
           await restoreConnection();
         } catch (_) {

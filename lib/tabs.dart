@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/tabs/notify.dart';
@@ -73,12 +75,16 @@ class _TabsScreen extends State<TabsScreen> {
     super.dispose();
   }
 
+  final GlobalKey _streamKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthContext>(
+    return Selector<AuthContext,WebSocket>(
+      selector: (context,provider)=>provider.channel,
+      key:_streamKey,
       builder: (context,asyncProvider,child){
         return StreamBuilder(
-          stream:asyncProvider.channel,
+          stream:asyncProvider,
           builder:(context,snapshot){
             final provider = Provider.of<TabsProvider>(context,listen: true);
             var content = {};
