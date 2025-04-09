@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -36,6 +37,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => TabsProvider()),
         ChangeNotifierProvider(create:(_) => AuthContext()),
+        ChangeNotifierProvider(create: (_) => chatProvider()),
       ],
       child: MyApp(),
     ),
