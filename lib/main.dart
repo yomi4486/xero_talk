@@ -183,8 +183,9 @@ class _LoginPageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final instance = AuthContext();
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user != null&&!failed) {
+      if (user != null&&!failed && !instance.inHomeScreen) {
         signInWithGoogle(true);
       }
     });
