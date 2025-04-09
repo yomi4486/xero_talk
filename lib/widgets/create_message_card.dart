@@ -40,10 +40,9 @@ class _Base64ImageWidgetState extends State<Base64ImageWidget> {
     Uint8List imageBytes = decodeBase64(base64String);
     ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
     ui.FrameInfo frameInfo = await codec.getNextFrame();
-    setState(() {
-      imageHeight = frameInfo.image.height.toDouble();
-      imageWidth = frameInfo.image.width.toDouble();
-    });
+    imageHeight = frameInfo.image.height.toDouble();
+    imageWidth = frameInfo.image.width.toDouble();
+
   }
 
   @override
@@ -268,7 +267,7 @@ Widget getMessageCard(
                                                     255, 255, 10, 10)),
                                           ),
                                           onPressed: () async {
-                                            await deleteMessage(instance,messageId,
+                                            await deleteMessage(messageId,
                                                 widget.channelInfo["id"]);
                                             Navigator.pop(context);
                                           }),
