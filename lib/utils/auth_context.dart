@@ -41,6 +41,14 @@ class AuthContext extends ChangeNotifier {
     Color.fromARGB(204, 153, 65, 216)
   ];
 
+  Future<void> startSession() async {
+    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+    channel = await WebSocket.connect(
+        'wss://${dotenv.env['BASE_URL']}/v1',
+        headers: {'token': token});
+    await checkConnection();
+  }
+
   /// セッションの復元を行うための関数です
   Future restoreConnection() async {
     await channel.close();
@@ -109,10 +117,6 @@ class AuthContext extends ChangeNotifier {
         }
       }
     });
-  }
-
-  void notify(){
-    notifyListeners();
   }
 
   Future logout() async {
