@@ -50,6 +50,7 @@ class _Base64ImageWidgetState extends State<Base64ImageWidget> {
     if (widget.base64Strings != null && widget.base64Strings!.isNotEmpty) {
       Uint8List imageBytes = decodeBase64(widget.base64Strings![0]);
       return Container(
+        key:GlobalKey(),
         padding: const EdgeInsets.only(top: 10),
         width: MediaQuery.of(context).size.width * 0.7,
         child: ClipRRect(
