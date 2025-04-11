@@ -5,8 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 class UserIcon extends StatefulWidget {
   final String userId;
-  final double size;
-  const UserIcon({required this.userId, required this.size, Key? key}): super(key: key);
+  final double? size;
+  const UserIcon({required this.userId, this.size, Key? key}): super(key: key);
 
   @override
   _UserIconState createState() => _UserIconState();

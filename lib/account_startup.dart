@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/utils/auth_context.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:xero_talk/widgets/user_icon.dart';
 
 class AccountStartup extends StatelessWidget {
   final AuthContext instance = AuthContext();
@@ -66,11 +66,7 @@ class AccountStartup extends StatelessWidget {
                               ClipRRect(
                                 // アイコン表示（角丸）
                                 borderRadius: BorderRadius.circular(2000000),
-                                child: Image.network(
-                                  "https://${dotenv.env['BASE_URL']}:8092/geticon?user_id=${instance.id}&t=${nowDt}",
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.2,
-                                ),
+                                child: UserIcon(userId: instance.id,size:MediaQuery.of(context).size.width * 0.2)
                               ),
                               ElevatedButton.icon(
                                 // アイコン変更ボタン

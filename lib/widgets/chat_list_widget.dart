@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:xero_talk/widgets/user_icon.dart';
 import '../utils/auth_context.dart';
 
 final AuthContext instance = AuthContext();
@@ -23,21 +23,7 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
         ClipRRect(
           // アイコン表示（角丸）
           borderRadius: BorderRadius.circular(2000000),
-          child: Image.network(
-            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${widget.userId}",
-            width: MediaQuery.of(context).size.height * 0.05,
-            loadingBuilder: (BuildContext context, Widget child,
-                ImageChunkEvent? loadingProgress) {
-              if (loadingProgress == null) {
-                return child;
-              } else {
-                return Image.asset(
-                  'assets/images/default_user_icon.png',
-                  width: MediaQuery.of(context).size.height * 0.05,
-                );
-              }
-            },
-          ),
+          child: UserIcon(userId: widget.userId, size: MediaQuery.of(context).size.height * 0.05)
         ),
         FutureBuilder(
             future: FirebaseFirestore.instance
