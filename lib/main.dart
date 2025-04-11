@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:xero_talk/account_startup.dart';
 import 'dart:io';
-import 'dart:async';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -13,6 +12,7 @@ import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 late drive.DriveApi googleDriveApi;
 bool failed = false;
@@ -29,6 +29,8 @@ class MyHttpOverrides extends HttpOverrides {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  await Hive.openBox('imageCache');
   await Firebase.initializeApp();
   await dotenv.load();
   HttpOverrides.global = MyHttpOverrides();
@@ -70,15 +72,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<MyHomePage> {
-  
-  Future<WebSocket> getSession() async {
-    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-    final WebSocket channel = await WebSocket.connect(
-        'wss://${dotenv.env['BASE_URL']}/v1',
-        headers: {'token': token});
-    return channel;
-  }
-
   void signInWithGoogle(bool isExistUser) async {
     try {
       final authContext = AuthContext();
@@ -150,20 +143,14 @@ class _LoginPageState extends State<MyHomePage> {
       await authContext.getTheme();
       if (userCredential.additionalUserInfo!.isNewUser) {
         // 新規ユーザーの場合
-        // 定期的な接続チェックを行う
-        await authContext.checkConnection();
-        WebSocket channel = await getSession();
-        authContext.channel = channel;
+        await authContext.startSession();
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => AccountStartup()),
         );
       } else if (!authContext.inHomeScreen) {
         //既存ユーザーの場合
-        // 定期的な接続チェックを行う
-        await authContext.checkConnection();
-        WebSocket channel = await getSession();
-        authContext.channel = channel;
+        await authContext.startSession();
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => TabsScreen()),
