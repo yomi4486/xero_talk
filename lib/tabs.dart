@@ -17,6 +17,10 @@ class TabsProvider with ChangeNotifier {
   int selectedIndex = 0;
 
   void setSelectedIndex(int index) {
+    if(selectedIndex == index){
+      // 二重クリックは無視
+      return;
+    }
     selectedIndex = index;
     notifyListeners();
   }
