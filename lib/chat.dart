@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:xero_talk/home.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/voice_chat.dart';
 
 import 'package:xero_talk/widgets/message_screen.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/message_tools.dart';
 import 'package:xero_talk/widgets/image_viewer.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/tabs.dart';
+import 'package:xero_talk/widgets/user_icon.dart';
 
 class chatProvider with ChangeNotifier {
   bool showImage = false;
@@ -293,24 +292,7 @@ class _chat extends State<chat> {
                                         // アイコン表示（角丸）
                                         borderRadius:
                                             BorderRadius.circular(200),
-                                        child: Image.network(
-                                          "https://${dotenv.env['BASE_URL']}/geticon?user_id=${channelInfo["id"]}",
-                                          fit: BoxFit.contain,
-                                          loadingBuilder:
-                                              (BuildContext context,
-                                                  Widget child,
-                                                  ImageChunkEvent?
-                                                      loadingProgress) {
-                                            if (loadingProgress == null) {
-                                              return child;
-                                            } else {
-                                              return Image.asset(
-                                                'assets/images/default_user_icon.png',
-                                                fit: BoxFit.contain,
-                                              );
-                                            }
-                                          },
-                                        ),
+                                        child: UserIcon(userId: channelInfo["id"])
                                       ),
                                     ),
                                     Padding(
@@ -408,21 +390,7 @@ class _chat extends State<chat> {
                             child: ClipRRect(
                               // アイコン表示（角丸）
                               borderRadius: BorderRadius.circular(200),
-                              child: Image.network(
-                                "https://${dotenv.env['BASE_URL']}/geticon?user_id=${channelInfo["id"]}",
-                                fit: BoxFit.contain,
-                                loadingBuilder: (BuildContext context, Widget child,
-                                    ImageChunkEvent? loadingProgress) {
-                                  if (loadingProgress == null) {
-                                    return child;
-                                  } else {
-                                    return Image.asset(
-                                      'assets/images/default_user_icon.png',
-                                      fit: BoxFit.contain,
-                                    );
-                                  }
-                                },
-                              ),
+                              child: UserIcon(userId: channelInfo["id"],)
                             ),
                           ),
                         ],

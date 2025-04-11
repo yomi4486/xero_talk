@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:xero_talk/widgets/user_icon.dart';
 import './utils/auth_context.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ParticipantWidget extends StatefulWidget {
   final Participant participant;
@@ -53,7 +53,7 @@ class _ParticipantState extends State<ParticipantWidget> {
             margin: EdgeInsets.all(100),
             child:ClipRRect(
               borderRadius: BorderRadius.circular(100.0), 
-              child: Image.network("https://${dotenv.env['BASE_URL']}/geticon?user_id=${widget.userId}"),
+              child: UserIcon(userId: widget.userId)
             )
           ),
         ]

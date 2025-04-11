@@ -50,7 +50,6 @@ class _AccountPage extends State<AccountPage> {
         final bytesData = await croppedFile.readAsBytes();
         final base64Data = base64Encode(bytesData);
         await uit.upload(token, base64Data);
-        setState(() {});
       }
     }
     return;
@@ -169,7 +168,9 @@ class _AccountPage extends State<AccountPage> {
                                         String? token = await FirebaseAuth
                                             .instance.currentUser
                                             ?.getIdToken();
-                                        upload('$token');
+                                        await upload('$token');
+                                        instance.deleteImageCache(id:instance.id);
+                                        setState((){});
                                       },
                                       child:
                                       Stack(children:[

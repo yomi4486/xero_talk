@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
+import 'package:xero_talk/widgets/user_icon.dart';
 
 class NotifyPage extends StatelessWidget {
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
@@ -52,15 +52,8 @@ class NotifyPage extends StatelessWidget {
                                               ClipRRect(
                                                 // アイコン表示（角丸）
                                                 borderRadius:
-                                                    BorderRadius.circular(
-                                                        2000000),
-                                                child: Image.network(
-                                                  "https://${dotenv.env['BASE_URL']}/geticon?user_id=106017943896753291176&t=${DateTime.now().millisecondsSinceEpoch}",
-                                                  width: MediaQuery.of(context)
-                                                          .size
-                                                          .height *
-                                                      0.05,
-                                                ),
+                                                    BorderRadius.circular(1000),
+                                                child: UserIcon(userId: "106017943896753291176",size:MediaQuery.of(context).size.height * 0.05)
                                               ),
                                               Container(
                                                   margin: const EdgeInsets.only(
