@@ -1,10 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:xero_talk/utils/message_tools.dart';
 
 import 'package:xero_talk/widgets/message_screen.dart';
+import 'package:xero_talk/widgets/user_icon.dart';
 import 'dart:typed_data';
 import 'dart:convert' as convert;
 import 'dart:ui' as ui;
@@ -145,10 +145,7 @@ Widget getMessageCard(
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(2000000),
-          child: Image.network(
-            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${author}",
-            width: MediaQuery.of(context).size.height * 0.05,
-          ),
+          child: UserIcon(userId: author, size: MediaQuery.of(context).size.height * 0.05)
         ),
         Container(
           margin: const EdgeInsets.only(left: 10),
@@ -365,11 +362,7 @@ Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> co
           ),
           ClipRRect(
           borderRadius: BorderRadius.circular(2000000),
-          child: Image.network(
-            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${content["author"]}",
-            width: 30,
-            height: 30,
-            )
+          child: UserIcon(userId: content["author"], size: 30)
         ),
         ]
       ),
