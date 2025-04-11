@@ -9,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:livekit_client/livekit_client.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 /// アプリ全体の状態管理を担うクラス
 class AuthContext extends ChangeNotifier {
@@ -127,5 +128,16 @@ class AuthContext extends ChangeNotifier {
       await googleSignIn.signOut();
       await FirebaseAuth.instance.signOut();
     } catch (_) {}
+  }
+
+  Future<void> deleteImageCache({String? id})async{
+    if(id != null){
+      // imageCache ボックス内のすべてのエントリーを削除
+      var box = Hive.box('imageCache');
+      await box.clear();
+    }else{
+      var box = Hive.box('imageCache');
+      await box.delete(id);
+    }
   }
 }
