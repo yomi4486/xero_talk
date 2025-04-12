@@ -57,6 +57,7 @@ class _chat extends State<chat> {
   FocusNode focusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   List<String> images = [];
+  final tabsProvider = TabsProvider();
 
   @override
   void initState(){
@@ -455,82 +456,74 @@ class _chat extends State<chat> {
       ),
       body: WillPopScope(
         onWillPop: () async => true,
-        child: GestureDetector(
-          onHorizontalDragEnd: (details) {
-            if (details.primaryVelocity! > 0) {
-              // 左スワイプ
-              provider.showChatScreen();
-            }
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: FractionalOffset.topLeft,
-                end: FractionalOffset.bottomRight,
-                colors: instance.theme,
-                stops: const [
-                  0.0,
-                  1.0,
-                ],
-              ),
+        child:Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: FractionalOffset.topLeft,
+              end: FractionalOffset.bottomRight,
+              colors: instance.theme,
+              stops: const [
+                0.0,
+                1.0,
+              ],
             ),
-            height: double.infinity,
-            width: double.infinity,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Column(
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width,
-                          height:
-                              MediaQuery.of(context).size.height * 0.713,
-                          child: Container(
-                              margin: const EdgeInsets.only(
-                                  left: 30,
-                                  top: 30,
-                                  right: 30,
-                                  bottom: 30),
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  return SingleChildScrollView(
-                                    controller: _scrollController,
-                                    child: ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                        minHeight: constraints.maxHeight,
+          ),
+          height: double.infinity,
+          width: double.infinity,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height:
+                            MediaQuery.of(context).size.height * 0.713,
+                        child: Container(
+                            margin: const EdgeInsets.only(
+                                left: 30,
+                                top: 30,
+                                right: 30,
+                                bottom: 30),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                return SingleChildScrollView(
+                                  controller: _scrollController,
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight: constraints.maxHeight,
+                                    ),
+                                    child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          MessageScreen(
+                                              focusNode: focusNode,
+                                              scrollController:
+                                                  _scrollController,
+                                              channelInfo: channelInfo,
+                                              fieldText: fieldText,
+                                              EditMode: chatScreenProvider.editMode,
+                                              ImageControler:
+                                                  chatScreenProvider.visibleImage,
+                                              snapshot: widget.snapshot
+                                          ) // コントローラーやノードの状態をストリームの描画部分と共有
+                                        ]
                                       ),
-                                      child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            MessageScreen(
-                                                focusNode: focusNode,
-                                                scrollController:
-                                                    _scrollController,
-                                                channelInfo: channelInfo,
-                                                fieldText: fieldText,
-                                                EditMode: chatScreenProvider.editMode,
-                                                ImageControler:
-                                                    chatScreenProvider.visibleImage,
-                                                snapshot: widget.snapshot
-                                            ) // コントローラーやノードの状態をストリームの描画部分と共有
-                                          ]
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                )
-                              ),
-                            )
-                          ] // childlen 画面全体
-                        )
-                      ]
-                    )
-                  ],
-                )
+                                    ),
+                                  );
+                                },
+                              )
+                            ),
+                          )
+                        ] // childlen 画面全体
+                      )
+                    ]
+                  )
+                ],
               )
             )
           )
