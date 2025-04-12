@@ -153,7 +153,7 @@ class _LoginPageState extends State<MyHomePage> {
         await authContext.startSession();
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => TabsScreen()),
+          MaterialPageRoute(builder: (context) => PageViewTabsScreen()),
         );
       }
       authContext.inHomeScreen = true;

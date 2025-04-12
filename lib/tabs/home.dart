@@ -37,20 +37,7 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
     super.build(context);
     return WillPopScope(
       onWillPop: () async => false,
-      child: GestureDetector(
-        onHorizontalDragEnd: (details) {
-          if (details.primaryVelocity! < 0) {
-            // try {
-            //   Navigator.of(context).push(
-            //     MaterialPageRoute(
-            //         builder: (context) => instance.lastOpenedChat),
-            //   );
-            // } catch (e) {
-            //   //初期化されてない場合
-            //   print("前の会話はありません");
-            // }
-          }
-        },
+      
         child: Stack(
           children:[
             Scaffold(
@@ -222,7 +209,6 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
             ),         
           ]
         )
-      )
     );
   }
 }
