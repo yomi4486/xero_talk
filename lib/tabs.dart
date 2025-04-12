@@ -12,6 +12,7 @@ import 'package:xero_talk/utils/get_user_profile.dart';
 import 'dart:convert' as convert;
 
 class TabsProvider with ChangeNotifier {
+  final PageController pageController = PageController(keepPage: true,initialPage: 0);
   Map<String,dynamic> userData = {};
 
   int selectedIndex = 0;
@@ -25,31 +26,36 @@ class TabsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  bool visibleChatScreen = false;
   String showId = "";
 
   Future<void> showChatScreen({String? id})async{
     if(id == null){
-      visibleChatScreen = false;
+      pageController.animateToPage(
+        0,
+        duration: Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      );
       notifyListeners();
       return;
     }
     userData = await getUserProfile(id);
-    visibleChatScreen = !visibleChatScreen;
+    pageController.animateToPage(        
+        1,
+        duration: Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+      );
     showId = id;
     notifyListeners();
   }
 }
 
-class TabsScreen extends StatefulWidget {
-  TabsScreen();
-  final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
+class PageViewTabsScreen extends StatefulWidget {
   @override
-  _TabsScreen createState() => _TabsScreen();
+  TabsScreen createState() => TabsScreen();
 }
 
-class _TabsScreen extends State<TabsScreen> {
-  _TabsScreen();
+class TabsScreen extends State<PageViewTabsScreen> {
+  TabsScreen();
   final AuthContext instance = AuthContext();
   late List<dynamic> theme;
   String colorToHex(Color color) {
@@ -113,7 +119,10 @@ class _TabsScreen extends State<TabsScreen> {
             } catch (e) {
               // print(e);
             }
-            return Stack(
+            return PageView(
+              controller: provider.pageController,
+              scrollDirection: Axis.horizontal,
+              physics: provider.selectedIndex == 0 ? ClampingScrollPhysics() : NeverScrollableScrollPhysics(),
               children:[
                 Scaffold(
                   bottomNavigationBar:BottomNavigationBar(
@@ -145,7 +154,8 @@ class _TabsScreen extends State<TabsScreen> {
                     ],
                     backgroundColor: const Color.fromARGB(255, 40, 40, 40),
                   ),
-                  body: IndexedStack(
+                  body: Container(child:IndexedStack(
+                    key:GlobalKey(),
                     index:provider.selectedIndex,
                     children:[
                       chatHome(
@@ -154,14 +164,12 @@ class _TabsScreen extends State<TabsScreen> {
                       NotifyPage(),
                       AccountPage(),
                     ]
-                  ),
+                  ),),
                 ),
-                provider.visibleChatScreen ? chat(
+                chat(
                   channelInfo: provider.userData,
                   snapshot: snapshot,
                 )
-                :
-                Container()
               ]
             );
           }
