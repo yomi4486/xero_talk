@@ -122,7 +122,7 @@ class TabsScreen extends State<PageViewTabsScreen> {
             return PageView(
               controller: provider.pageController,
               scrollDirection: Axis.horizontal,
-              physics: provider.selectedIndex == 0 ? ClampingScrollPhysics() : NeverScrollableScrollPhysics(),
+              physics: provider.selectedIndex == 0 && provider.userData.isNotEmpty ? ClampingScrollPhysics() : NeverScrollableScrollPhysics(),
               children:[
                 Scaffold(
                   bottomNavigationBar:BottomNavigationBar(
@@ -154,7 +154,7 @@ class TabsScreen extends State<PageViewTabsScreen> {
                     ],
                     backgroundColor: const Color.fromARGB(255, 40, 40, 40),
                   ),
-                  body: Container(child:IndexedStack(
+                  body: IndexedStack(
                     key:GlobalKey(),
                     index:provider.selectedIndex,
                     children:[
@@ -164,7 +164,7 @@ class TabsScreen extends State<PageViewTabsScreen> {
                       NotifyPage(),
                       AccountPage(),
                     ]
-                  ),),
+                  ),
                 ),
                 chat(
                   channelInfo: provider.userData,
