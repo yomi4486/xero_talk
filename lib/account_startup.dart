@@ -36,7 +36,7 @@ class AccountStartup extends StatelessWidget {
               'display_name': displayName,
               'name': name,
             }).then((value) {
-              Navigator.push(
+              Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (context) => PageViewTabsScreen()));
             }).catchError((err) {
               print(err);
