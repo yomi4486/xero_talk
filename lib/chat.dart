@@ -127,8 +127,7 @@ class _chat extends State<chat> {
                         cursorColor:
                             const Color.fromARGB(55, 255, 255, 255),
                         controller: fieldText,
-                        onTapOutside: (_) =>
-                            unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
+                        onTapOutside: (_) => unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
                         style: const TextStyle(
@@ -166,51 +165,52 @@ class _chat extends State<chat> {
                         },
                       ),
                     ),
-                    SizedBox(
-                      height: 60,
-                      child: IconButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                              Colors.transparent),
-                          overlayColor: MaterialStateProperty.all<Color>(
-                              Colors.transparent),
-                        ),
-                        onPressed: () async {
-                          if (chatScreenProvider.editing) {
-                            chatScreenProvider.toggleEditMode();
-                            await editMessage(chatScreenProvider.editingMessageId,
-                                channelInfo["id"], chatText);
-                          } else {
-                            await sendMessage(chatText, channelInfo["id"],
-                                imageList: images);
-                          }
-                          chatText = "";
-                          images = [];
-                          fieldText.clear();
-                          focusNode.requestFocus();
-                        },
-                        icon: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Color.fromARGB(55, 0, 0, 0),
-                                Color.fromARGB(55, 0, 0, 0)
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            shape: BoxShape.circle,
+                    TextFieldTapRegion(
+                      child: SizedBox(
+                        height: 60,
+                        child: IconButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                Colors.transparent),
+                            overlayColor: MaterialStateProperty.all<Color>(
+                                Colors.transparent),
                           ),
-                          child: chatScreenProvider.editing
-                            ? const Icon(
-                                Icons.edit,
-                                color: Color.fromARGB(255, 255, 255, 255),
-                            )
-                            : const ImageIcon(
-                                AssetImage("assets/images/send.png"),
-                                color: Color.fromARGB(255, 255, 255, 255),
+                          onPressed: () async {
+                            if (chatScreenProvider.editing) {
+                              chatScreenProvider.toggleEditMode();
+                              await editMessage(chatScreenProvider.editingMessageId,
+                                  channelInfo["id"], chatText);
+                            } else {
+                              await sendMessage(chatText, channelInfo["id"],
+                                  imageList: images);
+                            }
+                            chatText = "";
+                            images = [];
+                            fieldText.clear();
+                          },
+                          icon: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color.fromARGB(55, 0, 0, 0),
+                                  Color.fromARGB(55, 0, 0, 0)
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              shape: BoxShape.circle,
                             ),
+                            child: chatScreenProvider.editing
+                              ? const Icon(
+                                  Icons.edit,
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                              )
+                              : const ImageIcon(
+                                  AssetImage("assets/images/send.png"),
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                              ),
+                          ),
                         ),
                       ),
                     ),
