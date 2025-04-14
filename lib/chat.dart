@@ -186,6 +186,7 @@ class _chat extends State<chat> {
                           chatText = "";
                           images = [];
                           fieldText.clear();
+                          focusNode.requestFocus();
                         },
                         icon: Container(
                           padding: const EdgeInsets.all(12),
