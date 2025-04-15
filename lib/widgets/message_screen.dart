@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:xero_talk/widgets/create_message_card.dart';
 import 'dart:typed_data';
 import '../voice_chat.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/voice_chat.dart';
 import 'package:xero_talk/utils/message_tools.dart';
 
@@ -251,7 +250,7 @@ class _MessageScreenState extends State<MessageScreen> {
                         builder: (context) => VoiceChat(RoomInfo(
                             token: accessToken,
                             displayName: "",
-                            userId:"https://${dotenv.env['BASE_URL']}/geticon?user_id=${content["author"]}"))),
+                            userId:"${content["author"]}"))),
                       );
                     });
                   }

@@ -7,9 +7,9 @@ import 'package:xero_talk/setting.dart';
 import 'dart:convert';
 import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:provider/provider.dart';
+import 'package:xero_talk/widgets/user_icon.dart';
 
 class AccountPage extends StatefulWidget {
   AccountPage();
@@ -177,27 +177,7 @@ class _AccountPage extends State<AccountPage> {
                                         // アイコン表示（角丸）
                                         borderRadius:
                                             BorderRadius.circular(2000000),
-                                        child: Image.network(
-                                          "https://${dotenv.env['BASE_URL']}/geticon?user_id=${profile?['sub']}&t=$nowDt",
-                                          width:
-                                              MediaQuery.of(context).size.width *
-                                                  0.2,
-                                          loadingBuilder: (BuildContext context,
-                                              Widget child,
-                                              ImageChunkEvent? loadingProgress) {
-                                            if (loadingProgress == null) {
-                                              return child;
-                                            } else {
-                                              return Image.asset(
-                                                'assets/images/default_user_icon.png',
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    0.2,
-                                              );
-                                            }
-                                          },
-                                        ),
+                                        child: UserIcon(userId: profile?["sub"],size:MediaQuery.of(context).size.width * 0.2)
                                       ),
                                       Positioned(
                                         bottom: 0,
