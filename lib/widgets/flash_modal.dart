@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flash/flash.dart';
 import 'package:flash/flash_helper.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
+import 'package:xero_talk/widgets/user_icon.dart';
 // import 'package:xero_talk/chat.dart';
 
 Future<void> showInfoSnack(
@@ -94,10 +94,7 @@ class _ProgressFlashState extends State<ProgressFlash> {
                         ClipRRect(
                           // アイコン表示（角丸）
                           borderRadius: BorderRadius.circular(1000),
-                          child: Image.network(
-                            "https://${dotenv.env['BASE_URL']}/geticon?user_id=${widget.content['author']}",
-                            width: MediaQuery.of(context).size.width * 0.1,
-                          ),
+                          child: UserIcon(userId: widget.content['author'])
                         ),
                       ],
                     ),
