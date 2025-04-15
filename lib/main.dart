@@ -151,7 +151,7 @@ class _LoginPageState extends State<MyHomePage> {
       } else if (!authContext.inHomeScreen) {
         //既存ユーザーの場合
         await authContext.startSession();
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => PageViewTabsScreen()),
         );

@@ -101,13 +101,14 @@ class _chat extends State<chat> {
     final Color backgroundColor = lightenColor(instance.theme[0], .2);
     final List<Color> textColor = instance.getTextColor(backgroundColor);
     final String displayName = channelInfo["display_name"] ?? "-";
+    final double bottomBarHeight = MediaQuery.of(context).size.height * 0.1799;
 
     return Stack(children: [
       Scaffold(
         bottomSheet: BottomAppBar(
           surfaceTintColor: Colors.transparent,
           shadowColor: Colors.transparent,
-          height: MediaQuery.of(context).size.height * 0.1799,
+          height: bottomBarHeight,
           notchMargin: 4.0,
           color: darkenColor(instance.theme[1].withOpacity(1), .001),
           child: Column(
@@ -126,8 +127,7 @@ class _chat extends State<chat> {
                         cursorColor:
                             const Color.fromARGB(55, 255, 255, 255),
                         controller: fieldText,
-                        onTapOutside: (_) =>
-                            unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
+                        onTapOutside: (_) => unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
                         style: const TextStyle(
@@ -165,50 +165,52 @@ class _chat extends State<chat> {
                         },
                       ),
                     ),
-                    SizedBox(
-                      height: 60,
-                      child: IconButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                              Colors.transparent),
-                          overlayColor: MaterialStateProperty.all<Color>(
-                              Colors.transparent),
-                        ),
-                        onPressed: () async {
-                          if (chatScreenProvider.editing) {
-                            chatScreenProvider.toggleEditMode();
-                            await editMessage(chatScreenProvider.editingMessageId,
-                                channelInfo["id"], chatText);
-                          } else {
-                            await sendMessage(chatText, channelInfo["id"],
-                                imageList: images);
-                          }
-                          chatText = "";
-                          images = [];
-                          fieldText.clear();
-                        },
-                        icon: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Color.fromARGB(55, 0, 0, 0),
-                                Color.fromARGB(55, 0, 0, 0)
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            shape: BoxShape.circle,
+                    TextFieldTapRegion(
+                      child: SizedBox(
+                        height: 60,
+                        child: IconButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all<Color>(
+                                Colors.transparent),
+                            overlayColor: MaterialStateProperty.all<Color>(
+                                Colors.transparent),
                           ),
-                          child: chatScreenProvider.editing
-                            ? const Icon(
-                                Icons.edit,
-                                color: Color.fromARGB(255, 255, 255, 255),
-                            )
-                            : const ImageIcon(
-                                AssetImage("assets/images/send.png"),
-                                color: Color.fromARGB(255, 255, 255, 255),
+                          onPressed: () async {
+                            if (chatScreenProvider.editing) {
+                              chatScreenProvider.toggleEditMode();
+                              await editMessage(chatScreenProvider.editingMessageId,
+                                  channelInfo["id"], chatText);
+                            } else {
+                              await sendMessage(chatText, channelInfo["id"],
+                                  imageList: images);
+                            }
+                            chatText = "";
+                            images = [];
+                            fieldText.clear();
+                          },
+                          icon: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color.fromARGB(55, 0, 0, 0),
+                                  Color.fromARGB(55, 0, 0, 0)
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              shape: BoxShape.circle,
                             ),
+                            child: chatScreenProvider.editing
+                              ? const Icon(
+                                  Icons.edit,
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                              )
+                              : const ImageIcon(
+                                  AssetImage("assets/images/send.png"),
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                              ),
+                          ),
                         ),
                       ),
                     ),
@@ -454,79 +456,76 @@ class _chat extends State<chat> {
           )
         ],
       ),
-      body: WillPopScope(
-        onWillPop: () async => true,
-        child:Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: FractionalOffset.topLeft,
-              end: FractionalOffset.bottomRight,
-              colors: instance.theme,
-              stops: const [
-                0.0,
-                1.0,
-              ],
-            ),
+      body:Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: FractionalOffset.topLeft,
+            end: FractionalOffset.bottomRight,
+            colors: instance.theme,
+            stops: const [
+              0.0,
+              1.0,
+            ],
           ),
-          height: double.infinity,
-          width: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Column(
-                    children: [
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        height:
-                            MediaQuery.of(context).size.height * 0.713,
-                        child: Container(
-                            margin: const EdgeInsets.only(
-                                left: 30,
-                                top: 30,
-                                right: 30,
-                                bottom: 30),
-                            child: LayoutBuilder(
-                              builder: (context, constraints) {
-                                return SingleChildScrollView(
-                                  controller: _scrollController,
-                                  child: ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      minHeight: constraints.maxHeight,
+        ),
+        height: double.infinity,
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height:
+                          MediaQuery.of(context).size.height,
+                      child: Container(
+                          margin: EdgeInsets.only(
+                              left: 30,
+                              right: 30,
+                              bottom: bottomBarHeight+118),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SingleChildScrollView(
+                                controller: _scrollController,
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight,
+                                  ),
+                                  child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.end,
+                                      children: [
+                                        MessageScreen(
+                                            focusNode: focusNode,
+                                            scrollController:
+                                                _scrollController,
+                                            channelInfo: channelInfo,
+                                            fieldText: fieldText,
+                                            EditMode: chatScreenProvider.editMode,
+                                            ImageControler:
+                                                chatScreenProvider.visibleImage,
+                                            snapshot: widget.snapshot
+                                        ) // コントローラーやノードの状態をストリームの描画部分と共有
+                                      ]
                                     ),
-                                    child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          MessageScreen(
-                                              focusNode: focusNode,
-                                              scrollController:
-                                                  _scrollController,
-                                              channelInfo: channelInfo,
-                                              fieldText: fieldText,
-                                              EditMode: chatScreenProvider.editMode,
-                                              ImageControler:
-                                                  chatScreenProvider.visibleImage,
-                                              snapshot: widget.snapshot
-                                          ) // コントローラーやノードの状態をストリームの描画部分と共有
-                                        ]
-                                      ),
-                                    ),
-                                  );
-                                },
-                              )
-                            ),
-                          )
-                        ] // childlen 画面全体
-                      )
-                    ]
-                  )
-                ],
-              )
+                                  ),
+                                );
+                              },
+                            )
+                          ),
+                        )
+                      ] // childlen 画面全体
+                    )
+                  ]
+                )
+              ],
             )
-          )
+          ),
         ),
         chatScreenProvider.showImage && chatScreenProvider.image.isNotEmpty
         ? Positioned.fill(
