@@ -229,6 +229,51 @@ class _SettingPage extends State<SettingPage> {
                     ),
                   ),
                   CenterButton(
+                      name: "キャッシュを削除",
+                      fontColor: Colors.white,
+                      function: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return SimpleDialog(
+                              title: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                spacing: 3,
+                                children:[
+                                  const Text(
+                                    'キャッシュを削除しますか？',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  const Text(
+                                    'ログイン状態は保持されます',
+                                    style: TextStyle(fontSize: 13,color: Color.fromARGB(170, 0, 0, 0)),
+                                  ),
+                                ]
+                              ),
+                              children: <Widget>[
+                                SimpleDialogOption(
+                                    child: const Text(
+                                      'はい',
+                                      style: TextStyle(
+                                          color:
+                                              Color.fromARGB(255, 255, 10, 10)),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      instance.deleteImageCache();
+                                    }),
+                                SimpleDialogOption(
+                                    child: const Text('キャンセル'),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    }),
+                              ],
+                            );
+                          },
+                        );
+                      }),
+                      CenterButton(
                       name: "ログアウト",
                       fontColor: Colors.redAccent,
                       function: () {
