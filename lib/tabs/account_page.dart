@@ -60,6 +60,7 @@ class _AccountPage extends State<AccountPage> {
     final instance = Provider.of<AuthContext>(context);
     var profile = instance.userCredential.additionalUserInfo?.profile;
     return WillPopScope(
+      key: GlobalKey(),
       onWillPop: () async => true,
       child: FutureBuilder(
         future: FirebaseFirestore.instance
@@ -120,22 +121,20 @@ class _AccountPage extends State<AccountPage> {
             floatingActionButton: _showFab
                 ? FloatingActionButton(
                     onPressed: () async {
-                      if (_showFab) {
-                        // ドキュメント作成
-                        FirebaseFirestore.instance
-                            .collection('user_account') // コレクションID
-                            .doc('${profile?["sub"]}') // ドキュメントID
-                            .update({
-                          'description': description,
-                          'display_name': displayName,
-                        }).then((value) {
-                          setState(() {
-                            _showFab = false;
-                          });
-                        }).catchError((err) {
-                          print(err);
+                      // ドキュメント作成
+                      FirebaseFirestore.instance
+                          .collection('user_account') // コレクションID
+                          .doc('${profile?["sub"]}') // ドキュメントID
+                          .update({
+                        'description': description,
+                        'display_name': displayName,
+                      }).then((value) {
+                        setState(() {
+                          _showFab = false;
                         });
-                      }
+                      }).catchError((err) {
+                        print(err);
+                      });
                     },
                     backgroundColor: instance.theme[1],
                     shape: RoundedRectangleBorder(
@@ -255,15 +254,13 @@ class _AccountPage extends State<AccountPage> {
                                               onChanged: (text) {
                                                 displayName = text;
                                                 if (!_showFab) {
-                                                  setState(() {
-                                                    _showFab = true;
-                                                  });
+                                                  _showFab = true;
                                                 }
                                               },
                                               onTapOutside: (f) {
-                                                FocusScope.of(context)
-                                                    .unfocus();
-                                              }),
+                                                FocusScope.of(context).unfocus();
+                                              },),
+                                              
                                         ]))),
                               ],
                             ),
@@ -298,14 +295,12 @@ class _AccountPage extends State<AccountPage> {
                           onChanged: (text) {
                             description = text;
                             if (!_showFab) {
-                              setState(() {
-                                _showFab = true;
-                              });
+                              _showFab = true;
                             }
                           },
                           onTapOutside: (f) {
                             FocusScope.of(context).unfocus();
-                          }),
+                          },),
                     )),
                     GestureDetector(
                         onTap: () {

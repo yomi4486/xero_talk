@@ -248,14 +248,15 @@ Widget getMessageCard(
                                       style: TextStyle(fontSize: 16),
                                     ),
                                     children: <Widget>[
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.8,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(10),
-                                          child: _chatWidget,
-                                        ),
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: _chatWidget,
+                                          ),                  
+                                        ],
                                       ),
                                       SimpleDialogOption(
                                           child: const Text(
