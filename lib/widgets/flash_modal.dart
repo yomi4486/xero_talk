@@ -24,7 +24,16 @@ Future<void> showInfoSnack(
       return Flash(
         controller: controller,
         position: FlashPosition.top,
-        child: ProgressFlash(controller: controller,content: content,userProfile: userProfile,),
+        child: Dismissible(
+          key: UniqueKey(),
+          direction: DismissDirection.up, // 上方向のみ許可
+          onDismissed: (_) => controller.dismiss(),
+          child:ProgressFlash(
+            controller: controller,
+            content: content,
+            userProfile: userProfile,
+          ),
+        )
       );
     }
   );
@@ -94,7 +103,7 @@ class _ProgressFlashState extends State<ProgressFlash> {
                         ClipRRect(
                           // アイコン表示（角丸）
                           borderRadius: BorderRadius.circular(1000),
-                          child: UserIcon(userId: widget.content['author'])
+                          child: UserIcon(userId: widget.content['author'],size:MediaQuery.of(context).size.width * 0.1)
                         ),
                       ],
                     ),
