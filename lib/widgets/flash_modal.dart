@@ -88,13 +88,18 @@ class _ProgressFlashState extends State<ProgressFlash> {
               ),
             ],
           ),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.3
+          ),
           margin: EdgeInsets.only(top: 60,left: 20,right: 20),
           child:Wrap(
             children: [
               Padding(      
                 padding: EdgeInsets.all(22),
-                child:Row(
+                child: Row(
                   spacing: 10,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children:[
                     Column(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -110,18 +115,26 @@ class _ProgressFlashState extends State<ProgressFlash> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.userProfile['display_name'],
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                        DefaultTextStyle(
+                          style: TextStyle(),
+                          child: Text(
+                            widget.userProfile['display_name'],
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
-                        Text(
-                          widget.content['content'],
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
+                        DefaultTextStyle(
+                          style: TextStyle(),
+                          child: Text(
+                            widget.content['content'],
+                            overflow: TextOverflow.fade, // 超過分をフェードアウト
+                            maxLines: 3,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       ],
