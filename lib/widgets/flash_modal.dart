@@ -10,6 +10,7 @@ import 'package:flash/flash_helper.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
+import 'package:xero_talk/widgets/create_message_card.dart';
 // import 'package:xero_talk/chat.dart';
 
 Future<void> showInfoSnack(
@@ -72,6 +73,7 @@ class _ProgressFlashState extends State<ProgressFlash> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Color> textColor = instance.getTextColor(Color.fromARGB(255, 22, 22, 22));
     return Column(
       mainAxisSize: MainAxisSize.min,
       children:[
@@ -88,13 +90,19 @@ class _ProgressFlashState extends State<ProgressFlash> {
               ),
             ],
           ),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.3,
+          ),
           margin: EdgeInsets.only(top: 60,left: 20,right: 20),
           child:Wrap(
             children: [
-              Padding(      
+              Container(      
+                width: MediaQuery.of(context).size.width * 0.9,
                 padding: EdgeInsets.all(22),
-                child:Row(
+                child: Row(
                   spacing: 10,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children:[
                     Column(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -109,25 +117,36 @@ class _ProgressFlashState extends State<ProgressFlash> {
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          widget.userProfile['display_name'],
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                        DefaultTextStyle(
+                          style: TextStyle(),
+                          child: Text(
+                            widget.userProfile['display_name'],
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
-                        Text(
-                          widget.content['content'],
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
+                        SizedBox(
+                          child: DefaultTextStyle(
+                            overflow: TextOverflow.fade,
+                            style: TextStyle(),
+                            child: RichText(
+                              text: TextSpan(
+                                children: getTextSpans(widget.content["content"], false, textColor),
+                                style:
+                                    TextStyle(color: textColor[1], fontSize: 16.0),
+                              ),
+                            )
                           ),
                         ),
                       ],
-                  ),
-                ]
-              )),
+                    ),
+                  ]
+                )
+              ),
               LinearProgressIndicator(
                 minHeight: 5,
                 value: _progress,
