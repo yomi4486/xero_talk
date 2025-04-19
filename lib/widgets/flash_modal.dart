@@ -130,22 +130,23 @@ class _ProgressFlashState extends State<ProgressFlash> {
                           ),
                         ),
                         SizedBox(
-                          child:
-                        DefaultTextStyle(
-                          overflow: TextOverflow.fade,
-                          style: TextStyle(),
-                          child: RichText(
-                          text: TextSpan(
-                            children: getTextSpans(widget.content["content"], false, textColor),
-                            style:
-                                TextStyle(color: textColor[1], fontSize: 16.0),
+                          child: DefaultTextStyle(
+                            overflow: TextOverflow.fade,
+                            style: TextStyle(),
+                            child: RichText(
+                              text: TextSpan(
+                                children: getTextSpans(widget.content["content"], false, textColor),
+                                style:
+                                    TextStyle(color: textColor[1], fontSize: 16.0),
+                              ),
+                            )
                           ),
-                        )
-                        ),),
+                        ),
                       ],
-                  ),
-                ]
-              )),
+                    ),
+                  ]
+                )
+              ),
               LinearProgressIndicator(
                 minHeight: 5,
                 value: _progress,
