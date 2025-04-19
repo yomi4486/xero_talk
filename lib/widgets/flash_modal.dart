@@ -10,6 +10,7 @@ import 'package:flash/flash_helper.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
+import 'package:xero_talk/widgets/create_message_card.dart';
 // import 'package:xero_talk/chat.dart';
 
 Future<void> showInfoSnack(
@@ -72,6 +73,7 @@ class _ProgressFlashState extends State<ProgressFlash> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Color> textColor = instance.getTextColor(Color.fromARGB(255, 22, 22, 22));
     return Column(
       mainAxisSize: MainAxisSize.min,
       children:[
@@ -89,12 +91,13 @@ class _ProgressFlashState extends State<ProgressFlash> {
             ],
           ),
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.3
+            maxHeight: MediaQuery.of(context).size.height * 0.3,
           ),
           margin: EdgeInsets.only(top: 60,left: 20,right: 20),
           child:Wrap(
             children: [
-              Padding(      
+              Container(      
+                width: MediaQuery.of(context).size.width * 0.9,
                 padding: EdgeInsets.all(22),
                 child: Row(
                   spacing: 10,
@@ -114,6 +117,7 @@ class _ProgressFlashState extends State<ProgressFlash> {
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         DefaultTextStyle(
                           style: TextStyle(),
@@ -125,18 +129,19 @@ class _ProgressFlashState extends State<ProgressFlash> {
                             ),
                           ),
                         ),
+                        SizedBox(
+                          child:
                         DefaultTextStyle(
+                          overflow: TextOverflow.fade,
                           style: TextStyle(),
-                          child: Text(
-                            widget.content['content'],
-                            overflow: TextOverflow.fade, // 超過分をフェードアウト
-                            maxLines: 3,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
+                          child: RichText(
+                          text: TextSpan(
+                            children: getTextSpans(widget.content["content"], false, textColor),
+                            style:
+                                TextStyle(color: textColor[1], fontSize: 16.0),
                           ),
-                        ),
+                        )
+                        ),),
                       ],
                   ),
                 ]
