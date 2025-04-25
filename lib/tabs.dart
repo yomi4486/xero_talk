@@ -111,7 +111,7 @@ class TabsScreen extends State<PageViewTabsScreen> {
                 messageId = content["id"];
               }
               if(type == 'send_message' && lastMessageId != messageId){
-                if(instance.id != content['author']){
+                if((instance.id != content['author'])&&((provider.selectedIndex == 0) && (provider.userData.isNotEmpty) && (provider.userData['id'] != content['author'])) ){
                   showInfoSnack(context, content: content);
                 }     
               }
