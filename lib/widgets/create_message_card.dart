@@ -143,6 +143,7 @@ Widget getMessageCard(
     child: Row(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.max,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(2000000),
@@ -180,7 +181,9 @@ Widget getMessageCard(
                       ),
                     ))
               ]),
-              Column(children: [
+              Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
                 SizedBox(
                   width: MediaQuery.of(context).size.width * 0.7,
                   child: content.isNotEmpty
@@ -199,7 +202,8 @@ Widget getMessageCard(
                     showImage!(decodeBase64(attachments[0]), true);
                   },
                 )
-              ]),
+              ]
+              ),
             ],
           ),
         ),

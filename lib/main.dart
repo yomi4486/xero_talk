@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:xero_talk/account_startup.dart';
-import 'dart:io';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,23 +16,12 @@ import 'package:hive_flutter/hive_flutter.dart';
 late drive.DriveApi googleDriveApi;
 bool failed = false;
 
-class MyHttpOverrides extends HttpOverrides {
-  // 証明書の検証を無効
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-  }
-}
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox('imageCache');
   await Firebase.initializeApp();
   await dotenv.load();
-  HttpOverrides.global = MyHttpOverrides();
   runApp(
     MultiProvider(
       providers: [
