@@ -124,7 +124,7 @@ class _LoginPageState extends State<MyHomePage> {
           await FirebaseAuth.instance.signInWithCredential(credential);
       final httpClient = (await googleSignIn.authenticatedClient())!;
       googleDriveApi = drive.DriveApi(httpClient);
-      authContext.id = userCredential.additionalUserInfo?.profile?['sub'];
+      authContext.id = await userCredential.additionalUserInfo?.profile?['sub'];
       
       authContext.googleDriveApi = googleDriveApi;
       authContext.userCredential = userCredential;
@@ -146,8 +146,6 @@ class _LoginPageState extends State<MyHomePage> {
       }
       authContext.inHomeScreen = true;
       authContext.userCredential = userCredential;
-    } on FirebaseException catch (e) {
-      print(e.message);
     } catch (e) {
       print(e);
       setState(() {
