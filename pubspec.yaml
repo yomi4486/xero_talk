@@ -46,7 +46,7 @@ dependencies:
   io: ^1.0.4
   rxdart: ^0.28.0
   flash: ^3.1.1
-  googleapis: ^13.2.0
+  googleapis: ^14.0.0
   googleapis_auth: ^1.6.0
   path_provider: ^2.1.5
   extension_google_sign_in_as_googleapis_auth: ^2.0.12
