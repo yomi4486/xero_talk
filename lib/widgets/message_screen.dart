@@ -190,14 +190,19 @@ class _MessageScreenState extends State<MessageScreen> {
 
   void removeWidget(String key) {
     try {
-      returnWidget.removeWhere((widget) => (widget.key as ValueKey).value == key);
+      returnWidget.removeWhere((widget) {
+        if (widget.key is ValueKey) {
+          return (widget.key as ValueKey).value == key;
+        }
+        return false;
+      });
       chatHistory.remove(key);
       _saveChatHistory({
         'messages': chatHistory,
         'lastUpdated': DateTime.now().millisecondsSinceEpoch,
       });
     } catch (e) {
-      print(e);
+      print('Error removing widget: $e');
     }
   }
 
