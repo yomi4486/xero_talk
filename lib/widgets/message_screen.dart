@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
-// import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +11,7 @@ import 'dart:typed_data';
 import '../voice_chat.dart';
 import 'package:xero_talk/utils/voice_chat.dart';
 import 'package:xero_talk/utils/message_tools.dart';
+import 'dart:convert' show utf8;
 
 String lastMessageId = "";
 
@@ -41,12 +42,140 @@ class MessageScreen extends StatefulWidget {
 class _MessageScreenState extends State<MessageScreen> {
   List<Widget> returnWidget = [];
   Map chatHistory = {};
+  late drive.DriveApi driveApi;
+  String? chatFileId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeDriveApi();
+  }
+
+  Future<void> _initializeDriveApi() async {
+    final instance = Provider.of<AuthContext>(context, listen: false);
+    driveApi = instance.googleDriveApi;
+    await _loadOrCreateChatFile();
+  }
+
+  Future<void> _loadOrCreateChatFile() async {
+    try {
+      // チャットファイルを検索
+      final result = await driveApi.files.list(
+        spaces: 'appDataFolder',
+        q: "name='chat_history.json'",
+      );
+
+      if (result.files != null && result.files!.isNotEmpty) {
+        chatFileId = result.files!.first.id;
+        await _loadChatHistory();
+      } else {
+        // 新しいファイルを作成
+        final file = drive.File()
+          ..name = 'chat_history.json'
+          ..parents = ['appDataFolder']
+          ..mimeType = 'application/json';
+
+        final createdFile = await driveApi.files.create(file);
+        chatFileId = createdFile.id;
+        
+        // 初期データを保存
+        final initialData = {
+          'messages': [],
+          'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+        };
+        await _saveChatHistory(initialData);
+      }
+    } catch (e) {
+      print('Error initializing chat file: $e');
+    }
+  }
+
+  Future<void> _loadChatHistory() async {
+    try {
+      if (chatFileId == null) return;
+
+      final file = await driveApi.files.get(
+        chatFileId!,
+        downloadOptions: drive.DownloadOptions.fullMedia,
+      ) as drive.Media;
+
+      final bytes = await file.stream.toList();
+      final content = utf8.decode(bytes.expand((x) => x).toList());
+      final data = convert.jsonDecode(content);
+      print(data);
+      
+      if (data['messages'] != null) {
+        setState(() {
+          chatHistory = Map<String, dynamic>.from(data['messages']);
+          // 履歴を時系列順に並び替えて表示
+          final sortedMessages = chatHistory.entries.toList()
+            ..sort((a, b) => (a.value['timeStamp'] as int).compareTo(b.value['timeStamp'] as int));
+          
+          returnWidget = [];
+          for (var entry in sortedMessages) {
+            if (entry.value['voice'] == true) {
+              final voiceWidget = getVoiceWidget(
+                context,
+                entry.key,
+                {
+                  'author': entry.value['author'],
+                  'room_id': entry.key,
+                },
+                instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
+              );
+              addWidget(voiceWidget, 0);
+            } else {
+              final Widget chatWidget = getMessageCard(
+                context,
+                widget,
+                instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
+                entry.value['display_name'],
+                entry.value['display_time'],
+                entry.value['author'],
+                entry.value['content'],
+                entry.value['edited'] ?? false,
+                entry.value['attachments'],
+                entry.key,
+                showImage: widget.ImageControler,
+              );
+              addWidget(chatWidget, 0);
+            }
+          }
+        });
+      }
+    } catch (e) {
+      print('Error loading chat history: $e');
+    }
+  }
+
+  Future<void> _saveChatHistory(Map<String, dynamic> data) async {
+    try {
+      if (chatFileId == null) return;
+
+      final content = convert.jsonEncode(data);
+      final bytes = utf8.encode(content);
+      final media = drive.Media(
+        Stream.value(bytes),
+        bytes.length,
+      );
+
+      await driveApi.files.update(
+        drive.File()
+          ..name = 'chat_history.json'
+          ..mimeType = 'application/json; charset=utf-8',
+        chatFileId!,
+        uploadMedia: media,
+      );
+    } catch (e) {
+      print('Error saving chat history: $e');
+    }
+  }
+
   void addWidget(Widget newWidget, double currentPosition) {
     returnWidget.add(newWidget);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.scrollController.jumpTo(currentPosition); // 再描画前の座標にScrollViewを戻す
+      widget.scrollController.jumpTo(currentPosition);
       widget.scrollController.animateTo(
-        // 最新のメッセージまでスクロール
         widget.scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
@@ -56,9 +185,12 @@ class _MessageScreenState extends State<MessageScreen> {
 
   void removeWidget(String key) {
     try {
-      returnWidget
-          .removeWhere((widget) => (widget.key as ValueKey).value == key);
+      returnWidget.removeWhere((widget) => (widget.key as ValueKey).value == key);
       chatHistory.remove(key);
+      _saveChatHistory({
+        'messages': chatHistory,
+        'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+      });
     } catch (e) {
       print(e);
     }
@@ -68,14 +200,13 @@ class _MessageScreenState extends State<MessageScreen> {
     try {
       chatHistory[key]["content"] = content;
       chatHistory[key]["edited"] = true;
+      _saveChatHistory({
+        'messages': chatHistory,
+        'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+      });
     } catch (e) {
       print(e);
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
   }
 
   @override
@@ -221,6 +352,10 @@ class _MessageScreenState extends State<MessageScreen> {
                       addWidget(chatWidget, currentPosition);
                     }
                   }
+                  _saveChatHistory({
+                    'messages': chatHistory,
+                    'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+                  });
                 }catch(e){
                   chatHistory={};
                   return Column(children: returnWidget);
@@ -240,6 +375,10 @@ class _MessageScreenState extends State<MessageScreen> {
                   textColor
                 );
                 addWidget(chatWidget, currentPosition);
+                _saveChatHistory({
+                  'messages': chatHistory,
+                  'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+                });
                 rootChange() async {
                   final String accessToken = await getRoom(content["room_id"]);
                   if(content["author"]! == instance.id){
@@ -280,6 +419,10 @@ class _MessageScreenState extends State<MessageScreen> {
                     messageId,
                     showImage: widget.ImageControler);
                 addWidget(chatWidget, currentPosition);
+                _saveChatHistory({
+                  'messages': chatHistory,
+                  'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+                });
               }
             }
             return Column(children: returnWidget);

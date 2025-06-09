@@ -44,7 +44,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラーが発生しました: $e')),
+          SnackBar(content: Text(e.toString())),
         );
       }
     } finally {
