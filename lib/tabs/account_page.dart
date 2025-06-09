@@ -10,6 +10,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
+import 'package:xero_talk/screens/friends_screen.dart';
 
 class AccountPage extends StatefulWidget {
   AccountPage();
@@ -285,41 +286,56 @@ class _AccountPage extends State<AccountPage> {
                     GestureDetector(
                         onTap: () {
                           showModalBottomSheet(
-                            scrollControlDisabledMaxHeightRatio: 1,
                             context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
                             builder: (BuildContext context) {
                               return Container(
-                                  decoration: const BoxDecoration(
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(20.0),
-                                      topRight: Radius.circular(20.0),
-                                    ),
+                                height: MediaQuery.of(context).size.height * 0.9,
+                                decoration: const BoxDecoration(
+                                  color: Color.fromARGB(255, 22, 22, 22),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20.0),
+                                    topRight: Radius.circular(20.0),
                                   ),
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.9,
-                                  child: Padding(
-                                      padding: const EdgeInsets.only(top: 10),
-                                      child: Column(children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 5),
-                                                child: IconButton(
-                                                    onPressed: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    icon: const Icon(
-                                                        Icons.close))),
-                                            const Padding(
-                                                padding:
-                                                    EdgeInsets.only(right: 20),
-                                                child: Icon(Icons.person_add))
-                                          ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      decoration: const BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color: Color.fromARGB(255, 40, 40, 40),
+                                            width: 1,
+                                          ),
                                         ),
-                                      ])));
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          IconButton(
+                                            onPressed: () => Navigator.pop(context),
+                                            icon: const Icon(Icons.close, color: Colors.white),
+                                          ),
+                                          const Text(
+                                            'フレンド',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 40), // バランスを取るための空のスペース
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: FriendsScreen(),
+                                    ),
+                                  ],
+                                ),
+                              );
                             },
                           );
                         },
