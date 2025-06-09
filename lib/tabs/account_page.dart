@@ -177,7 +177,7 @@ class _AccountPage extends State<AccountPage> {
                                       ClipRRect(
                                         // アイコン表示（角丸）
                                         borderRadius:
-                                            BorderRadius.circular(2000000),
+                                            BorderRadius.circular(1000),
                                         child: UserIcon(userId: profile?["sub"],size:MediaQuery.of(context).size.width * 0.2)
                                       ),
                                       Positioned(
