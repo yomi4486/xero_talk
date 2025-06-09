@@ -114,16 +114,21 @@ class _MessageScreenState extends State<MessageScreen> {
           returnWidget = [];
           for (var entry in sortedMessages) {
             if (entry.value['voice'] == true) {
-              final voiceWidget = getVoiceWidget(
-                context,
-                entry.key,
-                {
-                  'author': entry.value['author'],
-                  'room_id': entry.key,
-                },
-                instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
-              );
-              addWidget(voiceWidget, 0);
+              try{
+                final voiceWidget = getVoiceWidget(
+                  context,
+                  entry.key,
+                  {
+                    'author': entry.value['author'],
+                    'room_id': entry.key,
+                    'timestamp': entry.value['timeStamp'],
+                  },
+                  instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
+                );
+                addWidget(voiceWidget, 0);
+              }catch(e){
+                print(e);
+              }
             } else {
               final Widget chatWidget = getMessageCard(
                 context,
