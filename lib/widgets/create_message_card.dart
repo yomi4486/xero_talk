@@ -10,6 +10,8 @@ import 'dart:convert' as convert;
 import 'dart:ui' as ui;
 import '../utils/voice_chat.dart';
 import '../voice_chat.dart';
+import 'package:provider/provider.dart';
+import 'package:xero_talk/utils/auth_context.dart';
 
 Uint8List decodeBase64(String base64String) {
   return convert.base64Decode(base64String);
@@ -231,90 +233,91 @@ Widget getMessageCard(
                     padding: const EdgeInsets.only(top: 20),
                     child: ListView(
                       children: [
-                        SimpleDialogOption(
-                            // メッセージ削除ボタン
-                            padding: const EdgeInsets.all(15),
-                            child: const Row(children: [
-                              Icon(Icons.delete),
-                              Padding(
-                                  padding: EdgeInsets.only(left: 5),
-                                  child: Text('メッセージを削除',
-                                      style: TextStyle(fontSize: 16)))
-                            ]),
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return SimpleDialog(
-                                    title: const Text(
-                                      'メッセージを削除',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                    children: <Widget>[
-                                      Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(10),
-                                            child: _chatWidget,
-                                          ),                  
-                                        ],
+                        if (author == Provider.of<AuthContext>(context, listen: false).id) ...[
+                          SimpleDialogOption(
+                              // メッセージ削除ボタン
+                              padding: const EdgeInsets.all(15),
+                              child: const Row(children: [
+                                Icon(Icons.delete),
+                                Padding(
+                                    padding: EdgeInsets.only(left: 5),
+                                    child: Text('メッセージを削除',
+                                        style: TextStyle(fontSize: 16)))
+                              ]),
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return SimpleDialog(
+                                      title: const Text(
+                                        'メッセージを削除',
+                                        style: TextStyle(fontSize: 16),
                                       ),
-                                      SimpleDialogOption(
-                                          child: const Text(
-                                            '削除',
-                                            style: TextStyle(
-                                                color: Color.fromARGB(
-                                                    255, 255, 10, 10)),
-                                          ),
-                                          onPressed: () async {
-                                            await deleteMessage(messageId,
-                                                widget.channelInfo["id"]);
-                                            Navigator.pop(context);
-                                          }),
-                                      SimpleDialogOption(
-                                          child: const Text('キャンセル'),
-                                          onPressed: () async {
-                                            Navigator.pop(context);
-                                          }),
-                                    ],
-                                  );
-                                },
-                              );
-                            }),
-                        SimpleDialogOption(
-                            // メッセージ削除ボタン
-                            padding: const EdgeInsets.all(15),
-                            child: const Row(children: [
-                              Icon(Icons.edit),
-                              Padding(
-                                  padding: EdgeInsets.only(left: 5),
-                                  child: Text('編集',
-                                      style: TextStyle(fontSize: 16)))
-                            ]),
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              widget.focusNode.requestFocus();
-                              widget.fieldText.text = content;
-                              widget.EditMode(messageId, true);
-                            }),
-                        attachments.isNotEmpty
-                            ? SimpleDialogOption(
-                                padding: const EdgeInsets.all(15),
-                                child: const Row(children: [
-                                  Icon(Icons.download),
-                                  Padding(
-                                      padding: EdgeInsets.only(left: 5),
-                                      child: Text('画像を保存',
-                                          style: TextStyle(fontSize: 16)))
-                                ]),
-                                onPressed: () async {
-                                  await saveImageToGallery(attachments[0]);
-                                  Navigator.pop(context);
-                                })
-                            : Container(),
+                                      children: <Widget>[
+                                        Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: _chatWidget,
+                                            ),                  
+                                          ],
+                                        ),
+                                        SimpleDialogOption(
+                                            child: const Text(
+                                              '削除',
+                                              style: TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 255, 10, 10)),
+                                            ),
+                                            onPressed: () async {
+                                              await deleteMessage(messageId,
+                                                  widget.channelInfo["id"]);
+                                              Navigator.pop(context);
+                                            }),
+                                        SimpleDialogOption(
+                                            child: const Text('キャンセル'),
+                                            onPressed: () async {
+                                              Navigator.pop(context);
+                                            }),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }),
+                          SimpleDialogOption(
+                              // メッセージ編集ボタン
+                              padding: const EdgeInsets.all(15),
+                              child: const Row(children: [
+                                Icon(Icons.edit),
+                                Padding(
+                                    padding: EdgeInsets.only(left: 5),
+                                    child: Text('編集',
+                                        style: TextStyle(fontSize: 16)))
+                              ]),
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                widget.focusNode.requestFocus();
+                                widget.fieldText.text = content;
+                                widget.EditMode(messageId, true);
+                              }),
+                        ],
+                        if (attachments.isNotEmpty)
+                          SimpleDialogOption(
+                              padding: const EdgeInsets.all(15),
+                              child: const Row(children: [
+                                Icon(Icons.download),
+                                Padding(
+                                    padding: EdgeInsets.only(left: 5),
+                                    child: Text('画像を保存',
+                                        style: TextStyle(fontSize: 16)))
+                              ]),
+                              onPressed: () async {
+                                await saveImageToGallery(attachments[0]);
+                                Navigator.pop(context);
+                              }),
                       ],
                     )));
           },
@@ -375,14 +378,39 @@ Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> co
     ),
     onTap: () async {
       if (isNavigating) return; // 二回目以降のクリックを無視
-      isNavigating = true; 
-      final token = await getRoom(roomId);
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-            builder: (context) => VoiceChat(RoomInfo(
-                token: token,
-                displayName: "",
-                userId:content["author"]))),
+      isNavigating = true;
+
+      // 確認ダイアログを表示
+      await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('通話に参加'),
+            content: const Text('通話に参加しますか？'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('キャンセル'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('参加'),
+                onPressed: ()async {
+                  Navigator.of(context).pop();
+                  final token = await getRoom(roomId);
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => VoiceChat(RoomInfo(
+                          token: token,
+                          displayName: "",
+                          userId:content["author"]))),
+                  );
+                },
+              ),
+            ],
+          );
+        },
       );
       isNavigating = false;
     },
