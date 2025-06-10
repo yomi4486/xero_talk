@@ -378,14 +378,39 @@ Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> co
     ),
     onTap: () async {
       if (isNavigating) return; // 二回目以降のクリックを無視
-      isNavigating = true; 
-      final token = await getRoom(roomId);
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-            builder: (context) => VoiceChat(RoomInfo(
-                token: token,
-                displayName: "",
-                userId:content["author"]))),
+      isNavigating = true;
+
+      // 確認ダイアログを表示
+      await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('通話に参加'),
+            content: const Text('通話に参加しますか？'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('キャンセル'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text('参加'),
+                onPressed: ()async {
+                  Navigator.of(context).pop();
+                  final token = await getRoom(roomId);
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => VoiceChat(RoomInfo(
+                          token: token,
+                          displayName: "",
+                          userId:content["author"]))),
+                  );
+                },
+              ),
+            ],
+          );
+        },
       );
       isNavigating = false;
     },
