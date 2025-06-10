@@ -140,4 +140,11 @@ class AuthContext extends ChangeNotifier {
       await box.delete(id);
     }
   }
+
+  Future<void> refreshToken() async {
+    final googleSignIn = GoogleSignIn();
+    await googleSignIn.signInSilently();
+    await FirebaseAuth.instance.currentUser?.getIdToken(true);
+    // 必要ならgoogleDriveApiも再生成
+  }
 }
