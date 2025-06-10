@@ -431,7 +431,30 @@ class _chat extends State<chat> {
                         color: const Color.fromARGB(0, 255, 255, 255),
                         child: IconButton(
                             onPressed: () async {
-                              call(channelInfo["id"]);
+                              await showDialog<bool>(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('通話を開始'),
+                                    content: const Text('通話を開始しますか？'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        child: const Text('キャンセル'),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                      ),
+                                      TextButton(
+                                        child: const Text('開始'),
+                                        onPressed: ()async {
+                                          Navigator.of(context).pop();
+                                          call(channelInfo["id"]);
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                             },
                             icon: const Icon(Icons.phone,
                                 color:
