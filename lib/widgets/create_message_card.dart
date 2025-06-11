@@ -397,15 +397,15 @@ Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> co
               TextButton(
                 child: const Text('参加'),
                 onPressed: ()async {
-                  Navigator.of(context).pop();
                   final token = await getRoom(roomId);
                   await Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => VoiceChat(RoomInfo(
                           token: token,
                           displayName: "",
-                          userId:content["author"]))),
+                          userId:content["author"] ?? ""))),
                   );
+                  Navigator.of(context).pop();
                 },
               ),
             ],

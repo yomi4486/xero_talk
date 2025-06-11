@@ -17,20 +17,25 @@ class ParticipantWidget extends StatefulWidget {
 
 class _ParticipantState extends State<ParticipantWidget> {
   TrackPublication? videoPub;
+  bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
     widget.participant.addListener(_onChange);
+    _updateVideoTrack();
   }
 
   @override
   void dispose() {
-    super.dispose();
+    _isDisposed = true;
     widget.participant.removeListener(_onChange);
+    super.dispose();
   }
 
-  void _onChange() {
+  void _updateVideoTrack() {
+    if (_isDisposed) return;
+    
     var visibleVideos = widget.participant.videoTracks.where((pub) {
       return pub.kind == TrackType.VIDEO && pub.subscribed && !pub.muted;
     });
@@ -39,6 +44,16 @@ class _ParticipantState extends State<ParticipantWidget> {
       setState(() {
         videoPub = visibleVideos.first;
       });
+    } else {
+      setState(() {
+        videoPub = null;
+      });
+    }
+  }
+
+  void _onChange() {
+    if (!_isDisposed) {
+      _updateVideoTrack();
     }
   }
 
@@ -48,15 +63,15 @@ class _ParticipantState extends State<ParticipantWidget> {
       return VideoTrackRenderer(videoPub!.track as VideoTrack);
     } else {
       return Stack(
-        children:[
+        children: [
           Container(
-            margin: EdgeInsets.all(100),
-            child:ClipRRect(
-              borderRadius: BorderRadius.circular(100.0), 
-              child: UserIcon(userId: widget.userId)
-            )
+            margin: const EdgeInsets.all(100),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100.0),
+              child: UserIcon(userId: widget.userId),
+            ),
           ),
-        ]
+        ],
       );
     }
   }
@@ -89,11 +104,12 @@ class _VoiceChatState extends State<VoiceChat> {
     dynacast: true,
   );
 
-  bool micAvailable = false; 
+  bool micAvailable = false;
   bool cameraAvailable = false;
+  Set<String> _connectedParticipants = {};
 
-  Participant<TrackPublication<Track>>? localParticipant; //自分側
-  Participant<TrackPublication<Track>>? remoteParticipant; //相手側
+  Participant<TrackPublication<Track>>? localParticipant;
+  Participant<TrackPublication<Track>>? remoteParticipant;
 
   @override
   void initState() {
@@ -103,40 +119,51 @@ class _VoiceChatState extends State<VoiceChat> {
 
   @override
   void dispose() {
-    super.dispose();
     instance.room.disconnect();
+    super.dispose();
   }
 
   Future<void> requestPermissions() async {
     var status = await Permission.camera.request();
     if (status.isGranted) {
-      cameraAvailable=true;
+      cameraAvailable = true;
     }
     status = await Permission.microphone.request();
     if (status.isGranted) {
-      micAvailable=true;
+      micAvailable = true;
     }
   }
 
   connectToLivekit() async {
     instance.room = Room(roomOptions: roomOptions);
 
-    instance.room.createListener().on<TrackSubscribedEvent>((event) {
-      //他の参加者の接続
-      print('-----track event : $event');
-      setState(() {
-        remoteParticipant = event.participant;
+    instance.room.createListener()
+      ..on<TrackSubscribedEvent>((event) {
+        if (!_connectedParticipants.contains(event.participant.identity)) {
+          setState(() {
+            _connectedParticipants.add(event.participant.identity);
+            remoteParticipant = event.participant;
+          });
+        }
+      })
+      ..on<ParticipantDisconnectedEvent>((event) {
+        setState(() {
+          _connectedParticipants.remove(event.participant.identity);
+          if (remoteParticipant?.identity == event.participant.identity) {
+            remoteParticipant = null;
+          }
+        });
       });
-    });
 
     try {
       await requestPermissions();
-      await instance.room.connect('wss://xerotalk-zhj3ofry.livekit.cloud',widget.roomInfo.token);
-    } catch (_) {
-      print('Failed : $_');
+      await instance.room.connect('wss://xerotalk-zhj3ofry.livekit.cloud', widget.roomInfo.token);
+    } catch (e) {
+      print('Failed to connect: $e');
     }
-    await instance.room.localParticipant?.setCameraEnabled(false); //カメラの接続
-    await instance.room.localParticipant?.setMicrophoneEnabled(true); //マイクの接続
+
+    await instance.room.localParticipant?.setCameraEnabled(false);
+    await instance.room.localParticipant?.setMicrophoneEnabled(true);
 
     setState(() {
       localParticipant = instance.room.localParticipant;
@@ -145,9 +172,9 @@ class _VoiceChatState extends State<VoiceChat> {
 
   @override
   Widget build(BuildContext context) {
-    final Color backgroundColor =
-      Color.lerp(instance.theme[0], instance.theme[1], .5)!;
+    final Color backgroundColor = Color.lerp(instance.theme[0], instance.theme[1], .5)!;
     final List<Color> textColor = instance.getTextColor(backgroundColor);
+    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -155,128 +182,131 @@ class _VoiceChatState extends State<VoiceChat> {
             begin: FractionalOffset.topLeft,
             end: FractionalOffset.bottomRight,
             colors: instance.theme,
-            stops: const [
-              0.0,
-              1.0,
-            ],
+            stops: const [0.0, 1.0],
           ),
         ),
-        child:Center(
-        child:Stack(
-          children: [
-            Column(
-              children: [
-                // local video
-                localParticipant != null
-                    ? Expanded(child: ParticipantWidget(localParticipant!,instance.id))
-                    : Container(),
-                // remote video
-                remoteParticipant != null
-                    ? Expanded(child: ParticipantWidget(remoteParticipant!,widget.roomInfo.userId))
-                    : Container(),
-              ],
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                padding: EdgeInsets.only(left: 40,right: 40,bottom: 60),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Material(
-                    color:Colors.black.withOpacity(.5),
-                    elevation: 12, // 影をより強く
-                    shape: CircleBorder(),
-                    child: ClipRRect( // camera
-                      borderRadius: BorderRadius.circular(100.0), 
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.15,
-                        height: MediaQuery.of(context).size.width * 0.15,
-                        color:textColor[0].withOpacity(.5),
-                        child:IconButton(
-                        onPressed: (){}, 
-                        icon: cameraAvailable ? Icon(
-                          Icons.video_camera_back,
-                          color: Colors.white,
-                        )
-                        :
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Icon(Icons.video_camera_back,color: Colors.white), // メインアイコン
-                            Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
-                          ],
-                        ),
-                        )
-                      )
+        child: Center(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  if (localParticipant != null)
+                    Expanded(
+                      child: ParticipantWidget(
+                        localParticipant!,
+                        instance.id,
+                      ),
                     ),
-                  ),
-                  Material(
-                    elevation: 12, // 影をより強く
-                    shape: CircleBorder(),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(100.0),
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.15,
-                        height: MediaQuery.of(context).size.width * 0.15,
-                        color: Colors.red.withOpacity(.8),
-                        child: IconButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          }, 
-                          icon: Icon(
-                            Icons.close,
+                  if (remoteParticipant != null)
+                    Expanded(
+                      child: ParticipantWidget(
+                        remoteParticipant!,
+                        widget.roomInfo.userId,
+                      ),
+                    ),
+                ],
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  padding: EdgeInsets.only(left: 40,right: 40,bottom: 60),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                    Material(
+                      color:Colors.black.withOpacity(.5),
+                      elevation: 12, // 影をより強く
+                      shape: CircleBorder(),
+                      child: ClipRRect( // camera
+                        borderRadius: BorderRadius.circular(100.0), 
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.15,
+                          height: MediaQuery.of(context).size.width * 0.15,
+                          color:textColor[0].withOpacity(.5),
+                          child:IconButton(
+                          onPressed: (){}, 
+                          icon: cameraAvailable ? Icon(
+                            Icons.video_camera_back,
                             color: Colors.white,
+                          )
+                          :
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Icon(Icons.video_camera_back,color: Colors.white), // メインアイコン
+                              Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
+                            ],
+                          ),
+                          )
+                        )
+                      ),
+                    ),
+                    Material(
+                      elevation: 12, // 影をより強く
+                      shape: CircleBorder(),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(100.0),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.15,
+                          height: MediaQuery.of(context).size.width * 0.15,
+                          color: Colors.red.withOpacity(.8),
+                          child: IconButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            }, 
+                            icon: Icon(
+                              Icons.close,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  Material(
-                    color:Colors.black.withOpacity(.5),
-                    elevation: 12, // 影をより強く
-                    shape: CircleBorder(),
-                    child: ClipRRect( // mute button
-                      borderRadius: BorderRadius.circular(100.0), 
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.15,
-                        height: MediaQuery.of(context).size.width * 0.15,
-                        color: textColor[0].withOpacity(.8),
-                        child:IconButton(
-                        onPressed: ()async{
-                          if(!micAvailable){
-                            return;
-                          }
-                          if(instance.room.localParticipant!.isMuted){
-                            await instance.room.localParticipant?.setMicrophoneEnabled(true);
-                          }else{
-                            await instance.room.localParticipant?.setMicrophoneEnabled(false);
-                          }
-                          setState(() {});
-                        }, 
-                        icon: micAvailable? 
-                        Icon(
-                          instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic,
-                          color: Colors.white,
+                    Material(
+                      color:Colors.black.withOpacity(.5),
+                      elevation: 12, // 影をより強く
+                      shape: CircleBorder(),
+                      child: ClipRRect( // mute button
+                        borderRadius: BorderRadius.circular(100.0), 
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.15,
+                          height: MediaQuery.of(context).size.width * 0.15,
+                          color: textColor[0].withOpacity(.8),
+                          child:IconButton(
+                          onPressed: ()async{
+                            if(!micAvailable){
+                              return;
+                            }
+                            if(instance.room.localParticipant!.isMuted){
+                              await instance.room.localParticipant?.setMicrophoneEnabled(true);
+                            }else{
+                              await instance.room.localParticipant?.setMicrophoneEnabled(false);
+                            }
+                            setState(() {});
+                          }, 
+                          icon: micAvailable? 
+                          Icon(
+                            instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic,
+                            color: Colors.white,
+                          )
+                          :
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Icon(Icons.mic,color: Colors.white), // メインアイコン
+                              Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
+                            ],
+                          ),
                         )
-                        :
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Icon(Icons.mic,color: Colors.white), // メインアイコン
-                            Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
-                          ],
-                        ),
                       )
                     )
-                  ),
-                  ),
-                ],)
+                    ),
+                  ],)
+                ),
               ),
-            ),
-          ],
-        )
-      ),
-    ));
+            ],
+          )
+        ),
+      ));
   }
 }
