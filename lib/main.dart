@@ -12,15 +12,37 @@ import 'package:xero_talk/utils/auth_context.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 late drive.DriveApi googleDriveApi;
 bool failed = false;
+
+Future<void> initializeFirebase() async {
+  if (kIsWeb) {
+    // Web用のFirebase設定
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: "AIzaSyDsw8W8EGDbk0GodyI06CIMdx115fVxPn8",
+        authDomain: "xero-talk.firebaseapp.com",
+        projectId: "xero-talk",
+        storageBucket: "xero-talk.firebasestorage.app",
+        messagingSenderId: "163114823018",
+        appId: "1:163114823018:web:0c47a0498a95d903afc913",
+        measurementId: "G-X6QHV0BFL1",
+        iosClientId: "163114823018-rufpd5iuiglp79b8rgteb35orb238ouu.apps.googleusercontent.com",
+      ),
+    );
+  }else{
+    // iOS用のFirebase設定（既存のGoogleService-Info.plistを使用）
+    await Firebase.initializeApp();
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox('imageCache');
-  await Firebase.initializeApp();
+  await initializeFirebase();
   await dotenv.load();
   runApp(
     MultiProvider(
@@ -104,20 +126,39 @@ class _LoginPageState extends State<MyHomePage> {
       authContext.deviceName = deviceData;
 
       //Google認証フローを起動する
-      final googleSignIn =
-          GoogleSignIn(scopes: [drive.DriveApi.driveAppdataScope]);
+      final googleSignIn = GoogleSignIn(
+        scopes: [
+          drive.DriveApi.driveAppdataScope,
+          'email',
+          'profile',
+        ],
+        clientId: kIsWeb 
+          ? "163114823018-qr93qqaflbhptq2eogas8ffhrlqnvaut.apps.googleusercontent.com" 
+          : "163114823018-rufpd5iuiglp79b8rgteb35orb238ouu.apps.googleusercontent.com"
+      );
+
       late GoogleSignInAccount? googleUser = googleSignIn.currentUser;
       if (!isExistUser && googleUser == null) {
         googleUser = await googleSignIn.signIn();
       } else {
         googleUser = await googleSignIn.signInSilently();
       }
+
+      if (googleUser == null) {
+        throw Exception('Google Sign-In failed');
+      }
+
       //リクエストから認証情報を取得する
-      final googleAuth = await googleUser?.authentication;
+      final googleAuth = await googleUser.authentication;
+      
+      if (googleAuth.accessToken == null && googleAuth.idToken == null) {
+        throw Exception('Failed to get authentication tokens');
+      }
+
       //firebaseAuthで認証を行う為、credentialを作成
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
       );
       //作成したcredentialを元にfirebaseAuthで認証を行う
       UserCredential userCredential =
