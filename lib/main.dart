@@ -42,7 +42,7 @@ Future<void> initializeFirebase() async {
       ),
     );
   }else{
-    // iOS用のFirebase設定（既存のGoogleService-Info.plistを使用）
+    print("mobile");
     await Firebase.initializeApp();
   }
 }
@@ -142,9 +142,6 @@ class _LoginPageState extends State<MyHomePage> {
           'email',
           'profile',
         ],
-        clientId: kIsWeb 
-          ? "163114823018-qr93qqaflbhptq2eogas8ffhrlqnvaut.apps.googleusercontent.com" 
-          : "163114823018-rufpd5iuiglp79b8rgteb35orb238ouu.apps.googleusercontent.com"
       );
 
       late GoogleSignInAccount? googleUser = googleSignIn.currentUser;
