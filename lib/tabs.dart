@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
 import 'package:xero_talk/utils/chat_file_manager.dart';
-import 'package:xero_talk/utils/message_tools.dart';
 import 'dart:convert' as convert;
 
 class TabsProvider with ChangeNotifier {
