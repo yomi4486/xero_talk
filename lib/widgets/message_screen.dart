@@ -2,7 +2,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert' as convert;
-import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +10,7 @@ import 'dart:typed_data';
 import '../voice_chat.dart';
 import 'package:xero_talk/utils/voice_chat.dart';
 import 'package:xero_talk/utils/message_tools.dart';
-import 'dart:convert' show utf8;
+import 'package:xero_talk/utils/chat_file_manager.dart';
 
 String lastMessageId = "";
 
@@ -42,77 +41,37 @@ class MessageScreen extends StatefulWidget {
 class _MessageScreenState extends State<MessageScreen> {
   List<Widget> returnWidget = [];
   Map chatHistory = {};
-  late drive.DriveApi driveApi;
+  late ChatFileManager chatFileManager;
   String? chatFileId;
 
   @override
   void initState() {
     super.initState();
-    _initializeDriveApi();
+    _initializeChatFileManager();
   }
 
-  Future<void> _initializeDriveApi() async {
-    final instance = Provider.of<AuthContext>(context, listen: false);
-    driveApi = instance.googleDriveApi;
-    await _loadOrCreateChatFile();
-  }
-
-  Future<void> _loadOrCreateChatFile() async {
-    try {
-      // チャットファイルを検索
-      final result = await driveApi.files.list(
-        spaces: 'appDataFolder',
-        q: "name='chat_history.json'",
-      );
-
-      if (result.files != null && result.files!.isNotEmpty) {
-        chatFileId = result.files!.first.id;
-        await _loadChatHistory();
-      } else {
-        // 新しいファイルを作成
-        final file = drive.File()
-          ..name = 'chat_history.json'
-          ..parents = ['appDataFolder']
-          ..mimeType = 'application/json';
-
-        final createdFile = await driveApi.files.create(file);
-        chatFileId = createdFile.id;
-        
-        // 初期データを保存
-        final initialData = {
-          'messages': [],
-          'lastUpdated': DateTime.now().millisecondsSinceEpoch,
-        };
-        await _saveChatHistory(initialData);
-      }
-    } catch (e) {
-      print('Error initializing chat file: $e');
-    }
+  Future<void> _initializeChatFileManager() async {
+    chatFileManager = ChatFileManager(chatFileId: null);
+    chatFileId = await chatFileManager.loadOrCreateChatFile();
+    chatFileManager = ChatFileManager(chatFileId: chatFileId);
+    await _loadChatHistory();
   }
 
   Future<void> _loadChatHistory() async {
     try {
-      if (chatFileId == null) return;
-
-      final file = await driveApi.files.get(
-        chatFileId!,
-        downloadOptions: drive.DownloadOptions.fullMedia,
-      ) as drive.Media;
-
-      final bytes = await file.stream.toList();
-      final content = utf8.decode(bytes.expand((x) => x).toList());
-      final data = convert.jsonDecode(content);
-      print(data);
-      
-      if (data['messages'] != null) {
+      final history = await chatFileManager.loadChatHistory();
+      if (history != null) {
         setState(() {
-          chatHistory = Map<String, dynamic>.from(data['messages']);
+          chatHistory = history;
           // 履歴を時系列順に並び替えて表示
           final sortedMessages = chatHistory.entries.toList()
             ..sort((a, b) => (a.value['timeStamp'] as int).compareTo(b.value['timeStamp'] as int));
           
           returnWidget = [];
           for (var entry in sortedMessages) {
+            final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(entry.value['timeStamp']);
+            final String displayTime = getTimeStringFormat(dateTime);
+            
             if (entry.value['voice'] == true) {
               try{
                 final voiceWidget = getVoiceWidget(
@@ -130,18 +89,31 @@ class _MessageScreenState extends State<MessageScreen> {
                 print(e);
               }
             } else {
-              final Widget chatWidget = getMessageCard(
-                context,
-                widget,
-                instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
-                entry.value['display_name'],
-                entry.value['display_time'],
-                entry.value['author'],
-                entry.value['content'],
-                entry.value['edited'] ?? false,
-                entry.value['attachments'],
-                entry.key,
-                showImage: widget.ImageControler,
+              final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('user_account')
+                    .doc(entry.value['author'])
+                    .get(),
+                builder: (context, snapshot) {
+                  String displayName = "Unknown";
+                  if (snapshot.hasData && snapshot.data != null) {
+                    final data = snapshot.data!.data() as Map<String, dynamic>?;
+                    displayName = data?['display_name'] ?? "Unknown";
+                  }
+                  return getMessageCard(
+                    context,
+                    widget,
+                    instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
+                    displayName,
+                    displayTime,
+                    entry.value['author'],
+                    entry.value['content'],
+                    entry.value['edited'] ?? false,
+                    entry.value['attachments'],
+                    entry.key,
+                    showImage: widget.ImageControler,
+                  );
+                },
               );
               addWidget(chatWidget, 0);
             }
@@ -150,29 +122,6 @@ class _MessageScreenState extends State<MessageScreen> {
       }
     } catch (e) {
       print('Error loading chat history: $e');
-    }
-  }
-
-  Future<void> _saveChatHistory(Map<String, dynamic> data) async {
-    try {
-      if (chatFileId == null) return;
-
-      final content = convert.jsonEncode(data);
-      final bytes = utf8.encode(content);
-      final media = drive.Media(
-        Stream.value(bytes),
-        bytes.length,
-      );
-
-      await driveApi.files.update(
-        drive.File()
-          ..name = 'chat_history.json'
-          ..mimeType = 'application/json; charset=utf-8',
-        chatFileId!,
-        uploadMedia: media,
-      );
-    } catch (e) {
-      print('Error saving chat history: $e');
     }
   }
 
@@ -192,7 +141,7 @@ class _MessageScreenState extends State<MessageScreen> {
     try {
       returnWidget.removeWhere((widget) => (widget.key as ValueKey).value == key);
       chatHistory.remove(key);
-      _saveChatHistory({
+      chatFileManager.saveChatHistory({
         'messages': chatHistory,
         'lastUpdated': DateTime.now().millisecondsSinceEpoch,
       });
@@ -205,7 +154,7 @@ class _MessageScreenState extends State<MessageScreen> {
     try {
       chatHistory[key]["content"] = content;
       chatHistory[key]["edited"] = true;
-      _saveChatHistory({
+      chatFileManager.saveChatHistory({
         'messages': chatHistory,
         'lastUpdated': DateTime.now().millisecondsSinceEpoch,
       });
@@ -357,7 +306,7 @@ class _MessageScreenState extends State<MessageScreen> {
                       addWidget(chatWidget, currentPosition);
                     }
                   }
-                  _saveChatHistory({
+                  chatFileManager.saveChatHistory({
                     'messages': chatHistory,
                     'lastUpdated': DateTime.now().millisecondsSinceEpoch,
                   });
@@ -380,7 +329,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   textColor
                 );
                 addWidget(chatWidget, currentPosition);
-                _saveChatHistory({
+                chatFileManager.saveChatHistory({
                   'messages': chatHistory,
                   'lastUpdated': DateTime.now().millisecondsSinceEpoch,
                 });
@@ -405,26 +354,40 @@ class _MessageScreenState extends State<MessageScreen> {
                   "author": content["author"],
                   "content": messageContent,
                   "timeStamp": timestamp,
-                  "display_time": modifiedDateTime,
                   "edited": edited,
-                  "display_name": displayName,
                   "attachments": content["attachments"],
                   "voice": false
                 };
-                final Widget chatWidget = getMessageCard(
-                    context,
-                    widget,
-                    textColor,
-                    displayName,
-                    modifiedDateTime,
-                    content["author"],
-                    messageContent!,
-                    edited,
-                    content["attachments"],
-                    messageId,
-                    showImage: widget.ImageControler);
+                final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+                final String displayTime = getTimeStringFormat(dateTime);
+                final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance
+                      .collection('user_account')
+                      .doc(content["author"])
+                      .get(),
+                  builder: (context, snapshot) {
+                    String displayName = "Unknown";
+                    if (snapshot.hasData && snapshot.data != null) {
+                      final data = snapshot.data!.data() as Map<String, dynamic>?;
+                      displayName = data?['display_name'] ?? "Unknown";
+                    }
+                    return getMessageCard(
+                      context,
+                      widget,
+                      textColor,
+                      displayName,
+                      displayTime,
+                      content["author"],
+                      messageContent!,
+                      edited,
+                      content["attachments"],
+                      messageId,
+                      showImage: widget.ImageControler,
+                    );
+                  },
+                );
                 addWidget(chatWidget, currentPosition);
-                _saveChatHistory({
+                chatFileManager.saveChatHistory({
                   'messages': chatHistory,
                   'lastUpdated': DateTime.now().millisecondsSinceEpoch,
                 });

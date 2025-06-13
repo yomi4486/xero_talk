@@ -9,11 +9,16 @@ import 'package:xero_talk/widgets/flash_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
+import 'package:xero_talk/utils/chat_file_manager.dart';
+import 'package:xero_talk/utils/message_tools.dart';
 import 'dart:convert' as convert;
 
 class TabsProvider with ChangeNotifier {
   final PageController pageController = PageController(keepPage: true,initialPage: 0);
+  late ChatFileManager chatFileManager;
+  String? chatFileId;
   Map<String,dynamic> userData = {};
+  Map<String, dynamic> chatHistory = {};
 
   int selectedIndex = 0;
 
@@ -46,6 +51,38 @@ class TabsProvider with ChangeNotifier {
       );
     showId = id;
     notifyListeners();
+  }
+
+  Future<void> saveNotification(Map<dynamic, dynamic> content) async {
+    try {
+      chatFileManager = ChatFileManager(chatFileId: null);
+      chatFileId = await chatFileManager.loadOrCreateChatFile();
+      chatFileManager = ChatFileManager(chatFileId: chatFileId);
+
+      final history = await chatFileManager.loadChatHistory();
+      print(history);
+      if(history != null) chatHistory = history;
+
+      final String type = content['type'] as String;
+      final String messageId = type == "call" ? content["room_id"] as String : content["id"] as String;
+      final int timestamp = content["timestamp"] as int;
+      print(content);
+      chatHistory[messageId] = {
+        "author": content["author"],
+        "content": content["content"],
+        "timeStamp": timestamp,
+        "edited": false,
+        "attachments": content["attachments"],
+        "voice": type == "call"
+      };
+
+      await chatFileManager.saveChatHistory({
+        'messages': chatHistory,
+        'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+      });
+    } catch (e) {
+      print('Error saving notification: $e');
+    }
   }
 }
 
@@ -113,6 +150,7 @@ class TabsScreen extends State<PageViewTabsScreen> {
               if(type == 'send_message' && lastMessageId != messageId){
                 if((instance.id != content['author'])&&(content['author'] != provider.showId || provider.pageController.page == 0)){
                   showInfoSnack(context, content: content);
+                  provider.saveNotification(content);
                 }     
               }
               lastMessageId = messageId;
