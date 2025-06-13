@@ -7,7 +7,7 @@ import './utils/auth_context.dart';
 class ParticipantWidget extends StatefulWidget {
   final Participant participant;
   final String userId;
-  ParticipantWidget(this.participant,this.userId);
+  ParticipantWidget(this.participant, this.userId);
 
   @override
   State<StatefulWidget> createState() {
@@ -36,7 +36,7 @@ class _ParticipantState extends State<ParticipantWidget> {
   void _updateVideoTrack() {
     if (_isDisposed) return;
     
-    var visibleVideos = widget.participant.videoTracks.where((pub) {
+    var visibleVideos = widget.participant.videoTrackPublications.where((pub) {
       return pub.kind == TrackType.VIDEO && pub.subscribed && !pub.muted;
     });
 
@@ -82,8 +82,11 @@ class RoomInfo {
   String displayName;
   String userId;
 
-  RoomInfo(
-      {required this.token, required this.displayName, required this.userId});
+  RoomInfo({
+    required this.token,
+    required this.displayName,
+    required this.userId,
+  });
 }
 
 class VoiceChat extends StatefulWidget {
@@ -106,19 +109,21 @@ class _VoiceChatState extends State<VoiceChat> {
 
   bool micAvailable = false;
   bool cameraAvailable = false;
+  late final EventsListener<RoomEvent> _listener;
   Set<String> _connectedParticipants = {};
 
-  Participant<TrackPublication<Track>>? localParticipant;
-  Participant<TrackPublication<Track>>? remoteParticipant;
+  Participant? localParticipant;
+  Participant? remoteParticipant;
 
   @override
   void initState() {
     super.initState();
-    connectToLivekit();
+    _initializeRoom();
   }
 
   @override
   void dispose() {
+    _listener.dispose();
     instance.room.disconnect();
     super.dispose();
   }
@@ -134,37 +139,63 @@ class _VoiceChatState extends State<VoiceChat> {
     }
   }
 
-  connectToLivekit() async {
+  void _initializeRoom() async {
     instance.room = Room(roomOptions: roomOptions);
+    _listener = instance.room.createListener();
 
-    instance.room.createListener()
-      ..on<TrackSubscribedEvent>((event) {
-        if (!_connectedParticipants.contains(event.participant.identity)) {
+    // ルームの状態変更を監視
+    instance.room.addListener(_onRoomChange);
+
+    // 特定のイベントを監視
+    _listener
+      ..on<RoomDisconnectedEvent>((_) {
+        print('Room disconnected');
+        Navigator.of(context).pop();
+      })
+      ..on<ParticipantConnectedEvent>((e) {
+        print('Participant joined: ${e.participant.identity}');
+        if (!_connectedParticipants.contains(e.participant.identity)) {
           setState(() {
-            _connectedParticipants.add(event.participant.identity);
-            remoteParticipant = event.participant;
+            _connectedParticipants.add(e.participant.identity);
+            remoteParticipant = e.participant;
           });
         }
       })
-      ..on<ParticipantDisconnectedEvent>((event) {
+      ..on<ParticipantDisconnectedEvent>((e) {
+        print('Participant left: ${e.participant.identity}');
         setState(() {
-          _connectedParticipants.remove(event.participant.identity);
-          if (remoteParticipant?.identity == event.participant.identity) {
+          _connectedParticipants.remove(e.participant.identity);
+          if (remoteParticipant?.identity == e.participant.identity) {
             remoteParticipant = null;
           }
         });
+      })
+      ..on<TrackSubscribedEvent>((e) {
+        print('Track subscribed: ${e.track.kind}');
+        setState(() {});
+      })
+      ..on<TrackUnsubscribedEvent>((e) {
+        print('Track unsubscribed: ${e.track.kind}');
+        setState(() {});
       });
 
     try {
       await requestPermissions();
       await instance.room.connect('wss://xerotalk-zhj3ofry.livekit.cloud', widget.roomInfo.token);
+      
+      await instance.room.localParticipant?.setCameraEnabled(false);
+      await instance.room.localParticipant?.setMicrophoneEnabled(true);
+
+      setState(() {
+        localParticipant = instance.room.localParticipant;
+      });
     } catch (e) {
       print('Failed to connect: $e');
+      Navigator.of(context).pop();
     }
+  }
 
-    await instance.room.localParticipant?.setCameraEnabled(false);
-    await instance.room.localParticipant?.setMicrophoneEnabled(true);
-
+  void _onRoomChange() {
     setState(() {
       localParticipant = instance.room.localParticipant;
     });
@@ -209,104 +240,124 @@ class _VoiceChatState extends State<VoiceChat> {
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
-                  padding: EdgeInsets.only(left: 40,right: 40,bottom: 60),
+                  padding: const EdgeInsets.only(left: 40, right: 40, bottom: 60),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                    Material(
-                      color:Colors.black.withOpacity(.5),
-                      elevation: 12, // 影をより強く
-                      shape: CircleBorder(),
-                      child: ClipRRect( // camera
-                        borderRadius: BorderRadius.circular(100.0), 
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.15,
-                          height: MediaQuery.of(context).size.width * 0.15,
-                          color:textColor[0].withOpacity(.5),
-                          child:IconButton(
-                          onPressed: (){}, 
-                          icon: cameraAvailable ? Icon(
-                            Icons.video_camera_back,
-                            color: Colors.white,
-                          )
-                          :
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Icon(Icons.video_camera_back,color: Colors.white), // メインアイコン
-                              Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
-                            ],
-                          ),
-                          )
-                        )
-                      ),
-                    ),
-                    Material(
-                      elevation: 12, // 影をより強く
-                      shape: CircleBorder(),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(100.0),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.15,
-                          height: MediaQuery.of(context).size.width * 0.15,
-                          color: Colors.red.withOpacity(.8),
-                          child: IconButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            }, 
-                            icon: Icon(
-                              Icons.close,
-                              color: Colors.white,
+                      Material(
+                        color: Colors.black.withOpacity(.5),
+                        elevation: 12,
+                        shape: const CircleBorder(),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(100.0),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.15,
+                            height: MediaQuery.of(context).size.width * 0.15,
+                            color: textColor[0].withOpacity(.5),
+                            child: IconButton(
+                              onPressed: () {},
+                              icon: cameraAvailable
+                                  ? const Icon(
+                                      Icons.video_camera_back,
+                                      color: Colors.white,
+                                    )
+                                  : Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        const Icon(Icons.video_camera_back,
+                                            color: Colors.white),
+                                        Icon(
+                                            Icons.block,
+                                            color: Colors.white,
+                                            size: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.1),
+                                      ],
+                                    ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    Material(
-                      color:Colors.black.withOpacity(.5),
-                      elevation: 12, // 影をより強く
-                      shape: CircleBorder(),
-                      child: ClipRRect( // mute button
-                        borderRadius: BorderRadius.circular(100.0), 
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.15,
-                          height: MediaQuery.of(context).size.width * 0.15,
-                          color: textColor[0].withOpacity(.8),
-                          child:IconButton(
-                          onPressed: ()async{
-                            if(!micAvailable){
-                              return;
-                            }
-                            if(instance.room.localParticipant!.isMuted){
-                              await instance.room.localParticipant?.setMicrophoneEnabled(true);
-                            }else{
-                              await instance.room.localParticipant?.setMicrophoneEnabled(false);
-                            }
-                            setState(() {});
-                          }, 
-                          icon: micAvailable? 
-                          Icon(
-                            instance.room.localParticipant?.isMuted != null && instance.room.localParticipant!.isMuted ? Icons.mic_off:Icons.mic,
-                            color: Colors.white,
-                          )
-                          :
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Icon(Icons.mic,color: Colors.white), // メインアイコン
-                              Icon(Icons.block,color: Colors.white,size:MediaQuery.of(context).size.width * 0.1), // オーバーレイアイコン
-                            ],
+                      Material(
+                        elevation: 12,
+                        shape: const CircleBorder(),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(100.0),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.15,
+                            height: MediaQuery.of(context).size.width * 0.15,
+                            color: Colors.red.withOpacity(.8),
+                            child: IconButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              icon: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                        )
-                      )
-                    )
-                    ),
-                  ],)
+                        ),
+                      ),
+                      Material(
+                        color: Colors.black.withOpacity(.5),
+                        elevation: 12,
+                        shape: const CircleBorder(),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(100.0),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.15,
+                            height: MediaQuery.of(context).size.width * 0.15,
+                            color: textColor[0].withOpacity(.8),
+                            child: IconButton(
+                              onPressed: () async {
+                                if (!micAvailable) return;
+                                if (instance.room.localParticipant!.isMuted) {
+                                  await instance.room.localParticipant
+                                      ?.setMicrophoneEnabled(true);
+                                } else {
+                                  await instance.room.localParticipant
+                                      ?.setMicrophoneEnabled(false);
+                                }
+                                setState(() {});
+                              },
+                              icon: micAvailable
+                                  ? Icon(
+                                      instance.room.localParticipant?.isMuted !=
+                                                  null &&
+                                              instance.room.localParticipant!
+                                                  .isMuted
+                                          ? Icons.mic_off
+                                          : Icons.mic,
+                                      color: Colors.white,
+                                    )
+                                  : Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        const Icon(Icons.mic,
+                                            color: Colors.white),
+                                        Icon(
+                                            Icons.block,
+                                            color: Colors.white,
+                                            size: MediaQuery.of(context)
+                                                    .size
+                                                    .width *
+                                                0.1),
+                                      ],
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
-          )
+          ),
         ),
-      ));
+      ),
+    );
   }
 }
