@@ -381,7 +381,7 @@ Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> co
       isNavigating = true;
 
       // 確認ダイアログを表示
-      await showDialog<bool>(
+      await showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
