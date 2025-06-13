@@ -51,9 +51,17 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   Future<void> _initializeChatFileManager() async {
-    chatFileManager = ChatFileManager(chatFileId: null);
+    // channelInfoからフレンドのIDを取得
+    final String? friendId = widget.channelInfo['id'];
+    chatFileManager = ChatFileManager(
+      chatFileId: null,
+      friendId: friendId,
+    );
     chatFileId = await chatFileManager.loadOrCreateChatFile();
-    chatFileManager = ChatFileManager(chatFileId: chatFileId);
+    chatFileManager = ChatFileManager(
+      chatFileId: chatFileId,
+      friendId: friendId,
+    );
     await _loadChatHistory();
   }
 
@@ -150,16 +158,78 @@ class _MessageScreenState extends State<MessageScreen> {
     }
   }
 
-  void editWidget(String key, String content) {
+  void editWidget(String key, String content, {bool isLocalEdit = false}) {
     try {
-      chatHistory[key]["content"] = content;
-      chatHistory[key]["edited"] = true;
-      chatFileManager.saveChatHistory({
-        'messages': chatHistory,
-        'lastUpdated': DateTime.now().millisecondsSinceEpoch,
-      });
+      // 既存のメッセージデータを保持
+      final existingMessage = chatHistory[key];
+      if (existingMessage != null) {
+        // 既存のデータを更新
+        final updatedMessage = {
+          ...Map<String, dynamic>.from(existingMessage),
+          "content": content,
+          "edited": true,
+        };
+        chatHistory[key] = updatedMessage;
+        
+        // ローカルの編集の場合のみDBを更新
+        if (isLocalEdit) {
+          chatFileManager.updateMessage(key, updatedMessage);
+        }
+
+        // 表示を更新
+        setState(() {
+          returnWidget = [];
+          for (var entry in chatHistory.entries) {
+            if (entry.value["voice"] == true) {
+              try {
+                final voiceWidget = getVoiceWidget(
+                  context,
+                  entry.key,
+                  {
+                    'author': entry.value['author'],
+                    'room_id': entry.key,
+                    'timestamp': entry.value['timeStamp'],
+                  },
+                  instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
+                );
+                addWidget(voiceWidget, 0);
+              } catch(e) {
+                print('Error creating voice widget: $e');
+              }
+            } else {
+              final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
+                future: FirebaseFirestore.instance
+                    .collection('user_account')
+                    .doc(entry.value['author'])
+                    .get(),
+                builder: (context, snapshot) {
+                  String displayName = "Unknown";
+                  if (snapshot.hasData && snapshot.data != null) {
+                    final data = snapshot.data!.data() as Map<String, dynamic>?;
+                    displayName = data?['display_name'] ?? "Unknown";
+                  }
+                  return getMessageCard(
+                    context,
+                    widget,
+                    instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
+                    displayName,
+                    getTimeStringFormat(DateTime.fromMillisecondsSinceEpoch(entry.value['timeStamp'])),
+                    entry.value['author'],
+                    entry.value['content'],
+                    entry.value['edited'] ?? false,
+                    entry.value['attachments'],
+                    entry.key,
+                    showImage: widget.ImageControler,
+                  );
+                },
+              );
+              addWidget(chatWidget, 0);
+            }
+          }
+        });
+      }
     } catch (e) {
-      print(e);
+      print('Error editing widget: $e');
     }
   }
 
@@ -266,8 +336,10 @@ class _MessageScreenState extends State<MessageScreen> {
                 return Column(children: returnWidget);
               }
               if (type == "edit_message") {
-                editWidget(messageId, content["content"]);
-                edited = true;
+                // 自分のメッセージかどうかを確認
+                final bool isLocalEdit = content["author"] == instance.id;
+                editWidget(messageId, content["content"], isLocalEdit: isLocalEdit);
+                return Column(children: returnWidget);
               }
 
               if ((type == "send_message" || type == "call") && lastMessageId == messageId) { //　同じストリームが流れてきた時は無視
@@ -277,41 +349,8 @@ class _MessageScreenState extends State<MessageScreen> {
               }
               lastMessageId = messageId; // 最終受信を上書き
               if (type == "edit_message") {
-                try{
-                  chatHistory[messageId]["content"] = messageContent;
-                  chatHistory[messageId]["timeStamp"] = timestamp;
-                  chatHistory[messageId]["edited"] = edited;
-                  returnWidget = []; // IDの衝突を起こすため初期化
-                  for (var entry in chatHistory.entries) {
-                    if (entry.value["voice"] == true){
-                      final voiceWidget = getVoiceWidget(context, entry.key,content,textColor);
-                      addWidget(voiceWidget, currentPosition);
-                    }else{
-                      final Widget chatWidget = getMessageCard(
-                          context,
-                          widget,
-                          textColor,
-                          entry.value["display_name"],
-                          entry.value["display_time"],
-                          entry.value["author"],
-                          entry.value["content"],
-                          entry.value["edited"],
-                          entry.value["attachments"],
-                          entry.key,
-                          showImage: widget.ImageControler);
-                      addWidget(chatWidget, currentPosition);
-                    }
-                  }
-                  chatFileManager.saveChatHistory({
-                    'messages': chatHistory,
-                    'lastUpdated': DateTime.now().millisecondsSinceEpoch,
-                  });
-                }catch(e){
-                  chatHistory={};
-                  return Column(children: returnWidget);
-                }
-                
-              }else if(type == "call"){
+                return Column(children: returnWidget);
+              } else if(type == "call"){
                 chatHistory[messageId] = {
                   "author": content["author"],
                   "timeStamp": timestamp,
