@@ -324,6 +324,11 @@ class _MessageScreenState extends State<MessageScreen> {
               }else{
                 messageId = content["id"];
               }
+              if (content["author"] != instance.id && content["author"]  != widget.channelInfo['id']){ 
+                return Column(
+                  children: returnWidget,
+                );
+              }
               
               final String? messageContent = content["content"];
               final int timestamp = content["timestamp"];

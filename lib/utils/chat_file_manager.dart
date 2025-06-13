@@ -184,6 +184,12 @@ class ChatFileManager {
             ...lastMessage.value,
           };
           
+          // メッセージの送信者と受信者を検証
+          final senderId = messageData['author'];
+          print(senderId);
+          // 現在のチャットの参加者と一致するか確認
+          if (senderId != _userId && senderId != _friendId) return;
+          
           // ドキュメントの存在確認
           final doc = await docRef.get();
           if (!doc.exists) {
