@@ -5,9 +5,7 @@ import 'package:xero_talk/utils/message_tools.dart';
 
 import 'package:xero_talk/widgets/message_screen.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
-import 'dart:typed_data';
 import 'dart:convert' as convert;
-import 'dart:ui' as ui;
 import '../utils/voice_chat.dart';
 import '../voice_chat.dart';
 import 'package:provider/provider.dart';
@@ -194,12 +192,12 @@ Widget getMessageCard(
                                     try {
                                       final response = await HttpClient().getUrl(Uri.parse(attachment));
                                       final receivedBytes = await consolidateHttpClientResponseBytes(await response.close());
-                                      showImage!(receivedBytes, true);
+                                      showImage(receivedBytes, true);
                                     } catch (e) {
                                       print('Failed to load image from URL: $e');
                                     }
                                   } else {
-                                    showImage!(decodeBase64(attachment), true);
+                                    showImage(decodeBase64(attachment), true);
                                   }
                                 }
                               },
@@ -273,12 +271,12 @@ Widget getMessageCard(
                                           try {
                                             final response = await HttpClient().getUrl(Uri.parse(attachment));
                                             final receivedBytes = await consolidateHttpClientResponseBytes(await response.close());
-                                            showImage!(receivedBytes, true);
+                                            showImage(receivedBytes, true);
                                           } catch (e) {
                                             print('Failed to load image from URL: $e');
                                           }
                                         } else {
-                                          showImage!(decodeBase64(attachment), true);
+                                          showImage(decodeBase64(attachment), true);
                                         }
                                       }
                                     },
