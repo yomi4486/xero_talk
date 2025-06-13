@@ -24,6 +24,7 @@ class _AccountPage extends State<AccountPage> {
   bool _showFab = false; // falseなら未編集、trueなら編集済み
   var description = "";
   var displayName = "";
+  var userName = "";
 
   @override
   void dispose() {
@@ -75,13 +76,13 @@ class _AccountPage extends State<AccountPage> {
             } else if (snapshot.hasError) {
               displayName = "";
             } else if (snapshot.hasData) {
+              final res = (snapshot.data?.data() as Map<String, dynamic>);
               // successful
-              displayName = (snapshot.data?.data()
-                      as Map<String, dynamic>)["display_name"] ??
+              displayName = res["display_name"] ??
                   "-";
-              description = (snapshot.data?.data()
-                      as Map<String, dynamic>)["description"] ??
+              description = res["description"] ??
                   "";
+              userName = res["name"];
             } else {
               displayName = "";
             }
@@ -204,34 +205,39 @@ class _AccountPage extends State<AccountPage> {
                                     ),
                                   ],
                                 ),
-                                SizedBox(
-                                    // ニックネーム設定フォーム
-                                    child: Container(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.6,
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children:[
+                                    SizedBox(
+                                      // ニックネーム設定フォーム
+                                      child: Container(
+                                        width:MediaQuery.of(context).size.width * 0.6,
                                         margin: const EdgeInsets.only(left: 10),
-                                        child: Column(children: [
-                                          TextField(
+                                        child: Column(
+                                          children: [
+                                            TextField(
                                               controller: TextEditingController(
-                                                  text: displayName),
+                                                text: displayName
+                                              ),
                                               style: const TextStyle(
                                                 color: Color.fromARGB(
                                                     255, 255, 255, 255),
                                                 fontSize: 16,
                                               ),
                                               decoration: const InputDecoration(
-                                                  hintText: 'ニックネーム',
-                                                  labelStyle: TextStyle(
-                                                    color: Color.fromARGB(
-                                                        255, 255, 255, 255),
-                                                    fontSize: 16,
-                                                  ),
-                                                  hintStyle: TextStyle(
-                                                    color: Color.fromARGB(
-                                                        255, 255, 255, 255),
-                                                    fontSize: 16,
-                                                  )),
+                                                hintText: 'ニックネーム',
+                                                labelStyle: TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 255, 255, 255),
+                                                  fontSize: 16,
+                                                ),
+                                                hintStyle: TextStyle(
+                                                  color: Color.fromARGB(
+                                                      255, 255, 255, 255),
+                                                  fontSize: 16,
+                                                )
+                                              ),
                                               onChanged: (text) {
                                                 displayName = text;
                                                 if (!_showFab) {
@@ -240,12 +246,23 @@ class _AccountPage extends State<AccountPage> {
                                               },
                                               onTapOutside: (f) {
                                                 FocusScope.of(context).unfocus();
-                                              },),
-                                              
-                                        ]))),
+                                              },
+                                            ),      
+                                          ]
+                                        )
+                                      )
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 10,top: 7),
+                                      child:Text("@$userName",style: TextStyle(color: Colors.white70),)
+                                    )
+                                  ]
+                                )
                               ],
                             ),
-                          ])),
+                          ]
+                        )
+                      ),
                     ),
                     SizedBox(
                         child: Container(
