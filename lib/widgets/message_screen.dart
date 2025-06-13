@@ -229,7 +229,6 @@ class _MessageScreenState extends State<MessageScreen> {
     final Color backgroundColor =
         Color.lerp(instance.theme[0], instance.theme[1], .5)!;
     final List<Color> textColor = instance.getTextColor(backgroundColor);
-    late String displayName;
     if(widget.snapshot.data == null) {
       return Column(children: returnWidget);
     }
@@ -246,9 +245,6 @@ class _MessageScreenState extends State<MessageScreen> {
             } else if (docSnapshot.hasError) {
               // エラー
             } else if (docSnapshot.hasData) {
-              displayName = (docSnapshot.data?.data()
-                      as Map<String, dynamic>)["display_name"] ??
-                  "No Name";
               final String type = content["type"];
 
               late String messageId;
