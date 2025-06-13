@@ -191,7 +191,6 @@ class _VoiceChatState extends State<VoiceChat> {
     _listener
       ..on<RoomDisconnectedEvent>((_) {
         print('Room disconnected');
-        Navigator.of(context).pop();
       })
       ..on<ParticipantConnectedEvent>((e) {
         print('Participant joined: ${e.participant.identity}');
