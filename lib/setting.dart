@@ -228,6 +228,54 @@ class _SettingPage extends State<SettingPage> {
                       ),
                     ),
                   ),
+                  SettingItem(
+                    name: "メッセージの保存先",
+                    defaultValue: "",
+                    widget: FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('user_account')
+                          .doc('${profile?["sub"]}')
+                          .get(),
+                      builder: (context, snapshot) {
+                        String storageType = "Google Drive";
+                        if (snapshot.hasData && snapshot.data != null) {
+                          final data = snapshot.data!.data() as Map<String, dynamic>?;
+                          storageType = data?['storage_type'] ?? "Google Drive";
+                        }
+                        return DropdownButton<String>(
+                          value: storageType == "Firestore" ? "サーバー" : storageType,
+                          dropdownColor: const Color.fromARGB(255, 40, 40, 40),
+                          style: const TextStyle(color: Colors.white),
+                          underline: Container(
+                            height: 2,
+                            color: Colors.white,
+                          ),
+                          onChanged: (String? newValue) {
+                            if (newValue != null) {
+                              // 表示用の値を内部値に変換
+                              final internalValue = newValue == "サーバー" ? "Firestore" : newValue;
+                              FirebaseFirestore.instance
+                                  .collection('user_account')
+                                  .doc('${profile?["sub"]}')
+                                  .update({
+                                'storage_type': internalValue
+                              });
+                              setState(() {
+                                _showFab = true;
+                              });
+                            }
+                          },
+                          items: <String>['Google Drive', 'サーバー']
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                        );
+                      },
+                    ),
+                  ),
                   CenterButton(
                       name: "キャッシュを削除",
                       fontColor: Colors.white,
