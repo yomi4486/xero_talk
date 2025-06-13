@@ -66,10 +66,21 @@ class ChatFileManager {
   Future<void> _saveToFirestore(Map<String, dynamic> data) async {
     try {
       final profile = authContext.userCredential.additionalUserInfo?.profile;
-      await FirebaseFirestore.instance
+      final docRef = FirebaseFirestore.instance
           .collection('chat_history')
-          .doc('${profile?["sub"]}')
-          .set(data);
+          .doc('${profile?["sub"]}');
+      
+      // 新しいメッセージのみを追加
+      if (data['messages'] is Map) {
+        final messages = data['messages'] as Map;
+        if (messages.isNotEmpty) {
+          final lastMessage = messages.entries.last;
+          await docRef.update({
+            'messages.${lastMessage.key}': lastMessage.value,
+            'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+          });
+        }
+      }
     } catch (e) {
       print('Error saving chat history to Firestore: $e');
     }

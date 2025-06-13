@@ -59,26 +59,29 @@ class TabsProvider with ChangeNotifier {
       chatFileManager = ChatFileManager(chatFileId: chatFileId);
 
       final history = await chatFileManager.loadChatHistory();
-      print(history);
-      if(history != null) chatHistory = history;
+      if(history != null){ 
+        // 既存の履歴を保持
+        chatHistory = Map<String, dynamic>.from(history);
+        
+        final String type = content['type'] as String;
+        final String messageId = type == "call" ? content["room_id"] as String : content["id"] as String;
+        final int timestamp = content["timestamp"] as int;
 
-      final String type = content['type'] as String;
-      final String messageId = type == "call" ? content["room_id"] as String : content["id"] as String;
-      final int timestamp = content["timestamp"] as int;
-      print(content);
-      chatHistory[messageId] = {
-        "author": content["author"],
-        "content": content["content"],
-        "timeStamp": timestamp,
-        "edited": false,
-        "attachments": content["attachments"],
-        "voice": type == "call"
-      };
+        // 新しいメッセージを追加
+        chatHistory[messageId] = {
+          "author": content["author"],
+          "content": content["content"],
+          "timeStamp": timestamp,
+          "edited": false,
+          "attachments": content["attachments"],
+          "voice": type == "call"
+        };
 
-      await chatFileManager.saveChatHistory({
-        'messages': chatHistory,
-        'lastUpdated': DateTime.now().millisecondsSinceEpoch,
-      });
+        await chatFileManager.saveChatHistory({
+          'messages': chatHistory,
+          'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+        });
+      }
     } catch (e) {
       print('Error saving notification: $e');
     }
