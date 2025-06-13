@@ -237,10 +237,10 @@ class _SettingPage extends State<SettingPage> {
                           .doc('${profile?["sub"]}')
                           .get(),
                       builder: (context, snapshot) {
-                        String storageType = "Google Drive";
+                        String storageType = "Firestore";
                         if (snapshot.hasData && snapshot.data != null) {
                           final data = snapshot.data!.data() as Map<String, dynamic>?;
-                          storageType = data?['storage_type'] ?? "Google Drive";
+                          storageType = data?['storage_type'] ?? "Firestore";
                         }
                         return DropdownButton<String>(
                           value: storageType == "Firestore" ? "サーバー" : storageType,

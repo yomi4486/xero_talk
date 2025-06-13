@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ChatFileManager {
   final String? chatFileId;
   final AuthContext authContext = AuthContext();
-  String storageType = "Google Drive";
+  String storageType = "Firestore";
 
   ChatFileManager({
     required this.chatFileId,
@@ -22,8 +22,8 @@ class ChatFileManager {
           .get();
       
       if (doc.exists) {
-        final data = doc.data();
-        storageType = data?['storage_type'] ?? "Google Drive";
+        final data = doc.data() as Map<String, dynamic>?;
+        storageType = data?['storage_type'] ?? "Firestore";
       }
     } catch (e) {
       print('Error initializing storage type: $e');
