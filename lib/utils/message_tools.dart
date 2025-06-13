@@ -7,6 +7,8 @@ import 'package:uuid/uuid.dart';
 
 import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 
 const Uuid uuid = Uuid();
 
@@ -15,12 +17,31 @@ Future<void> sendMessage(String? text, String channelId,
     {List<String> imageList = const []}) async {
   /// instanceで有効になっているソケット通信に対してメッセージを送信する
   final instance = AuthContext();
-  if (text!.isNotEmpty || imageList.isNotEmpty) {
+  List<String> uploadedImageUrls = [];
+
+  if (imageList.isNotEmpty) {
+    for (String base64Image in imageList) {
+      try {
+        Uint8List imageData = base64Decode(base64Image);
+        String fileName = 'attachments/${uuid.v4()}.png'; // Unique filename for Firebase Storage
+        Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
+        UploadTask uploadTask = storageRef.putData(imageData);
+        TaskSnapshot snapshot = await uploadTask;
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        uploadedImageUrls.add(downloadUrl);
+      } catch (e) {
+        print('画像のアップロードに失敗しました: $e');
+        // Handle error, maybe show a snackbar to the user
+      }
+    }
+  }
+
+  if (text!.isNotEmpty || uploadedImageUrls.isNotEmpty) {
     final sendBody = {
       "type": "send_message",
       "content": text,
       "channel": channelId,
-      "attachments": imageList
+      "attachments": uploadedImageUrls
     };
     final String data = convert.json.encode(sendBody);
     if (instance.channel.readyState == 3) {
@@ -99,23 +120,32 @@ Future<String?> pickImage() async {
   return null;
 }
 
-Future<void> saveImageToGallery(String base64String) async {
+Future<void> saveImageToGallery(String imageUrlOrBase64) async {
   try {
-    // Base64文字列をデコードしてバイナリデータに変換
-    final decodedBytes = base64Decode(base64String);
+    Uint8List? imageData;
+    if (imageUrlOrBase64.startsWith('http')) {
+      final response = await HttpClient().getUrl(Uri.parse(imageUrlOrBase64));
+      final receivedResponse = await response.close();
+      imageData = await consolidateHttpClientResponseBytes(receivedResponse);
+    } else {
+      // Assume it's a base64 string
+      imageData = base64Decode(imageUrlOrBase64);
+    }
 
-    // 一時ディレクトリを取得
-    final tempDir = await getTemporaryDirectory();
-    final filePath = '${tempDir.path}/${uuid.v4()}.png';
+    if (imageData != null) {
+      // 一時ディレクトリを取得
+      final tempDir = await getTemporaryDirectory();
+      final filePath = '${tempDir.path}/${uuid.v4()}.png';
 
-    // ファイルにデコードしたデータを書き込む
-    final file = File(filePath);
-    await file.writeAsBytes(decodedBytes);
+      // ファイルにデコードしたデータを書き込む
+      final file = File(filePath);
+      await file.writeAsBytes(imageData);
 
-    // ギャラリーに保存
-    await GallerySaver.saveImage(file.path);
+      // ギャラリーに保存
+      await GallerySaver.saveImage(file.path);
+    }
   } catch (e) {
-    print(e);
+    print('Failed to save image to gallery: $e');
   }
 }
 

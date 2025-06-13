@@ -13,9 +13,18 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 
 late drive.DriveApi googleDriveApi;
 bool failed = false;
+
+Future<void> _initializeAndroidAudioSettings() async {
+  await webrtc.WebRTC.initialize(options: {
+    'androidAudioConfiguration': webrtc.AndroidAudioConfiguration.media.toMap()
+  });
+  webrtc.Helper.setAndroidAudioConfiguration(
+      webrtc.AndroidAudioConfiguration.media);
+}
 
 Future<void> initializeFirebase() async {
   if (kIsWeb) {
@@ -43,6 +52,7 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('imageCache');
   await initializeFirebase();
+  await _initializeAndroidAudioSettings();
   await dotenv.load();
   runApp(
     MultiProvider(

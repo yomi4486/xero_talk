@@ -12,66 +12,11 @@ import '../utils/voice_chat.dart';
 import '../voice_chat.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/utils/auth_context.dart';
+import 'dart:io'; // Ensure dart:io is imported for HttpClient
+import 'package:flutter/foundation.dart'; // Ensure flutter/foundation.dart is imported for consolidateHttpClientResponseBytes
 
 Uint8List decodeBase64(String base64String) {
   return convert.base64Decode(base64String);
-}
-
-class Base64ImageWidget extends StatefulWidget {
-  final List<dynamic>? base64Strings;
-
-  Base64ImageWidget({required this.base64Strings});
-
-  @override
-  _Base64ImageWidgetState createState() => _Base64ImageWidgetState();
-}
-
-class _Base64ImageWidgetState extends State<Base64ImageWidget> {
-  double? imageHeight;
-  double? imageWidth;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.base64Strings != null && widget.base64Strings!.isNotEmpty) {
-      decodeImageSize(widget.base64Strings![0]);
-    }
-  }
-
-  Future<void> decodeImageSize(String base64String) async {
-    Uint8List imageBytes = decodeBase64(base64String);
-    ui.Codec codec = await ui.instantiateImageCodec(imageBytes);
-    ui.FrameInfo frameInfo = await codec.getNextFrame();
-    imageHeight = frameInfo.image.height.toDouble();
-    imageWidth = frameInfo.image.width.toDouble();
-
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (widget.base64Strings != null && widget.base64Strings!.isNotEmpty) {
-      Uint8List imageBytes = decodeBase64(widget.base64Strings![0]);
-      return Container(
-        key:GlobalKey(),
-        padding: const EdgeInsets.only(top: 10),
-        width: MediaQuery.of(context).size.width * 0.7,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(10.0),
-          child: Image.memory(
-            imageBytes,
-            height: imageHeight != null &&
-                    imageWidth != null &&
-                    imageHeight! / imageWidth! > 2
-                ? 400
-                : null,
-            fit: BoxFit.cover,
-          ),
-        ),
-      );
-    } else {
-      return Container();
-    }
-  }
 }
 
 void launchURL(String url) async {
@@ -198,12 +143,160 @@ Widget getMessageCard(
                         )
                       : Container(),
                 ),
-                GestureDetector(
-                  child: Base64ImageWidget(base64Strings: attachments),
-                  onTap: () {
-                    showImage!(decodeBase64(attachments[0]), true);
-                  },
-                )
+                if (attachments.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Builder(
+                      builder: (context) {
+                        if (attachments.length == 1) {
+                          // Single image case
+                          final attachment = attachments[0];
+                          if (attachment == null) return Container();
+                          try {
+                            return GestureDetector(
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  child: attachment.startsWith('http')
+                                      ? Image.network(
+                                          attachment,
+                                          fit: BoxFit.fitWidth,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            print('Error loading image: $error');
+                                            return Container(
+                                              color: Colors.grey[300],
+                                              height: 150,
+                                              child: const Icon(Icons.error),
+                                            );
+                                          },
+                                        )
+                                      : Image.memory(
+                                          decodeBase64(attachment),
+                                          fit: BoxFit.fitWidth,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            print('Error loading image: $error');
+                                            return Container(
+                                              color: Colors.grey[300],
+                                              height: 150,
+                                              child: const Icon(Icons.error),
+                                            );
+                                          },
+                                        ),
+                                ),
+                              ),
+                              onTap: () async {
+                                if (showImage != null) {
+                                  if (attachment.startsWith('http')) {
+                                    try {
+                                      final response = await HttpClient().getUrl(Uri.parse(attachment));
+                                      final receivedBytes = await consolidateHttpClientResponseBytes(await response.close());
+                                      showImage!(receivedBytes, true);
+                                    } catch (e) {
+                                      print('Failed to load image from URL: $e');
+                                    }
+                                  } else {
+                                    showImage!(decodeBase64(attachment), true);
+                                  }
+                                }
+                              },
+                            );
+                          } catch (e) {
+                            print('Error processing image: $e');
+                            return Container(
+                              color: Colors.grey[300],
+                              height: 150,
+                              child: const Icon(Icons.error),
+                            );
+                          }
+                        } else {
+                          // Multiple images case (GridView)
+                          final double spacing = 4;
+                          final int crossAxisCount = 2;
+                          final double itemWidth = (MediaQuery.of(context).size.width * 0.7 - (crossAxisCount - 1) * spacing) / crossAxisCount;
+                          final double itemHeight = itemWidth; // childAspectRatio is 1
+                          
+                          final int numRows = (attachments.length / crossAxisCount).ceil();
+                          final double gridHeight = numRows * itemHeight + (numRows - 1) * spacing;
+
+                          return Container(
+                            width: MediaQuery.of(context).size.width * 0.7,
+                            height: gridHeight,
+                            child: GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                crossAxisSpacing: spacing,
+                                mainAxisSpacing: spacing,
+                                childAspectRatio: 1,
+                              ),
+                              itemCount: attachments.length,
+                              itemBuilder: (context, index) {
+                                final attachment = attachments[index];
+                                if (attachment == null) return Container();
+                                
+                                try {
+                                  return GestureDetector(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      child: attachment.startsWith('http')
+                                          ? Image.network(
+                                              attachment,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) {
+                                                print('Error loading image: $error');
+                                                return Container(
+                                                  color: Colors.grey[300],
+                                                  child: const Icon(Icons.error),
+                                                );
+                                              },
+                                            )
+                                          : Image.memory(
+                                              decodeBase64(attachment),
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) {
+                                                print('Error loading image: $error');
+                                                return Container(
+                                                  color: Colors.grey[300],
+                                                  child: const Icon(Icons.error),
+                                                );
+                                              },
+                                            ),
+                                    ),
+                                    onTap: () async {
+                                      if (showImage != null) {
+                                        if (attachment.startsWith('http')) {
+                                          try {
+                                            final response = await HttpClient().getUrl(Uri.parse(attachment));
+                                            final receivedBytes = await consolidateHttpClientResponseBytes(await response.close());
+                                            showImage!(receivedBytes, true);
+                                          } catch (e) {
+                                            print('Failed to load image from URL: $e');
+                                          }
+                                        } else {
+                                          showImage!(decodeBase64(attachment), true);
+                                        }
+                                      }
+                                    },
+                                  );
+                                } catch (e) {
+                                  print('Error processing image: $e');
+                                  return Container(
+                                    color: Colors.grey[300],
+                                    child: const Icon(Icons.error),
+                                  );
+                                }
+                              },
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  )
               ]
               ),
             ],
@@ -381,7 +474,7 @@ Widget getVoiceWidget(BuildContext context,String roomId,Map<dynamic,dynamic> co
       isNavigating = true;
 
       // 確認ダイアログを表示
-      await showDialog<bool>(
+      await showDialog(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(

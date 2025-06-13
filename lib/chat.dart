@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/voice_chat.dart';
-
+import 'dart:typed_data';
+import 'dart:convert';
 import 'package:xero_talk/widgets/message_screen.dart';
 import 'package:xero_talk/utils/message_tools.dart';
 import 'package:xero_talk/widgets/image_viewer.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
+
+Uint8List base64ToUint8List(String base64String) {
+  return base64Decode(base64String);
+}
 
 class chatProvider with ChangeNotifier {
   bool showImage = false;
@@ -101,7 +106,9 @@ class _chat extends State<chat> {
     final Color backgroundColor = lightenColor(instance.theme[0], .2);
     final List<Color> textColor = instance.getTextColor(backgroundColor);
     final String displayName = channelInfo["display_name"] ?? "-";
-    final double bottomBarHeight = MediaQuery.of(context).size.height * 0.1799;
+    final double baseBottomBarHeight = MediaQuery.of(context).size.height * 0.1799;
+    final double imagePreviewHeight = images.isNotEmpty ? 116.0 : 0.0; // 100px + 16px margin
+    final double bottomBarHeight = baseBottomBarHeight + imagePreviewHeight;
 
     return Stack(children: [
       Scaffold(
@@ -116,105 +123,161 @@ class _chat extends State<chat> {
               Container(
                 margin: const EdgeInsets.only(bottom: 5),
                 width: MediaQuery.of(context).size.width,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                child: Column(
                   children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.7,
-                      height: 48,
-                      child: TextField(
-                        focusNode: focusNode,
-                        cursorColor:
-                            const Color.fromARGB(55, 255, 255, 255),
-                        controller: fieldText,
-                        onTapOutside: (_) => unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
-                        keyboardType: TextInputType.multiline,
-                        maxLines: null,
-                        style: const TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                          fontSize: 16,
-                        ),
-                        decoration: InputDecoration(
-                          enabledBorder: OutlineInputBorder(
-                            borderSide:
-                                const BorderSide(color: Colors.transparent),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                const BorderSide(color: Colors.transparent),
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          hintText: '$displayNameにメッセージを送信',
-                          labelStyle: const TextStyle(
-                            color: Color.fromARGB(255, 255, 255, 255),
-                            fontSize: 16,
-                          ),
-                          hintStyle: const TextStyle(
-                            color: Color.fromARGB(255, 255, 255, 255),
-                            fontSize: 12,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          filled: true,
-                          fillColor: const Color.fromARGB(55, 0, 0, 0),
-                          contentPadding: const EdgeInsets.symmetric(
-                              vertical: 0, horizontal: 16.0),
-                        ),
-                        onChanged: (text) {
-                          chatText = text;
-                        },
-                      ),
-                    ),
-                    TextFieldTapRegion(
-                      child: SizedBox(
-                        height: 60,
-                        child: IconButton(
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                                Colors.transparent),
-                            overlayColor: MaterialStateProperty.all<Color>(
-                                Colors.transparent),
-                          ),
-                          onPressed: () async {
-                            if (chatScreenProvider.editing) {
-                              chatScreenProvider.toggleEditMode();
-                              await editMessage(chatScreenProvider.editingMessageId,
-                                  channelInfo["id"], chatText);
-                            } else {
-                              await sendMessage(chatText, channelInfo["id"],
-                                  imageList: images);
-                            }
-                            chatText = "";
-                            images = [];
-                            fieldText.clear();
+                    if (images.isNotEmpty)
+                      Container(
+                        height: 100,
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: images.length,
+                          itemBuilder: (context, index) {
+                            return Stack(
+                              children: [
+                                Container(
+                                  width: 100,
+                                  height: 100,
+                                  margin: const EdgeInsets.only(right: 8),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.2),
+                                      width: 1,
+                                    ),
+                                    image: DecorationImage(
+                                      image: MemoryImage(base64ToUint8List(images[index])),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.5),
+                                      borderRadius: const BorderRadius.only(
+                                        bottomLeft: Radius.circular(8),
+                                        topRight: Radius.circular(8),
+                                      ),
+                                    ),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                      onPressed: () {
+                                        setState(() {
+                                          images.removeAt(index);
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
                           },
-                          icon: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Color.fromARGB(55, 0, 0, 0),
-                                  Color.fromARGB(55, 0, 0, 0)
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: chatScreenProvider.editing
-                              ? const Icon(
-                                  Icons.edit,
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                              )
-                              : const ImageIcon(
-                                  AssetImage("assets/images/send.png"),
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                              ),
-                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          height: 48,
+                          child: TextField(
+                            focusNode: focusNode,
+                            cursorColor:
+                                const Color.fromARGB(55, 255, 255, 255),
+                            controller: fieldText,
+                            onTapOutside: (_) => unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
+                            keyboardType: TextInputType.multiline,
+                            maxLines: null,
+                            style: const TextStyle(
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              fontSize: 16,
+                            ),
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                borderSide:
+                                    const BorderSide(color: Colors.transparent),
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide:
+                                    const BorderSide(color: Colors.transparent),
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              hintText: '$displayNameにメッセージを送信',
+                              labelStyle: const TextStyle(
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                fontSize: 16,
+                              ),
+                              hintStyle: const TextStyle(
+                                color: Color.fromARGB(255, 255, 255, 255),
+                                fontSize: 12,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              filled: true,
+                              fillColor: const Color.fromARGB(55, 0, 0, 0),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 0, horizontal: 16.0),
+                            ),
+                            onChanged: (text) {
+                              chatText = text;
+                            },
+                          ),
+                        ),
+                        TextFieldTapRegion(
+                          child: SizedBox(
+                            height: 60,
+                            child: IconButton(
+                              style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all<Color>(
+                                    Colors.transparent),
+                                overlayColor: MaterialStateProperty.all<Color>(
+                                    Colors.transparent),
+                              ),
+                              onPressed: () async {
+                                if (chatScreenProvider.editing) {
+                                  chatScreenProvider.toggleEditMode();
+                                  await editMessage(chatScreenProvider.editingMessageId,
+                                      channelInfo["id"], chatText);
+                                } else {
+                                  await sendMessage(chatText, channelInfo["id"],
+                                      imageList: images);
+                                }
+                                chatText = "";
+                                images = [];
+                                fieldText.clear();
+                              },
+                              icon: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Color.fromARGB(55, 0, 0, 0),
+                                      Color.fromARGB(55, 0, 0, 0)
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: chatScreenProvider.editing
+                                  ? const Icon(
+                                      Icons.edit,
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                  )
+                                  : const ImageIcon(
+                                      AssetImage("assets/images/send.png"),
+                                      color: Color.fromARGB(255, 255, 255, 255),
+                                  ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  ]
                 )
               ),
               Container(
@@ -227,9 +290,20 @@ class _chat extends State<chat> {
                       icon: const Icon(Icons.photo,
                           color: Color.fromARGB(55, 0, 0, 0), size: 30),
                       onPressed: () async {
-                        final image = await pickImage();
-                        if (image != null) {
-                          images.add(image);
+                        try {
+                          final image = await pickImage();
+                          if (image != null) {
+                            setState(() {
+                              images.add(image);
+                            });
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('画像の選択に失敗しました'),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
                         }
                       },
                     ),
