@@ -186,7 +186,6 @@ class ChatFileManager {
           
           // メッセージの送信者と受信者を検証
           final senderId = messageData['author'];
-          print(senderId);
           // 現在のチャットの参加者と一致するか確認
           if (senderId != _userId && senderId != _friendId) return;
           
@@ -352,6 +351,90 @@ class ChatFileManager {
     } catch (e) {
       print('Error loading chat history from Firestore: $e');
       return null;
+    }
+  }
+
+  Future<void> deleteMessage(String messageId) async {
+    await _initializeStorageType();
+    
+    if (storageType == "Google Drive") {
+      await _deleteFromGoogleDrive(messageId);
+    } else {
+      await _deleteFromFirestore(messageId);
+    }
+  }
+
+  Future<void> _deleteFromFirestore(String messageId) async {
+    try {
+      if (_chatId.isEmpty) return;
+
+      final docRef = FirebaseFirestore.instance
+          .collection('chat_history')
+          .doc(_chatId);
+      
+      final doc = await docRef.get();
+      if (doc.exists) {
+        final data = doc.data();
+        if (data?['messages'] != null) {
+          final List<dynamic> messages = List<dynamic>.from(data!['messages']);
+          final index = messages.indexWhere((msg) => msg['id'] == messageId);
+          
+          if (index != -1) {
+            messages.removeAt(index);
+            
+            await docRef.update({
+              'messages': messages,
+              'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+            });
+          }
+        }
+      }
+    } catch (e) {
+      print('Error deleting message from Firestore: $e');
+    }
+  }
+
+  Future<void> _deleteFromGoogleDrive(String messageId) async {
+    try {
+      if (chatFileId == null) return;
+
+      final file = await authContext.googleDriveApi.files.get(
+        chatFileId!,
+        downloadOptions: drive.DownloadOptions.fullMedia,
+      ) as drive.Media;
+
+      final bytes = await file.stream.toList();
+      final content = utf8.decode(bytes.expand((x) => x).toList());
+      final data = convert.jsonDecode(content);
+      
+      if (data['messages'] != null) {
+        final List<dynamic> messages = List<dynamic>.from(data['messages']);
+        final index = messages.indexWhere((msg) => msg['id'] == messageId);
+        
+        if (index != -1) {
+          messages.removeAt(index);
+          
+          data['messages'] = messages;
+          data['lastUpdated'] = DateTime.now().millisecondsSinceEpoch;
+          
+          final updatedContent = convert.jsonEncode(data);
+          final updatedBytes = utf8.encode(updatedContent);
+          final media = drive.Media(
+            Stream.value(updatedBytes),
+            updatedBytes.length,
+          );
+
+          await authContext.googleDriveApi.files.update(
+            drive.File()
+              ..name = 'chat_history.json'
+              ..mimeType = 'application/json; charset=utf-8',
+            chatFileId!,
+            uploadMedia: media,
+          );
+        }
+      }
+    } catch (e) {
+      print('Error deleting message from Google Drive: $e');
     }
   }
 } 
