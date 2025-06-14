@@ -7,8 +7,7 @@ import 'package:camera/camera.dart';
 
 class ParticipantWidget extends StatefulWidget {
   final Participant participant;
-  final String userId;
-  ParticipantWidget(this.participant, this.userId);
+  ParticipantWidget(this.participant);
 
   @override
   State<StatefulWidget> createState() {
@@ -69,7 +68,7 @@ class _ParticipantState extends State<ParticipantWidget> {
             margin: const EdgeInsets.all(100),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100.0),
-              child: UserIcon(userId: widget.userId),
+              child: UserIcon(userId: widget.participant.identity),
             ),
           ),
         ],
@@ -111,7 +110,6 @@ class _VoiceChatState extends State<VoiceChat> {
   bool micAvailable = false;
   bool cameraAvailable = false;
   late final EventsListener<RoomEvent> _listener;
-  Map<String, Participant> _participants = {};
 
   Participant? localParticipant;
   List<Participant> remoteParticipants = [];
@@ -194,12 +192,10 @@ class _VoiceChatState extends State<VoiceChat> {
       })
       ..on<ParticipantConnectedEvent>((e) {
         print('Participant joined: ${e.participant.identity}');
-        _participants[e.participant.identity] = e.participant;
         _updateParticipants();
       })
       ..on<ParticipantDisconnectedEvent>((e) {
         print('Participant left: ${e.participant.identity}');
-        _participants.remove(e.participant.identity);
         _updateParticipants();
       })
       ..on<TrackSubscribedEvent>((e) {
@@ -221,7 +217,7 @@ class _VoiceChatState extends State<VoiceChat> {
       }
       await instance.room.localParticipant?.setMicrophoneEnabled(true);
 
-      setState(() {
+      setState(() {   
         localParticipant = instance.room.localParticipant;
       });
     } catch (e) {
@@ -232,13 +228,14 @@ class _VoiceChatState extends State<VoiceChat> {
 
   void _updateParticipants() {
     setState(() {
-      remoteParticipants = _participants.values.toList();
+      remoteParticipants = instance.room.remoteParticipants.values.toList();
     });
   }
 
   void _onRoomChange() {
     setState(() {
       localParticipant = instance.room.localParticipant;
+      remoteParticipants = instance.room.remoteParticipants.values.toList();
     });
   }
 
@@ -299,7 +296,6 @@ class _VoiceChatState extends State<VoiceChat> {
                             children: [
                               ParticipantWidget(
                                 _selectedParticipant!,
-                                _selectedParticipant == localParticipant ? instance.id : widget.roomInfo.userId,
                               ),
                               if (_selectedParticipant == localParticipant)
                                 Positioned(
@@ -364,7 +360,6 @@ class _VoiceChatState extends State<VoiceChat> {
                                 children: [
                                   ParticipantWidget(
                                     participant,
-                                    isLocal ? instance.id : widget.roomInfo.userId,
                                   ),
                                   if (isLocal)
                                     Positioned(
@@ -437,7 +432,6 @@ class _VoiceChatState extends State<VoiceChat> {
                             children: [
                               ParticipantWidget(
                                 participant,
-                                isLocal ? instance.id : widget.roomInfo.userId,
                               ),
                               if (isLocal)
                                 Positioned(
