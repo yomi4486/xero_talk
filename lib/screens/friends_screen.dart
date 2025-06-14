@@ -33,13 +33,43 @@ class FriendsScreen extends StatelessWidget {
         children: [
           Container(
             color: const Color.fromARGB(255, 40, 40, 40),
-            child: const TabBar(
+            child: TabBar(
               labelColor: Colors.white,
               unselectedLabelColor: Colors.grey,
               indicatorColor: Colors.white,
               tabs: [
-                Tab(text: 'フレンド一覧'),
-                Tab(text: '申請一覧'),
+                const Tab(text: 'フレンド一覧'),
+                StreamBuilder<List<Friend>>(
+                  stream: _friendService.getPendingRequests(userId),
+                  builder: (context, snapshot) {
+                    final requestCount = snapshot.hasData ? snapshot.data!.length : 0;
+                    return Tab(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('申請一覧'),
+                          if (requestCount > 0) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                requestCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),

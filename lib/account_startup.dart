@@ -3,18 +3,114 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
+import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
+import 'package:image_cropper/image_cropper.dart';
 
-class AccountStartup extends StatelessWidget {
+class AccountStartup extends StatefulWidget {
+  @override
+  _AccountStartupState createState() => _AccountStartupState();
+}
+
+class _AccountStartupState extends State<AccountStartup> {
   final AuthContext instance = AuthContext();
   final Color defaultColor = const Color.fromARGB(255, 22, 22, 22);
   final nowDt = DateTime.now().millisecondsSinceEpoch;
+  String name = "";
+  String displayName = "";
+  String description = "";
+  bool isUserIdAvailable = true;
+  bool isCheckingUserId = false;
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _displayNameController = TextEditingController();
+  final FocusNode _nameFocusNode = FocusNode();
+  final FocusNode _displayNameFocusNode = FocusNode();
+
   @override
-  Widget build(BuildContext context) {
-    String name = instance.userCredential.user!.email!
+  void initState() {
+    super.initState();
+    name = instance.userCredential.user!.email!
         .replaceAll('@gmail.com', '')
         .replaceAll('@icloud.com', '');
-    String displayName = "${instance.userCredential.user!.displayName}";
-    String description = "";
+    displayName = "${instance.userCredential.user!.displayName}";
+    _nameController.text = name;
+    _displayNameController.text = displayName;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _displayNameController.dispose();
+    _nameFocusNode.dispose();
+    _displayNameFocusNode.dispose();
+    super.dispose();
+  }
+
+  Future<void> checkUserIdAvailability(String userId) async {
+    if (userId.isEmpty) {
+      setState(() {
+        isUserIdAvailable = false;
+        isCheckingUserId = false;
+      });
+      return;
+    }
+
+    if (userId.contains(' ')) {
+      setState(() {
+        isUserIdAvailable = false;
+        isCheckingUserId = false;
+      });
+      return;
+    }
+
+    setState(() {
+      isCheckingUserId = true;
+    });
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('user_account')
+          .where('name', isEqualTo: userId)
+          .get();
+
+      setState(() {
+        isUserIdAvailable = querySnapshot.docs.isEmpty;
+        isCheckingUserId = false;
+      });
+    } catch (e) {
+      setState(() {
+        isUserIdAvailable = false;
+        isCheckingUserId = false;
+      });
+    }
+  }
+
+  Future<void> upload(String token) async {
+    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      final croppedFile = await ImageCropper().cropImage(
+          sourcePath: image.path,
+          compressFormat: ImageCompressFormat.png,
+          maxHeight: 512,
+          maxWidth: 512,
+          compressQuality: 0,
+          aspectRatio: const CropAspectRatio(ratioX: 1.0, ratioY: 1.0));
+
+      if (croppedFile != null) {
+        final bytesData = await croppedFile.readAsBytes();
+        final base64Data = base64Encode(bytesData);
+        await uit.upload(token, base64Data);
+        instance.deleteImageCache(id: instance.id);
+        setState(() {});
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -26,11 +122,19 @@ class AccountStartup extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
           onPressed: () {
+            if (!isUserIdAvailable || name.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('ユーザーIDが無効です'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              return;
+            }
             var profile = instance.userCredential.additionalUserInfo?.profile;
-            // ドキュメント作成
             FirebaseFirestore.instance
-                .collection('user_account') // コレクションID
-                .doc('${profile?["sub"]}') // ドキュメントID
+                .collection('user_account')
+                .doc('${profile?["sub"]}')
                 .set({
               'description': description,
               'display_name': displayName,
@@ -63,80 +167,107 @@ class AccountStartup extends StatelessWidget {
                         children: [
                           Column(
                             children: [
-                              ClipRRect(
-                                // アイコン表示（角丸）
-                                borderRadius: BorderRadius.circular(2000000),
-                                child: UserIcon(userId: instance.id,size:MediaQuery.of(context).size.width * 0.2)
-                              ),
-                              ElevatedButton.icon(
-                                // アイコン変更ボタン
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color.fromARGB(
-                                        255, 231, 231, 231),
-                                    foregroundColor: Colors.black,
-                                    minimumSize: const Size(0, 0),
-                                    maximumSize: Size.fromWidth(
-                                      MediaQuery.of(context).size.width * 0.2,
-                                    )),
-                                onPressed: () {},
-                                label: const Text('変更',
-                                    style: (TextStyle(
-                                        color: Colors.black, fontSize: 15))),
+                              GestureDetector(
+                                onTap: () async {
+                                  String? token = await FirebaseAuth
+                                      .instance.currentUser
+                                      ?.getIdToken();
+                                  await upload('$token');
+                                },
+                                child: Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(1000),
+                                      child: UserIcon(
+                                          userId: instance.id,
+                                          size: MediaQuery.of(context).size.width * 0.2),
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Material(
+                                        color: Colors.black,
+                                        elevation: 4,
+                                        shape: const CircleBorder(),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(3),
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Color.fromARGB(255, 222, 222, 222),
+                                          ),
+                                          child: const Icon(
+                                            Icons.edit,
+                                            color: Color.fromARGB(255, 0, 0, 0),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
                           SizedBox(
-                              // ニックネーム設定フォーム
                               child: Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.6,
+                                  width: MediaQuery.of(context).size.width * 0.6,
                                   margin: const EdgeInsets.only(left: 10),
                                   child: Column(children: [
                                     TextField(
-                                      controller: TextEditingController(
-                                          text: displayName),
+                                      controller: _displayNameController,
+                                      focusNode: _displayNameFocusNode,
                                       style: const TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 255, 255, 255),
+                                        color: Color.fromARGB(255, 255, 255, 255),
                                         fontSize: 16,
                                       ),
                                       decoration: const InputDecoration(
                                           hintText: '',
                                           labelText: 'ニックネーム',
                                           labelStyle: TextStyle(
-                                            color: Color.fromARGB(
-                                                255, 255, 255, 255),
+                                            color: Color.fromARGB(255, 255, 255, 255),
                                             fontSize: 16,
                                           ),
                                           hintStyle: TextStyle(
-                                            color: Color.fromARGB(
-                                                255, 255, 255, 255),
-                                            fontSize: 16,
-                                          )),
-                                    ),
-                                    TextField(
-                                      controller:
-                                          TextEditingController(text: name),
-                                      style: const TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 255, 255, 255),
-                                        fontSize: 16,
-                                      ),
-                                      decoration: const InputDecoration(
-                                          hintText: '',
-                                          labelText: 'ユーザーID(英数字のみ)',
-                                          labelStyle: TextStyle(
-                                            color: Color.fromARGB(
-                                                255, 255, 255, 255),
-                                            fontSize: 16,
-                                          ),
-                                          hintStyle: TextStyle(
-                                            color: Color.fromARGB(
-                                                255, 255, 255, 255),
+                                            color: Color.fromARGB(255, 255, 255, 255),
                                             fontSize: 16,
                                           )),
                                       onChanged: (text) {
+                                        displayName = text;
+                                      },
+                                    ),
+                                    TextField(
+                                      controller: _nameController,
+                                      focusNode: _nameFocusNode,
+                                      style: const TextStyle(
+                                        color: Color.fromARGB(255, 255, 255, 255),
+                                        fontSize: 16,
+                                      ),
+                                      decoration: InputDecoration(
+                                          hintText: '',
+                                          labelText: 'ユーザーID(英数字のみ)',
+                                          labelStyle: const TextStyle(
+                                            color: Color.fromARGB(255, 255, 255, 255),
+                                            fontSize: 16,
+                                          ),
+                                          hintStyle: const TextStyle(
+                                            color: Color.fromARGB(255, 255, 255, 255),
+                                            fontSize: 16,
+                                          ),
+                                          errorText: isCheckingUserId
+                                              ? null
+                                              : name.isEmpty
+                                                  ? 'ユーザーIDを入力してください'
+                                                  : name.contains(' ')
+                                                      ? 'スペースは使用できません'
+                                                      : !isUserIdAvailable
+                                                          ? 'このユーザーIDは使用できません'
+                                                          : null,
+                                          helperText: isCheckingUserId ? '' : null,
+                                          helperStyle: const TextStyle(
+                                            color: Color.fromARGB(255, 255, 255, 255),
+                                          )),
+                                      onChanged: (text) {
                                         name = text;
+                                        checkUserIdAvailability(text);
                                       },
                                     )
                                   ]))),
@@ -174,8 +305,7 @@ class AccountStartup extends StatelessWidget {
                   },
                 ),
               ))
-            ] //childlen 画面全体
-                )),
+            ])),
       ),
     );
   }
