@@ -17,6 +17,13 @@ Uint8List base64ToUint8List(String base64String) {
 class chatProvider with ChangeNotifier {
   bool showImage = false;
   late Uint8List image;
+  bool isSending = false;  // 送信中の状態を追加
+
+  void setSending(bool sending) {
+    isSending = sending;
+    notifyListeners();
+  }
+
   void visibleImage(Uint8List uintimage, bool mode) {
     showImage = mode;
     image = uintimage;
@@ -235,14 +242,19 @@ class _chat extends State<chat> {
                                 overlayColor: MaterialStateProperty.all<Color>(
                                     Colors.transparent),
                               ),
-                              onPressed: () async {
+                              onPressed: chatScreenProvider.isSending ? null : () async {
                                 if (chatScreenProvider.editing) {
                                   chatScreenProvider.toggleEditMode();
                                   await editMessage(chatScreenProvider.editingMessageId,
                                       channelInfo["id"], chatText);
                                 } else {
-                                  await sendMessage(chatText, channelInfo["id"],
-                                      imageList: images);
+                                  chatScreenProvider.setSending(true);
+                                  try {
+                                    await sendMessage(chatText, channelInfo["id"],
+                                        imageList: images);
+                                  } finally {
+                                    chatScreenProvider.setSending(false);
+                                  }
                                 }
                                 chatText = "";
                                 images = [];
@@ -261,15 +273,26 @@ class _chat extends State<chat> {
                                   ),
                                   shape: BoxShape.circle,
                                 ),
-                                child: chatScreenProvider.editing
-                                  ? const Icon(
-                                      Icons.edit,
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                  )
-                                  : const ImageIcon(
-                                      AssetImage("assets/images/send.png"),
-                                      color: Color.fromARGB(255, 255, 255, 255),
-                                  ),
+                                child: chatScreenProvider.isSending
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Color.fromARGB(255, 255, 255, 255),
+                                        ),
+                                      ),
+                                    )
+                                  : chatScreenProvider.editing
+                                    ? const Icon(
+                                        Icons.edit,
+                                        color: Color.fromARGB(255, 255, 255, 255),
+                                      )
+                                    : const ImageIcon(
+                                        AssetImage("assets/images/send.png"),
+                                        color: Color.fromARGB(255, 255, 255, 255),
+                                      ),
                               ),
                             ),
                           ),

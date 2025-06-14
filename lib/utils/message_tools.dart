@@ -59,7 +59,7 @@ Future<void> sendMessage(String? text, String channelId,
 }
 
 /// メッセージの削除を行います。
-Future deleteMessage(String messageId, String channelId) async {
+Future<void> deleteMessage(String messageId, String channelId) async {
   final instance = AuthContext();
   final sendBody = {
     "type": "delete_message",
@@ -69,9 +69,8 @@ Future deleteMessage(String messageId, String channelId) async {
   final String data = convert.json.encode(sendBody);
   if (instance.channel.readyState == 3) {
     // WebSocketが接続されていない場合
-    await instance.restoreConnection().then((v) {
-      instance.channel.add(data);
-    });
+    await instance.restoreConnection();
+    instance.channel.add(data);
     return;
   }
   try {
