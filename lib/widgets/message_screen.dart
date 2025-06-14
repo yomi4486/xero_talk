@@ -98,6 +98,7 @@ class _MessageScreenState extends State<MessageScreen> {
               }
             } else {
               final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
+                key:ValueKey(entry.key),
                 future: FirebaseFirestore.instance
                     .collection('user_account')
                     .doc(entry.value['author'])
@@ -108,16 +109,19 @@ class _MessageScreenState extends State<MessageScreen> {
                     final data = snapshot.data!.data() as Map<String, dynamic>?;
                     displayName = data?['display_name'] ?? "Unknown";
                   }
+                  if(entry.value['attachments'] == null && entry.value['message'] == null){
+                    return Container();
+                  }
                   return getMessageCard(
                     context,
                     widget,
                     instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
                     displayName,
                     displayTime,
-                    entry.value['author'],
-                    entry.value['content'],
+                    entry.value['author'] ?? "",
+                    entry.value['content'] ?? "",
                     entry.value['edited'] ?? false,
-                    entry.value['attachments'],
+                    entry.value['attachments'] ?? [],
                     entry.key,
                     showImage: widget.ImageControler,
                   );
@@ -145,16 +149,31 @@ class _MessageScreenState extends State<MessageScreen> {
     });
   }
 
-  void removeWidget(String key) {
+  void removeWidget(String key, {bool isLocalDelete = false}) {
     try {
-      returnWidget.removeWhere((widget) => (widget.key as ValueKey).value == key);
-      chatHistory.remove(key);
-      chatFileManager.saveChatHistory({
-        'messages': chatHistory,
-        'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+      // ウィジェットの削除
+      returnWidget.removeWhere((widget) {
+        if (widget.key == null) return false;
+
+        try {
+          return (widget.key as ValueKey).value == key;
+        } catch (e) {
+          print("Key type mismatch: ${widget.key.runtimeType}");
+          return false;
+        }
       });
+
+      // チャット履歴からメッセージを削除
+      if (chatHistory.containsKey(key)) {
+        chatHistory.remove(key);
+        
+        // ローカル削除の場合のみDBを更新
+        if (isLocalDelete) {
+          chatFileManager.deleteMessage(key);
+        }
+      }
     } catch (e) {
-      print(e);
+      print("Delete failed: $e");
     }
   }
 
@@ -198,6 +217,7 @@ class _MessageScreenState extends State<MessageScreen> {
               }
             } else {
               final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
+                key:ValueKey(entry.key),
                 future: FirebaseFirestore.instance
                     .collection('user_account')
                     .doc(entry.value['author'])
@@ -217,7 +237,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     entry.value['author'],
                     entry.value['content'],
                     entry.value['edited'] ?? false,
-                    entry.value['attachments'],
+                    entry.value['attachments'] ?? [],
                     entry.key,
                     showImage: widget.ImageControler,
                   );
@@ -337,7 +357,9 @@ class _MessageScreenState extends State<MessageScreen> {
               final String modifiedDateTime = getTimeStringFormat(dateTime);
               bool edited = false;
               if (type == "delete_message") {
-                removeWidget(messageId);
+                // 自分の削除操作かどうかを確認
+                final bool isLocalDelete = content["author"] == instance.id;
+                removeWidget(messageId, isLocalDelete: isLocalDelete);
                 return Column(children: returnWidget);
               }
               if (type == "edit_message") {
@@ -395,12 +417,13 @@ class _MessageScreenState extends State<MessageScreen> {
                   "content": messageContent,
                   "timeStamp": timestamp,
                   "edited": edited,
-                  "attachments": content["attachments"],
+                  "attachments": content["attachments"] ?? [],
                   "voice": false
                 };
                 final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
                 final String displayTime = getTimeStringFormat(dateTime);
                 final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
+                  key:ValueKey(messageId),
                   future: FirebaseFirestore.instance
                       .collection('user_account')
                       .doc(content["author"])

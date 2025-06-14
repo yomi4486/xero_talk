@@ -306,7 +306,6 @@ Widget getMessageCard(
 
   final chatWidget = GestureDetector(
       // メッセージのウィジェットのIDとタップイベントハンドラーを担当
-      key: ValueKey(messageId),
       onLongPress: () {
         showModalBottomSheet(
           context: context,
