@@ -110,7 +110,6 @@ class _VoiceChatState extends State<VoiceChat> {
   bool micAvailable = false;
   bool cameraAvailable = false;
   late final EventsListener<RoomEvent> _listener;
-  Map<String, Participant> _participants = {};
 
   Participant? localParticipant;
   List<Participant> remoteParticipants = [];
@@ -193,12 +192,10 @@ class _VoiceChatState extends State<VoiceChat> {
       })
       ..on<ParticipantConnectedEvent>((e) {
         print('Participant joined: ${e.participant.identity}');
-        _participants[e.participant.identity] = e.participant;
         _updateParticipants();
       })
       ..on<ParticipantDisconnectedEvent>((e) {
         print('Participant left: ${e.participant.identity}');
-        _participants.remove(e.participant.identity);
         _updateParticipants();
       })
       ..on<TrackSubscribedEvent>((e) {
@@ -220,7 +217,7 @@ class _VoiceChatState extends State<VoiceChat> {
       }
       await instance.room.localParticipant?.setMicrophoneEnabled(true);
 
-      setState(() {
+      setState(() {   
         localParticipant = instance.room.localParticipant;
       });
     } catch (e) {
@@ -231,13 +228,14 @@ class _VoiceChatState extends State<VoiceChat> {
 
   void _updateParticipants() {
     setState(() {
-      remoteParticipants = _participants.values.toList();
+      remoteParticipants = instance.room.remoteParticipants.values.toList();
     });
   }
 
   void _onRoomChange() {
     setState(() {
       localParticipant = instance.room.localParticipant;
+      remoteParticipants = instance.room.remoteParticipants.values.toList();
     });
   }
 
