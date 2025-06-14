@@ -94,6 +94,14 @@ class PageViewTabsScreen extends StatefulWidget {
 }
 
 class TabsScreen extends State<PageViewTabsScreen> {
+
+  Color darkenColor(Color color, double amount) {
+    assert(amount >= 0 && amount <= 1);
+    final hsl = HSLColor.fromColor(color);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+    return hslDark.toColor();
+  }
+
   TabsScreen();
   final AuthContext instance = AuthContext();
   late List<dynamic> theme;
@@ -159,7 +167,16 @@ class TabsScreen extends State<PageViewTabsScreen> {
             } catch (e) {
               // print(e);
             }
-            return PageView(
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: FractionalOffset.topLeft,
+                  end: FractionalOffset.bottomRight,
+                  colors: instance.theme,
+                  stops: const [0.0, 1.0],
+                ),
+              ),
+              child: PageView(
               controller: provider.pageController,
               scrollDirection: Axis.horizontal,
               physics: provider.selectedIndex == 0 && provider.userData.isNotEmpty ? ClampingScrollPhysics() : NeverScrollableScrollPhysics(),
@@ -171,11 +188,11 @@ class TabsScreen extends State<PageViewTabsScreen> {
                     onTap: (value) {
                       provider.setSelectedIndex(value);
                     },
-                    unselectedLabelStyle: const TextStyle(
-                        color: Color.fromARGB(255, 200, 200, 200)),
-                    unselectedItemColor: const Color.fromARGB(255, 200, 200, 200),
-                    selectedLabelStyle: TextStyle(color: instance.theme[1]),
-                    selectedItemColor: instance.theme[1],
+                    unselectedLabelStyle: TextStyle(
+                        color: instance.getTextColor(instance.theme[0])[1]),
+                    unselectedItemColor: Colors.white70,
+                    selectedLabelStyle: TextStyle(color: Colors.white),
+                    selectedItemColor: Colors.white,
                     items: const <BottomNavigationBarItem>[
                       BottomNavigationBarItem(
                         icon: Icon(Icons.home),
@@ -192,7 +209,7 @@ class TabsScreen extends State<PageViewTabsScreen> {
                         label: 'アカウント',
                       ),
                     ],
-                    backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+                    backgroundColor: darkenColor(instance.theme[1],.01)
                   ),
                   body: IndexedStack(
                     key:GlobalKey(),
@@ -211,7 +228,7 @@ class TabsScreen extends State<PageViewTabsScreen> {
                   snapshot: snapshot,
                 )
               ]
-            );
+            ));
           }
         );
       },
