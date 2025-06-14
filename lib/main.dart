@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 late drive.DriveApi googleDriveApi;
 bool failed = false;
@@ -177,7 +178,14 @@ class _LoginPageState extends State<MyHomePage> {
       authContext.googleDriveApi = googleDriveApi;
       authContext.userCredential = userCredential;
       await authContext.getTheme();
-      if (userCredential.additionalUserInfo!.isNewUser) {
+
+      // Check if user exists in Firestore
+      final userDoc = await FirebaseFirestore.instance
+          .collection('user_account')
+          .doc(authContext.id)
+          .get();
+
+      if (userCredential.additionalUserInfo!.isNewUser || !userDoc.exists) {
         // 新規ユーザーの場合
         await authContext.startSession();
         Navigator.push(
