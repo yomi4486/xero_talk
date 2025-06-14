@@ -7,8 +7,7 @@ import 'package:camera/camera.dart';
 
 class ParticipantWidget extends StatefulWidget {
   final Participant participant;
-  final String userId;
-  ParticipantWidget(this.participant, this.userId);
+  ParticipantWidget(this.participant);
 
   @override
   State<StatefulWidget> createState() {
@@ -69,7 +68,7 @@ class _ParticipantState extends State<ParticipantWidget> {
             margin: const EdgeInsets.all(100),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(100.0),
-              child: UserIcon(userId: widget.userId),
+              child: UserIcon(userId: widget.participant.identity),
             ),
           ),
         ],
@@ -299,7 +298,6 @@ class _VoiceChatState extends State<VoiceChat> {
                             children: [
                               ParticipantWidget(
                                 _selectedParticipant!,
-                                _selectedParticipant == localParticipant ? instance.id : widget.roomInfo.userId,
                               ),
                               if (_selectedParticipant == localParticipant)
                                 Positioned(
@@ -364,7 +362,6 @@ class _VoiceChatState extends State<VoiceChat> {
                                 children: [
                                   ParticipantWidget(
                                     participant,
-                                    isLocal ? instance.id : widget.roomInfo.userId,
                                   ),
                                   if (isLocal)
                                     Positioned(
@@ -437,7 +434,6 @@ class _VoiceChatState extends State<VoiceChat> {
                             children: [
                               ParticipantWidget(
                                 participant,
-                                isLocal ? instance.id : widget.roomInfo.userId,
                               ),
                               if (isLocal)
                                 Positioned(
