@@ -31,6 +31,13 @@ class _AccountPage extends State<AccountPage> {
     super.dispose();
   }
 
+  Color darkenColor(Color color, double amount) {
+    assert(amount >= 0 && amount <= 1);
+    final hsl = HSLColor.fromColor(color);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+    return hslDark.toColor();
+  }
+
   final nowDt = DateTime.now().millisecondsSinceEpoch;
 
   Future upload(String token) async {
@@ -87,7 +94,16 @@ class _AccountPage extends State<AccountPage> {
               displayName = "";
             }
           }
-          return Scaffold(
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: FractionalOffset.topLeft,
+                end: FractionalOffset.bottomRight,
+                colors: instance.theme,
+                stops: const [0.0, 1.0],
+              ),
+            ),
+            child:Scaffold(
             appBar: AppBar(
               centerTitle: false,
               automaticallyImplyLeading: false,
@@ -97,7 +113,7 @@ class _AccountPage extends State<AccountPage> {
                   )),
               titleTextStyle: const TextStyle(
                   color: Color.fromARGB(255, 255, 255, 255), fontSize: 20),
-              backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+              backgroundColor: darkenColor(const Color.fromARGB(255, 68, 68, 68),0.2).withOpacity(.1),
               actions: [
                 Container(
                   padding: const EdgeInsets.only(right: 10),
@@ -148,248 +164,247 @@ class _AccountPage extends State<AccountPage> {
                     ),
                   )
                 : null,
-            backgroundColor: widget.defaultColor,
+            backgroundColor: Colors.transparent,
             body: SafeArea(
-              child: DecoratedBox(
-                  decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 22, 22, 22)),
-                  child: Column(children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Container(
-                          margin: const EdgeInsets.all(30),
-                          child: Column(children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Column(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () async {
-                                        String? token = await FirebaseAuth
-                                            .instance.currentUser
-                                            ?.getIdToken();
-                                        await upload('$token');
-                                        instance.deleteImageCache(id:instance.id);
-                                        setState((){});
-                                      },
-                                      child:
-                                      Stack(children:[
-                                      ClipRRect(
-                                        // アイコン表示（角丸）
-                                        borderRadius:
-                                            BorderRadius.circular(1000),
-                                        child: UserIcon(userId: profile?["sub"],size:MediaQuery.of(context).size.width * 0.2)
-                                      ),
-                                      Positioned(
-                                        bottom: 0,
-                                        right: 0,
-                                        child: Material(
-                                        color:Colors.black,
-                                        elevation:4,
-                                        shape: CircleBorder(),
-                                        child:Container(
-                                            padding: const EdgeInsets.all(3),
-                                            decoration: const BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              color: Color.fromARGB(255, 222, 222, 222),
-                                            ),
-                                            child: const Icon(
-                                              Icons.edit,
-                                              color: Color.fromARGB(255, 0, 0, 0),
-                                            ),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+                child: Column(children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: Container(
+                        margin: const EdgeInsets.all(30),
+                        child: Column(children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () async {
+                                      String? token = await FirebaseAuth
+                                          .instance.currentUser
+                                          ?.getIdToken();
+                                      await upload('$token');
+                                      instance.deleteImageCache(id:instance.id);
+                                      setState((){});
+                                    },
+                                    child:
+                                    Stack(children:[
+                                    ClipRRect(
+                                      // アイコン表示（角丸）
+                                      borderRadius:
+                                          BorderRadius.circular(1000),
+                                      child: UserIcon(userId: profile?["sub"],size:MediaQuery.of(context).size.width * 0.2)
+                                    ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Material(
+                                      color:Colors.black,
+                                      elevation:4,
+                                      shape: CircleBorder(),
+                                      child:Container(
+                                          padding: const EdgeInsets.all(3),
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Color.fromARGB(255, 222, 222, 222),
+                                          ),
+                                          child: const Icon(
+                                            Icons.edit,
+                                            color: Color.fromARGB(255, 0, 0, 0),
                                           ),
                                         ),
                                       ),
-                                    ]),
                                     ),
-                                  ],
-                                ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children:[
-                                    SizedBox(
-                                      // ニックネーム設定フォーム
-                                      child: Container(
-                                        width:MediaQuery.of(context).size.width * 0.6,
-                                        margin: const EdgeInsets.only(left: 10),
-                                        child: Column(
-                                          children: [
-                                            TextField(
-                                              controller: TextEditingController(
-                                                text: displayName
-                                              ),
-                                              style: const TextStyle(
+                                  ]),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children:[
+                                  SizedBox(
+                                    // ニックネーム設定フォーム
+                                    child: Container(
+                                      width:MediaQuery.of(context).size.width * 0.6,
+                                      margin: const EdgeInsets.only(left: 10),
+                                      child: Column(
+                                        children: [
+                                          TextField(
+                                            controller: TextEditingController(
+                                              text: displayName
+                                            ),
+                                            style: const TextStyle(
+                                              color: Color.fromARGB(
+                                                  255, 255, 255, 255),
+                                              fontSize: 16,
+                                            ),
+                                            decoration: const InputDecoration(
+                                              hintText: 'ニックネーム',
+                                              labelStyle: TextStyle(
                                                 color: Color.fromARGB(
                                                     255, 255, 255, 255),
                                                 fontSize: 16,
                                               ),
-                                              decoration: const InputDecoration(
-                                                hintText: 'ニックネーム',
-                                                labelStyle: TextStyle(
-                                                  color: Color.fromARGB(
-                                                      255, 255, 255, 255),
-                                                  fontSize: 16,
-                                                ),
-                                                hintStyle: TextStyle(
-                                                  color: Color.fromARGB(
-                                                      255, 255, 255, 255),
-                                                  fontSize: 16,
-                                                )
-                                              ),
-                                              onChanged: (text) {
-                                                displayName = text;
-                                                if (!_showFab) {
-                                                  _showFab = true;
-                                                }
-                                              },
-                                              onTapOutside: (f) {
-                                                FocusScope.of(context).unfocus();
-                                              },
-                                            ),      
-                                          ]
-                                        )
+                                              hintStyle: TextStyle(
+                                                color: Color.fromARGB(
+                                                    255, 255, 255, 255),
+                                                fontSize: 16,
+                                              )
+                                            ),
+                                            onChanged: (text) {
+                                              displayName = text;
+                                              if (!_showFab) {
+                                                _showFab = true;
+                                              }
+                                            },
+                                            onTapOutside: (f) {
+                                              FocusScope.of(context).unfocus();
+                                            },
+                                          ),      
+                                        ]
                                       )
-                                    ),
-                                    Container(
-                                      margin: const EdgeInsets.only(left: 10,top: 7),
-                                      child:Text("@$userName",style: TextStyle(color: Colors.white70),)
                                     )
-                                  ]
-                                )
-                              ],
-                            ),
-                          ]
-                        )
-                      ),
+                                  ),
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 10,top: 7),
+                                    child:Text("@$userName",style: TextStyle(color: Colors.white70),)
+                                  )
+                                ]
+                              )
+                            ],
+                          ),
+                        ]
+                      )
                     ),
-                    SizedBox(
-                        child: Container(
-                      margin: const EdgeInsets.only(left: 30, right: 30),
-                      child: TextField(
-                          controller: TextEditingController(text: description),
-                          keyboardType: TextInputType.multiline,
-                          maxLines: null,
-                          style: const TextStyle(
+                  ),
+                  SizedBox(
+                      child: Container(
+                    margin: const EdgeInsets.only(left: 30, right: 30),
+                    child: TextField(
+                        controller: TextEditingController(text: description),
+                        keyboardType: TextInputType.multiline,
+                        maxLines: null,
+                        style: const TextStyle(
+                          color: Color.fromARGB(255, 255, 255, 255),
+                          fontSize: 16,
+                        ),
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: '',
+                          labelText: '自己紹介',
+                          labelStyle: TextStyle(
                             color: Color.fromARGB(255, 255, 255, 255),
                             fontSize: 16,
                           ),
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
-                            hintText: '',
-                            labelText: '自己紹介',
-                            labelStyle: TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontSize: 16,
-                            ),
-                            hintStyle: TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontSize: 16,
-                            ),
-                            filled: true,
-                            fillColor: Color.fromARGB(16, 255, 255, 255),
+                          hintStyle: TextStyle(
+                            color: Color.fromARGB(255, 255, 255, 255),
+                            fontSize: 16,
                           ),
-                          onChanged: (text) {
-                            description = text;
-                            if (!_showFab) {
-                              _showFab = true;
-                            }
-                          },
-                          onTapOutside: (f) {
-                            FocusScope.of(context).unfocus();
-                          },),
-                    )),
-                    GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (BuildContext context) {
-                              return Container(
-                                height: MediaQuery.of(context).size.height * 0.9,
-                                decoration: const BoxDecoration(
-                                  color: Color.fromARGB(255, 22, 22, 22),
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: Radius.circular(20.0),
-                                    topRight: Radius.circular(20.0),
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                      decoration: const BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            color: Color.fromARGB(255, 40, 40, 40),
-                                            width: 1,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          IconButton(
-                                            onPressed: () => Navigator.pop(context),
-                                            icon: const Icon(Icons.close, color: Colors.white),
-                                          ),
-                                          const Text(
-                                            'フレンド',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 40), // バランスを取るための空のスペース
-                                        ],
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: FriendsScreen(),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          );
+                          filled: true,
+                          fillColor: Color.fromARGB(16, 255, 255, 255),
+                        ),
+                        onChanged: (text) {
+                          description = text;
+                          if (!_showFab) {
+                            _showFab = true;
+                          }
                         },
-                        child: Container(
-                            margin: const EdgeInsets.all(30),
-                            child: GestureDetector(
-                                child: Container(
+                        onTapOutside: (f) {
+                          FocusScope.of(context).unfocus();
+                        },),
+                  )),
+                  GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (BuildContext context) {
+                            return Container(
+                              height: MediaQuery.of(context).size.height * 0.9,
+                              decoration: const BoxDecoration(
+                                color: Color.fromARGB(255, 22, 22, 22),
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(20.0),
+                                  topRight: Radius.circular(20.0),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                     decoration: const BoxDecoration(
-                                        color: Color.fromARGB(
-                                          16,
-                                          255,
-                                          255,
-                                          255,
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: Color.fromARGB(255, 40, 40, 40),
+                                          width: 1,
                                         ),
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(10))),
-                                    padding: const EdgeInsets.only(
-                                        left: 14, right: 14,top:12,bottom:12),
+                                      ),
+                                    ),
                                     child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        const Text("フレンド",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            )),
-                                        Icon(
-                                          Icons.arrow_forward,
-                                          color: Colors.white.withOpacity(.5),
-                                        )
+                                        IconButton(
+                                          onPressed: () => Navigator.pop(context),
+                                          icon: const Icon(Icons.close, color: Colors.white),
+                                        ),
+                                        const Text(
+                                          'フレンド',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 40), // バランスを取るための空のスペース
                                       ],
-                                    ))))),
-                  ] //childlen 画面全体
-                      )),
-            ),
-          );
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: FriendsScreen(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      child: Container(
+                          margin: const EdgeInsets.all(30),
+                          child: GestureDetector(
+                              child: Container(
+                                  decoration: const BoxDecoration(
+                                      color: Color.fromARGB(
+                                        16,
+                                        255,
+                                        255,
+                                        255,
+                                      ),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10))),
+                                  padding: const EdgeInsets.only(
+                                      left: 14, right: 14,top:12,bottom:12),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text("フレンド",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          )),
+                                      Icon(
+                                        Icons.arrow_forward,
+                                        color: Colors.white.withOpacity(.5),
+                                      )
+                                    ],
+                                  )))))
+                ] //childlen 画面全体
+                    )),
+          )));
         },
       ),
     );
