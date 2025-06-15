@@ -43,7 +43,6 @@ Future<void> initializeFirebase() async {
       ),
     );
   }else{
-    print("mobile");
     await Firebase.initializeApp();
   }
 }
