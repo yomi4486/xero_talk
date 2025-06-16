@@ -9,20 +9,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 final AuthContext instance = AuthContext();
 const Uuid uuid = Uuid();
 
-Future<String> createRoom() async {
-  String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-  final response = await http.post(
-      Uri.parse("https://${dotenv.env['BASE_URL']}/voiceclient"),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8'
-      },
-      body: convert.jsonEncode(<String, String>{'token': token!}));
-  if (response.statusCode != 200) {
-    print('Request failed with status: ${response.statusCode}');
-  }
-  return response.body.toString();
-}
-
 void call(String to_user_id) async {
   final sendBody = {
     "type": "call",
@@ -44,13 +30,14 @@ void call(String to_user_id) async {
 }
 
 Future<String> getRoom(String roomId) async {
+  print(roomId);
   String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
   final response = await http.get(
       Uri.parse("https://${dotenv.env['BASE_URL']}/voiceclient"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'token':token!,
-        'room_id':roomId
+        'roomId':roomId
       }
   );
   if (response.statusCode != 200) {

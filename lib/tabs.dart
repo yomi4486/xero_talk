@@ -11,6 +11,7 @@ import 'package:xero_talk/chat.dart';
 import 'package:xero_talk/utils/get_user_profile.dart';
 import 'package:xero_talk/utils/chat_file_manager.dart';
 import 'dart:convert' as convert;
+import 'dart:async';
 
 class TabsProvider with ChangeNotifier {
   final PageController pageController = PageController(keepPage: true,initialPage: 0);
@@ -94,6 +95,54 @@ class PageViewTabsScreen extends StatefulWidget {
 }
 
 class TabsScreen extends State<PageViewTabsScreen> {
+  bool _isShowingDisconnectSnackBar = false;
+  Timer? _connectionTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    oneColor = instance.theme[0];
+    twoColor = instance.theme[1];
+    _startConnectionMonitoring();
+  }
+
+  void _startConnectionMonitoring() {
+    _connectionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final authContext = AuthContext();
+      if (authContext.channel.readyState != 1) {
+        if (!_isShowingDisconnectSnackBar) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('サーバーとの接続が失われました。再接続を試みています...'),
+              duration: Duration(days: 1),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          _isShowingDisconnectSnackBar = true;
+        }
+      } else if (_isShowingDisconnectSnackBar) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('再接続に成功しました！'),
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        _isShowingDisconnectSnackBar = false;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectionTimer?.cancel();
+    if (_isShowingDisconnectSnackBar) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    }
+    super.dispose();
+  }
 
   Color darkenColor(Color color, double amount) {
     assert(amount >= 0 && amount <= 1);
@@ -119,18 +168,6 @@ class TabsScreen extends State<PageViewTabsScreen> {
 
   late Color oneColor;
   late Color twoColor;
-
-  @override
-  void initState() {
-    super.initState();
-    oneColor = instance.theme[0];
-    twoColor = instance.theme[1];
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 
   final GlobalKey _streamKey = GlobalKey();
 
