@@ -15,6 +15,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 
 late drive.DriveApi googleDriveApi;
 bool failed = false;
@@ -79,6 +80,7 @@ class MyApp extends StatelessWidget {
             seedColor: const Color.fromARGB(255, 22, 22, 22)),
         useMaterial3: true,
       ),
+      scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
       home: const MyHomePage(),
     );
   }
@@ -92,6 +94,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<MyHomePage> {
+  bool failed = false;
+
   void signInWithGoogle(bool isExistUser) async {
     try {
       final authContext = AuthContext();

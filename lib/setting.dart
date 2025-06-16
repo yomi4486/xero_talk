@@ -19,7 +19,9 @@ class _SettingPage extends State<SettingPage> {
   late List<dynamic> theme;
 
   String colorToHex(Color color) {
-    return '#${color.value.toRadixString(16).toUpperCase().padLeft(8, '0')}';
+    // アルファ値を255（FF）に固定し、RGB値のみを取得
+    final rgb = color.withAlpha(255);
+    return '#${rgb.value.toRadixString(16).toUpperCase().padLeft(8, '0')}';
   }
 
   Color hexToColor(String hexColor) {
