@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 /// アプリ全体の状態管理を担うクラス
 class AuthContext extends ChangeNotifier {
@@ -38,9 +39,10 @@ class AuthContext extends ChangeNotifier {
   late String showChatId;
   bool showBottomBar = true;
   List<Color> theme = const [
-    Color.fromARGB(204, 228, 169, 114),
-    Color.fromARGB(204, 153, 65, 216)
+    Color.fromARGB(255, 228, 169, 114),
+    Color.fromARGB(255, 153, 65, 216)
   ];
+  StreamSubscription? _connectivitySubscription;
 
   Future<void> startSession() async {
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
@@ -109,6 +111,17 @@ class AuthContext extends ChangeNotifier {
   }
 
   Future checkConnection() async {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) async {
+      if (results.isNotEmpty && results.first != ConnectivityResult.none) {
+        print('Network reconnected: ${results.first}');
+        try {
+          await restoreConnection();
+        } catch (e) {
+          print('Error restoring connection on network change: $e');
+        }
+      }
+    });
+
     Timer.periodic(const Duration(seconds: 1), (timer) async {
       if (channel.readyState != 1) {
         try {
@@ -123,6 +136,7 @@ class AuthContext extends ChangeNotifier {
   Future logout() async {
     try {
       inHomeScreen = false;
+      await _connectivitySubscription?.cancel();
       final googleSignIn = GoogleSignIn();
       await channel.close();
       await googleSignIn.signOut();

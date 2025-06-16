@@ -68,6 +68,7 @@ dependencies:
   permission_handler: ^11.3.0
   hive_flutter: ^1.1.0
   camera: ^0.10.5+9
+  connectivity_plus: ^6.0.1
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1

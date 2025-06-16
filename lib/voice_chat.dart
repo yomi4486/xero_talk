@@ -110,6 +110,7 @@ class _VoiceChatState extends State<VoiceChat> {
   bool micAvailable = false;
   bool cameraAvailable = false;
   late final EventsListener<RoomEvent> _listener;
+  bool _isFrontCamera = true;
 
   Participant? localParticipant;
   List<Participant> remoteParticipants = [];
@@ -178,6 +179,13 @@ class _VoiceChatState extends State<VoiceChat> {
     }
   }
 
+  Future<void> _switchCamera() async {
+    if (instance.room.localParticipant != null) {
+      // カメラを切り替えて有効化
+     setState(() {_isFrontCamera = !_isFrontCamera;});
+    }
+  }
+
   void _initializeRoom() async {
     instance.room = Room(roomOptions: roomOptions);
     _listener = instance.room.createListener();
@@ -213,7 +221,7 @@ class _VoiceChatState extends State<VoiceChat> {
       
       // カメラが使用可能な場合のみカメラを有効化
       if (cameraAvailable) {
-        await instance.room.localParticipant?.setCameraEnabled(false);
+        await instance.room.localParticipant?.setCameraEnabled(false,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
       }
       await instance.room.localParticipant?.setMicrophoneEnabled(true);
 
@@ -484,9 +492,9 @@ class _VoiceChatState extends State<VoiceChat> {
                           child: IconButton(
                             onPressed: cameraAvailable ? () async {
                               if (instance.room.localParticipant?.isCameraEnabled() ?? false) {
-                                await instance.room.localParticipant?.setCameraEnabled(false);
+                                await instance.room.localParticipant?.setCameraEnabled(false,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
                               } else {
-                                await instance.room.localParticipant?.setCameraEnabled(true);
+                                await instance.room.localParticipant?.setCameraEnabled(true,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
                               }
                               setState(() {});
                             } : null,
@@ -515,6 +523,30 @@ class _VoiceChatState extends State<VoiceChat> {
                         ),
                       ),
                     ),
+                    // カメラ切り替えボタンを追加
+                    if (cameraAvailable && (instance.room.localParticipant?.isCameraEnabled() ?? false))
+                      Material(
+                        color: Colors.black.withOpacity(.5),
+                        elevation: 12,
+                        shape: const CircleBorder(),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(100.0),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.15,
+                            height: MediaQuery.of(context).size.width * 0.15,
+                            color: textColor[0].withOpacity(.5),
+                            child: IconButton(
+                              onPressed: () async {
+                                await _switchCamera();
+                              },
+                              icon: Icon(
+                                Icons.cameraswitch,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     Material(
                       elevation: 12,
                       shape: const CircleBorder(),
