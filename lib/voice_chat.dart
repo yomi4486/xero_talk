@@ -110,7 +110,7 @@ class _VoiceChatState extends State<VoiceChat> {
   bool micAvailable = false;
   bool cameraAvailable = false;
   late final EventsListener<RoomEvent> _listener;
-  bool _isFrontCamera = true;
+  bool _isFrontCamera = false;
 
   Participant? localParticipant;
   List<Participant> remoteParticipants = [];
