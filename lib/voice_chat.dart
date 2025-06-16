@@ -179,13 +179,6 @@ class _VoiceChatState extends State<VoiceChat> {
     }
   }
 
-  Future<void> _switchCamera() async {
-    if (instance.room.localParticipant != null) {
-      // カメラを切り替えて有効化
-     setState(() {_isFrontCamera = !_isFrontCamera;});
-    }
-  }
-
   void _initializeRoom() async {
     instance.room = Room(roomOptions: roomOptions);
     _listener = instance.room.createListener();
@@ -537,7 +530,13 @@ class _VoiceChatState extends State<VoiceChat> {
                             color: textColor[0].withOpacity(.5),
                             child: IconButton(
                               onPressed: () async {
-                                await _switchCamera();
+                                _isFrontCamera = !_isFrontCamera;
+                                print("==============");
+                                print(_isFrontCamera);
+                                print("==============");
+                                await instance.room.localParticipant?.setCameraEnabled(false);
+                                await instance.room.localParticipant?.setCameraEnabled(true,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
+                                setState((){});
                               },
                               icon: Icon(
                                 Icons.cameraswitch,
