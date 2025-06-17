@@ -320,7 +320,10 @@ class _MessageScreenState extends State<MessageScreen> {
         Color.lerp(instance.theme[0], instance.theme[1], .5)!;
     final List<Color> textColor = instance.getTextColor(backgroundColor);
     if(widget.snapshot.data == null) {
-      return Column(children: returnWidget);
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: returnWidget
+      );
     }
     final content = convert.json.decode(widget.snapshot.data);
     final a = FirebaseFirestore.instance
@@ -331,9 +334,15 @@ class _MessageScreenState extends State<MessageScreen> {
           future: a.get(),
           builder: (context, AsyncSnapshot<DocumentSnapshot> docSnapshot) {
             if (docSnapshot.connectionState == ConnectionState.waiting) {
-              //　取得中
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: returnWidget
+              );
             } else if (docSnapshot.hasError) {
-              // エラー
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: returnWidget
+              );
             } else if (docSnapshot.hasData) {
               final String type = content["type"];
 
@@ -346,6 +355,7 @@ class _MessageScreenState extends State<MessageScreen> {
               }
               if (content["author"] != instance.id && content["author"]  != widget.channelInfo['id']){ 
                 return Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: returnWidget,
                 );
               }
@@ -360,17 +370,24 @@ class _MessageScreenState extends State<MessageScreen> {
                 // 自分の削除操作かどうかを確認
                 final bool isLocalDelete = content["author"] == instance.id;
                 removeWidget(messageId, isLocalDelete: isLocalDelete);
-                return Column(children: returnWidget);
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: returnWidget
+                );
               }
               if (type == "edit_message") {
                 // 自分のメッセージかどうかを確認
                 final bool isLocalEdit = content["author"] == instance.id;
                 editWidget(messageId, content["content"], isLocalEdit: isLocalEdit);
-                return Column(children: returnWidget);
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: returnWidget
+                );
               }
 
               if ((type == "send_message" || type == "call") && lastMessageId == messageId) { //　同じストリームが流れてきた時は無視
                 return Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: returnWidget,
                 );
               }
@@ -456,7 +473,10 @@ class _MessageScreenState extends State<MessageScreen> {
                 });
               }
             }
-            return Column(children: returnWidget);
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: returnWidget
+            );
           },
         );
   }
