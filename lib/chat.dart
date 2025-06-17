@@ -115,9 +115,16 @@ class _chat extends State<chat> {
     final double baseBottomBarHeight = MediaQuery.of(context).size.height * 0.1799;
     final double imagePreviewHeight = images.isNotEmpty ? 116.0 : 0.0; // 100px + 16px margin
     final double bottomBarHeight = baseBottomBarHeight + imagePreviewHeight;
-
+    var offset = MediaQuery.of(context).viewInsets.bottom;
+    print(offset);
+    if(_scrollController.hasClients){
+      _scrollController.jumpTo(
+        _scrollController.offset+offset,
+      );
+    }
     return Stack(children: [
       Scaffold(
+        resizeToAvoidBottomInset: true,
         bottomSheet: BottomAppBar(
           surfaceTintColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -587,12 +594,11 @@ class _chat extends State<chat> {
             ],
           ),
         ),
-        height: double.infinity,
-        width: double.infinity,
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
+            Expanded(child:Stack(
               clipBehavior: Clip.none,
               children: [
                 Column(
@@ -604,44 +610,41 @@ class _chat extends State<chat> {
                           MediaQuery.of(context).size.height,
                       child: Container(
                           margin: EdgeInsets.only(
-                              left: 30,
-                              right: 30,
-                              bottom: bottomBarHeight+118),
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              return SingleChildScrollView(
-                                controller: _scrollController,
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    minHeight: constraints.maxHeight,
-                                  ),
-                                  child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.end,
-                                      children: [
-                                        MessageScreen(
-                                            focusNode: focusNode,
-                                            scrollController:
-                                                _scrollController,
-                                            channelInfo: channelInfo,
-                                            fieldText: fieldText,
-                                            EditMode: chatScreenProvider.editMode,
-                                            ImageControler:
-                                                chatScreenProvider.visibleImage,
-                                            snapshot: widget.snapshot
-                                        ) // コントローラーやノードの状態をストリームの描画部分と共有
-                                      ]
-                                    ),
-                                  ),
-                                );
-                              },
+                            left: 30,
+                            right: 30,
+                            bottom: bottomBarHeight+118+offset),
+                            child: SingleChildScrollView(
+                              controller: _scrollController,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: MediaQuery.of(context).size.height,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.end,
+                                  children: [
+                                    MessageScreen(
+                                        focusNode: focusNode,
+                                        scrollController:
+                                            _scrollController,
+                                        channelInfo: channelInfo,
+                                        fieldText: fieldText,
+                                        EditMode: chatScreenProvider.editMode,
+                                        ImageControler:
+                                            chatScreenProvider.visibleImage,
+                                        snapshot: widget.snapshot,
+                                    )
+                                  ]
+                                ),
+                              ),
                             )
                           ),
                         )
                       ] // childlen 画面全体
                     )
                   ]
-                )
+                ),
+                ),
               ],
             )
           ),
