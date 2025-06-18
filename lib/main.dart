@@ -16,6 +16,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 late drive.DriveApi googleDriveApi;
 bool failed = false;
@@ -26,6 +27,17 @@ Future<void> _initializeAndroidAudioSettings() async {
   });
   webrtc.Helper.setAndroidAudioConfiguration(
       webrtc.AndroidAudioConfiguration.media);
+}
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Firebase初期化が必要な場合（Isolateの実行環境による）
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
+  print("Handling a background message: ${message.messageId}");
+  if (message.notification != null) {
+    print('Background message contained a notification: ${message.notification!.title} / ${message.notification!.body}');
+  }
+  // ここでバックグラウンドでの処理（ローカル通知の表示など）
 }
 
 Future<void> initializeFirebase() async {
@@ -55,6 +67,27 @@ void main() async {
   await initializeFirebase();
   await _initializeAndroidAudioSettings();
   await dotenv.load();
+  final messaging = FirebaseMessaging.instance;
+  await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Got a message whilst in the foreground!');
+    print('Message data: ${message.data}');
+
+    if (message.notification != null) {
+      print('Message also contained a notification: ${message.notification!.title} / ${message.notification!.body}');
+      // ここでローカル通知を表示するなどの処理を実装
+    }
+  });
+
   runApp(
     MultiProvider(
       providers: [
@@ -187,6 +220,15 @@ class _LoginPageState extends State<MyHomePage> {
           .collection('user_account')
           .doc(authContext.id)
           .get();
+
+      final messaging = FirebaseMessaging.instance;
+
+      final fcmToken = await messaging.getToken();
+
+      await FirebaseFirestore.instance
+          .collection('fcm_token')
+          .doc(authContext.id)
+          .set({"fcm_token": fcmToken}, SetOptions(merge: true));
 
       if (userCredential.additionalUserInfo!.isNewUser || !userDoc.exists) {
         // 新規ユーザーの場合
