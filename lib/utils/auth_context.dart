@@ -111,6 +111,7 @@ class AuthContext extends ChangeNotifier {
   }
 
   Future checkConnection() async {
+    print(id);
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) async {
       if (results.isNotEmpty && results.first != ConnectivityResult.none) {
         print('Network reconnected: ${results.first}');
