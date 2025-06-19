@@ -12,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart' show MqttQos, MqttConnectionState;
 import 'package:typed_data/typed_buffers.dart';
 import 'dart:typed_data';
+import 'package:image/image.dart' as img;
 
 const Uuid uuid = Uuid();
 
@@ -26,7 +27,16 @@ Future<void> sendMessage(String? text, String channelId,
     for (String base64Image in imageList) {
       try {
         Uint8List imageData = base64Decode(base64Image);
-        String fileName = 'attachments/${uuid.v4()}.png'; // Unique filename for Firebase Storage
+
+        // 圧縮処理
+        img.Image? decodedImage = img.decodeImage(imageData);
+        if (decodedImage != null) {
+          // 最大幅512pxにリサイズし、JPEGで80%品質で圧縮
+          final compressed = img.encodeJpg(decodedImage, quality: 50);
+          imageData = Uint8List.fromList(compressed);
+        }
+
+        String fileName = 'attachments/${uuid.v4()}.jpg'; // 拡張子もjpgに
         Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
         UploadTask uploadTask = storageRef.putData(imageData);
         TaskSnapshot snapshot = await uploadTask;
