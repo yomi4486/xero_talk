@@ -137,19 +137,22 @@ class _MessageScreenState extends State<MessageScreen> {
     }
   }
 
-  void addWidget(Widget newWidget, double currentPosition) {
+  void addWidget(Widget newWidget, double currentPosition, {bool shouldScroll = true}) {
     returnWidget.add(newWidget);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.scrollController.jumpTo(currentPosition);
-      widget.scrollController.animateTo(
-        widget.scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-      );
-    });
+    if (shouldScroll) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.scrollController.jumpTo(currentPosition);
+        widget.scrollController.animateTo(
+          widget.scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+        );
+      });
+    }
   }
 
   void removeWidget(String key, {bool isLocalDelete = false}) {
+    print('[DEBUG] removeWidget called for key=$key');
     try {
       // ウィジェットの削除
       returnWidget.removeWhere((widget) {
@@ -166,11 +169,9 @@ class _MessageScreenState extends State<MessageScreen> {
       // チャット履歴からメッセージを削除
       if (chatHistory.containsKey(key)) {
         chatHistory.remove(key);
-        
-        // ローカル削除の場合のみDBを更新
-        if (isLocalDelete) {
-          chatFileManager.deleteMessage(key);
-        }
+        // すべての削除イベントでDBを更新
+        print('[DEBUG] calling chatFileManager.deleteMessage($key)');
+        chatFileManager.deleteMessage(key);
       }
     } catch (e) {
       print("Delete failed: $e");
@@ -178,78 +179,72 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   void editWidget(String key, String content, {bool isLocalEdit = false}) {
-    try {
-      // 既存のメッセージデータを保持
-      final existingMessage = chatHistory[key];
-      if (existingMessage != null) {
-        // 既存のデータを更新
-        final updatedMessage = {
-          ...Map<String, dynamic>.from(existingMessage),
-          "content": content,
-          "edited": true,
-        };
-        chatHistory[key] = updatedMessage;
-        
-        // ローカルの編集の場合のみDBを更新
-        if (isLocalEdit) {
-          chatFileManager.updateMessage(key, updatedMessage);
-        }
-
-        // 表示を更新
-        setState(() {
-          returnWidget = [];
-          for (var entry in chatHistory.entries) {
-            if (entry.value["voice"] == true) {
-              try {
-                final voiceWidget = getVoiceWidget(
-                  context,
-                  entry.key,
-                  {
-                    'author': entry.value['author'],
-                    'room_id': entry.key,
-                    'timestamp': entry.value['timeStamp'],
-                  },
-                  instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
-                );
-                addWidget(voiceWidget, 0);
-              } catch(e) {
-                print('Error creating voice widget: $e');
-              }
-            } else {
-              final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
-                key:ValueKey(entry.key),
-                future: FirebaseFirestore.instance
-                    .collection('user_account')
-                    .doc(entry.value['author'])
-                    .get(),
-                builder: (context, snapshot) {
-                  String displayName = "Unknown";
-                  if (snapshot.hasData && snapshot.data != null) {
-                    final data = snapshot.data!.data() as Map<String, dynamic>?;
-                    displayName = data?['display_name'] ?? "Unknown";
-                  }
-                  return getMessageCard(
-                    context,
-                    widget,
-                    instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
-                    displayName,
-                    getTimeStringFormat(DateTime.fromMillisecondsSinceEpoch(entry.value['timeStamp'])),
-                    entry.value['author'],
-                    entry.value['content'],
-                    entry.value['edited'] ?? false,
-                    entry.value['attachments'] ?? [],
-                    entry.key,
-                    showImage: widget.ImageControler,
-                  );
+    print('[DEBUG] editWidget called for key=$key');
+    // 既存のメッセージデータを保持
+    final existingMessage = chatHistory[key];
+    if (existingMessage != null) {
+      // 既存のデータを更新
+      final updatedMessage = {
+        ...Map<String, dynamic>.from(existingMessage),
+        "content": content,
+        "edited": true,
+      };
+      chatHistory[key] = updatedMessage;
+      // すべての編集イベントでDBを更新
+      print('[DEBUG] calling chatFileManager.updateMessage($key, ...)');
+      chatFileManager.updateMessage(key, updatedMessage);
+      // 表示を更新
+      setState(() {
+        returnWidget = [];
+        for (var entry in chatHistory.entries) {
+          if (entry.value["voice"] == true) {
+            try {
+              final voiceWidget = getVoiceWidget(
+                context,
+                entry.key,
+                {
+                  'author': entry.value['author'],
+                  'room_id': entry.key,
+                  'timestamp': entry.value['timeStamp'],
                 },
+                instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
               );
-              addWidget(chatWidget, 0);
+              addWidget(voiceWidget, 0, shouldScroll: false);
+            } catch(e) {
+              print('Error creating voice widget: $e');
             }
+          } else {
+            final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
+              key:ValueKey(entry.key),
+              future: FirebaseFirestore.instance
+                  .collection('user_account')
+                  .doc(entry.value['author'])
+                  .get(),
+              builder: (context, snapshot) {
+                String displayName = "Unknown";
+                if (snapshot.hasData && snapshot.data != null) {
+                  final data = snapshot.data!.data() as Map<String, dynamic>?;
+                  displayName = data?['display_name'] ?? "Unknown";
+                }
+                return getMessageCard(
+                  context,
+                  widget,
+                  instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
+                  displayName,
+                  getTimeStringFormat(DateTime.fromMillisecondsSinceEpoch(entry.value['timeStamp'])),
+                  entry.value['author'],
+                  entry.value['content'],
+                  entry.value['edited'] ?? false,
+                  entry.value['attachments'] ?? [],
+                  entry.key,
+                  showImage: widget.ImageControler,
+                );
+              },
+            );
+            addWidget(chatWidget, 0, shouldScroll: false);
           }
-        });
-      }
-    } catch (e) {
-      print('Error editing widget: $e');
+        }
+      });
     }
   }
 
@@ -313,12 +308,58 @@ class _MessageScreenState extends State<MessageScreen> {
     return spans;
   }
 
+  // 送信直後にローカルでメッセージを即時追加するためのpublicメソッド
+  void addLocalMessage(Map message) {
+    setState(() {
+      final String messageId = message['id'];
+      chatHistory[messageId] = message;
+      final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(message['timeStamp']);
+      final String displayTime = getTimeStringFormat(dateTime);
+      final instance = Provider.of<AuthContext>(context, listen: false);
+      final textColor = instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!);
+      final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
+        key: ValueKey(messageId),
+        future: FirebaseFirestore.instance
+            .collection('user_account')
+            .doc(message["author"])
+            .get(),
+        builder: (context, snapshot) {
+          String displayName = "Unknown";
+          if (snapshot.hasData && snapshot.data != null) {
+            final data = snapshot.data!.data() as Map<String, dynamic>?;
+            displayName = data?['display_name'] ?? "Unknown";
+          }
+          return getMessageCard(
+            context,
+            widget,
+            textColor,
+            displayName,
+            displayTime,
+            message["author"],
+            message["content"],
+            false,
+            message["attachments"] ?? [],
+            messageId,
+            showImage: widget.ImageControler,
+          );
+        },
+      );
+      addWidget(chatWidget, widget.scrollController.position.pixels);
+      // Firestoreにも即時反映
+      chatFileManager.saveChatHistory({
+        'messages': chatHistory,
+        'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final instance = Provider.of<AuthContext>(context);
     final Color backgroundColor =
         Color.lerp(instance.theme[0], instance.theme[1], .5)!;
     final List<Color> textColor = instance.getTextColor(backgroundColor);
+    print("hello");
     if(widget.snapshot.data == null) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -326,6 +367,7 @@ class _MessageScreenState extends State<MessageScreen> {
       );
     }
     final content = convert.json.decode(widget.snapshot.data);
+    print(content);
     final a = FirebaseFirestore.instance
             .collection('user_account')
             .doc('${content["author"]}');
@@ -367,6 +409,7 @@ class _MessageScreenState extends State<MessageScreen> {
               final String modifiedDateTime = getTimeStringFormat(dateTime);
               bool edited = false;
               if (type == "delete_message") {
+                print('[DEBUG] delete_message event received for $messageId');
                 // 自分の削除操作かどうかを確認
                 final bool isLocalDelete = content["author"] == instance.id;
                 removeWidget(messageId, isLocalDelete: isLocalDelete);
@@ -378,7 +421,9 @@ class _MessageScreenState extends State<MessageScreen> {
               if (type == "edit_message") {
                 // 自分のメッセージかどうかを確認
                 final bool isLocalEdit = content["author"] == instance.id;
-                editWidget(messageId, content["content"], isLocalEdit: isLocalEdit);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  editWidget(messageId, content["content"], isLocalEdit: isLocalEdit);
+                });
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: returnWidget
@@ -395,6 +440,7 @@ class _MessageScreenState extends State<MessageScreen> {
               if (type == "edit_message") {
                 return Column(children: returnWidget);
               } else if(type == "call"){
+                print("来たあああああ");
                 chatHistory[messageId] = {
                   "author": content["author"],
                   "timeStamp": timestamp,
@@ -413,7 +459,9 @@ class _MessageScreenState extends State<MessageScreen> {
                   'lastUpdated': DateTime.now().millisecondsSinceEpoch,
                 });
                 rootChange() async {
-                  final String accessToken = await getRoom(content["room_id"]);
+                  print("kiteru");
+                  print(content);
+                  final String accessToken = content["token"];
                   if(content["author"]! == instance.id){
                     await Future.delayed(Duration(milliseconds: 0), () {
                       Navigator.push(
@@ -481,3 +529,6 @@ class _MessageScreenState extends State<MessageScreen> {
         );
   }
 }
+
+// _MessageScreenStateを外部から型として使うためのエイリアス
+typedef MessageScreenState = _MessageScreenState;

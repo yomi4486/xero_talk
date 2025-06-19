@@ -363,6 +363,7 @@ Widget getMessageCard(
                                                       255, 255, 10, 10)),
                                             ),
                                             onPressed: () async {
+                                              print('[DEBUG] 削除ボタン押下: $messageId');
                                               await deleteMessage(messageId,
                                                   widget.channelInfo["id"]);
                                               Navigator.pop(context);

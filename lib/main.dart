@@ -232,23 +232,58 @@ class _LoginPageState extends State<MyHomePage> {
 
       if (userCredential.additionalUserInfo!.isNewUser || !userDoc.exists) {
         // 新規ユーザーの場合
-        await authContext.startSession();
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AccountStartup()),
-        );
+        bool connected = await authContext.startSession();
+
+        if (connected) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AccountStartup()),
+          );
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('接続エラー'),
+              content: Text('サーバーに接続できませんでした。ネットワークやサーバー設定を確認してください。'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('OK'),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
       } else if (!authContext.inHomeScreen) {
         //既存ユーザーの場合
-        await authContext.startSession();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => PageViewTabsScreen()),
-        );
+        bool connected = await authContext.startSession();
+        if (connected) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => PageViewTabsScreen()),
+          );
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('接続エラー'),
+              content: Text('サーバーに接続できませんでした。ネットワークやサーバー設定を確認してください。'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('OK'),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
       }
       authContext.inHomeScreen = true;
       authContext.userCredential = userCredential;
     } catch (e) {
-      print(e);
+      print("SignIn Error: $e");
       setState(() {
         failed = true;
       });
