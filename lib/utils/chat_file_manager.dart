@@ -53,8 +53,9 @@ class ChatFileManager {
   }
 
   Future<void> updateMessage(String messageId, Map<String, dynamic> messageData) async {
+    print('[DEBUG] updateMessage called for messageId=$messageId');
     await _initializeStorageType();
-    
+    print('[DEBUG] storageType=$storageType');
     if (storageType == "Google Drive") {
       await _updateGoogleDriveMessage(messageId, messageData);
     } else {
@@ -69,7 +70,7 @@ class ChatFileManager {
       final docRef = FirebaseFirestore.instance
           .collection('chat_history')
           .doc(_chatId);
-      
+      print("OK");
       // 既存のメッセージを更新
       final doc = await docRef.get();
       if (doc.exists) {
@@ -77,17 +78,21 @@ class ChatFileManager {
         if (data?['messages'] != null) {
           final List<dynamic> messages = List<dynamic>.from(data!['messages']);
           final index = messages.indexWhere((msg) => msg['id'] == messageId);
-          
+          print('[Firestore] updateMessage: messageId=$messageId');
+          print('[Firestore] updateMessage: messages=$messages');
+          print('[Firestore] updateMessage: found index=$index');
           if (index != -1) {
             messages[index] = {
               'id': messageId,
               ...messageData,
             };
-            
             await docRef.update({
               'messages': messages,
               'lastUpdated': DateTime.now().millisecondsSinceEpoch,
             });
+            print('[Firestore] updateMessage: updated message at index $index');
+          } else {
+            print('[Firestore] updateMessage: Message with id $messageId not found in Firestore messages list.');
           }
         }
       }
@@ -355,8 +360,9 @@ class ChatFileManager {
   }
 
   Future<void> deleteMessage(String messageId) async {
+    print('[DEBUG] deleteMessage called for messageId=$messageId');
     await _initializeStorageType();
-    
+    print('[DEBUG] storageType=$storageType');
     if (storageType == "Google Drive") {
       await _deleteFromGoogleDrive(messageId);
     } else {
@@ -378,14 +384,18 @@ class ChatFileManager {
         if (data?['messages'] != null) {
           final List<dynamic> messages = List<dynamic>.from(data!['messages']);
           final index = messages.indexWhere((msg) => msg['id'] == messageId);
-          
+          print('[Firestore] deleteMessage: messageId=$messageId');
+          print('[Firestore] deleteMessage: messages=$messages');
+          print('[Firestore] deleteMessage: found index=$index');
           if (index != -1) {
             messages.removeAt(index);
-            
             await docRef.update({
               'messages': messages,
               'lastUpdated': DateTime.now().millisecondsSinceEpoch,
             });
+            print('[Firestore] deleteMessage: deleted message at index $index');
+          } else {
+            print('[Firestore] deleteMessage: Message with id $messageId not found in Firestore messages list.');
           }
         }
       }

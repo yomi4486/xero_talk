@@ -3,6 +3,8 @@ import 'package:xero_talk/utils/auth_context.dart';
 import 'dart:convert' as convert;
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
+import 'package:mqtt_client/mqtt_client.dart' show MqttQos, MqttConnectionState;
+import 'package:typed_data/typed_buffers.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -16,14 +18,17 @@ void call(String to_user_id) async {
     "channel": to_user_id
   };
   final String data = convert.json.encode(sendBody);
-  if (instance.channel.readyState == 3) {
-    // WebSocketが接続されていない場合
+  if (instance.mqttClient.connectionState != MqttConnectionState.connected) {
     await instance.restoreConnection();
-    instance.channel.add(data);
-    return;
   }
   try {
-    instance.channel.add(data);
+    Uint8Buffer buffer = Uint8Buffer();
+    buffer.addAll(data.codeUnits);
+    instance.mqttClient.publishMessage(
+      'request/call',
+      MqttQos.atMostOnce,
+      buffer,
+    );
   } catch (e) {
     print('送信に失敗：${e}');
   }
@@ -36,12 +41,13 @@ Future<String> getRoom(String roomId) async {
       Uri.parse("https://${dotenv.env['BASE_URL']}/voiceclient"),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
-        'token':token!,
+        'authorization':"Bearer $token",
         'roomId':roomId
       }
   );
+  print(response.body);
   if (response.statusCode != 200) {
     print('Request failed with status: ${response.statusCode}');
   }
-  return response.body.toString();
+  return convert.json.decode(response.body)["token"].toString();
 }
