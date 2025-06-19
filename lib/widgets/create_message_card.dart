@@ -164,7 +164,7 @@ Widget getMessageCard(
                                           attachment,
                                           fit: BoxFit.fitWidth,
                                           errorBuilder: (context, error, stackTrace) {
-                                            print('Error loading image: $error');
+                                            debugPrint('Error loading image: $error');
                                             return Container(
                                               color: Colors.grey[300],
                                               height: 150,
@@ -176,7 +176,7 @@ Widget getMessageCard(
                                           decodeBase64(attachment),
                                           fit: BoxFit.fitWidth,
                                           errorBuilder: (context, error, stackTrace) {
-                                            print('Error loading image: $error');
+                                            debugPrint('Error loading image: $error');
                                             return Container(
                                               color: Colors.grey[300],
                                               height: 150,
@@ -194,7 +194,7 @@ Widget getMessageCard(
                                       final receivedBytes = await consolidateHttpClientResponseBytes(await response.close());
                                       showImage(receivedBytes, true);
                                     } catch (e) {
-                                      print('Failed to load image from URL: $e');
+                                      debugPrint('Failed to load image from URL: $e');
                                     }
                                   } else {
                                     showImage(decodeBase64(attachment), true);
@@ -203,7 +203,7 @@ Widget getMessageCard(
                               },
                             );
                           } catch (e) {
-                            print('Error processing image: $e');
+                            debugPrint('Error processing image: $e');
                             return Container(
                               color: Colors.grey[300],
                               height: 150,
@@ -246,7 +246,7 @@ Widget getMessageCard(
                                               attachment,
                                               fit: BoxFit.cover,
                                               errorBuilder: (context, error, stackTrace) {
-                                                print('Error loading image: $error');
+                                                debugPrint('Error loading image: $error');
                                                 return Container(
                                                   color: Colors.grey[300],
                                                   child: const Icon(Icons.error),
@@ -257,7 +257,7 @@ Widget getMessageCard(
                                               decodeBase64(attachment),
                                               fit: BoxFit.cover,
                                               errorBuilder: (context, error, stackTrace) {
-                                                print('Error loading image: $error');
+                                                debugPrint('Error loading image: $error');
                                                 return Container(
                                                   color: Colors.grey[300],
                                                   child: const Icon(Icons.error),
@@ -273,7 +273,7 @@ Widget getMessageCard(
                                             final receivedBytes = await consolidateHttpClientResponseBytes(await response.close());
                                             showImage(receivedBytes, true);
                                           } catch (e) {
-                                            print('Failed to load image from URL: $e');
+                                            debugPrint('Failed to load image from URL: $e');
                                           }
                                         } else {
                                           showImage(decodeBase64(attachment), true);
@@ -282,7 +282,7 @@ Widget getMessageCard(
                                     },
                                   );
                                 } catch (e) {
-                                  print('Error processing image: $e');
+                                  debugPrint('Error processing image: $e');
                                   return Container(
                                     color: Colors.grey[300],
                                     child: const Icon(Icons.error),
@@ -363,7 +363,6 @@ Widget getMessageCard(
                                                       255, 255, 10, 10)),
                                             ),
                                             onPressed: () async {
-                                              print('[DEBUG] 削除ボタン押下: $messageId');
                                               await deleteMessage(messageId,
                                                   widget.channelInfo["id"]);
                                               Navigator.pop(context);

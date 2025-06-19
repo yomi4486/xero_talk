@@ -143,7 +143,7 @@ class _AccountStartupState extends State<AccountStartup> {
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (context) => PageViewTabsScreen()));
             }).catchError((err) {
-              print(err);
+              debugPrint(err);
             });
           },
           backgroundColor: instance.theme[1],

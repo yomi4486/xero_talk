@@ -85,7 +85,7 @@ class TabsProvider with ChangeNotifier {
         });
       }
     } catch (e) {
-      print('Error saving notification: $e');
+      debugPrint('Error saving notification: $e');
     }
   }
 }
@@ -202,9 +202,7 @@ class TabsScreen extends State<PageViewTabsScreen> {
                 }
                 lastMessageId = messageId;
               }
-            } catch (e) {
-              // print(e);
-            }
+            } catch (_) {}
             return DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

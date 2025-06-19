@@ -94,7 +94,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 );
                 addWidget(voiceWidget, 0);
               }catch(e){
-                print(e);
+                debugPrint(e.toString());
               }
             } else {
               final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
@@ -133,7 +133,7 @@ class _MessageScreenState extends State<MessageScreen> {
         });
       }
     } catch (e) {
-      print('Error loading chat history: $e');
+      debugPrint('Error loading chat history: $e');
     }
   }
 
@@ -152,7 +152,6 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   void removeWidget(String key, {bool isLocalDelete = false}) {
-    print('[DEBUG] removeWidget called for key=$key');
     try {
       // ウィジェットの削除
       returnWidget.removeWhere((widget) {
@@ -161,7 +160,7 @@ class _MessageScreenState extends State<MessageScreen> {
         try {
           return (widget.key as ValueKey).value == key;
         } catch (e) {
-          print("Key type mismatch: ${widget.key.runtimeType}");
+          debugPrint("Key type mismatch: ${widget.key.runtimeType}");
           return false;
         }
       });
@@ -170,16 +169,15 @@ class _MessageScreenState extends State<MessageScreen> {
       if (chatHistory.containsKey(key)) {
         chatHistory.remove(key);
         // すべての削除イベントでDBを更新
-        print('[DEBUG] calling chatFileManager.deleteMessage($key)');
+        debugPrint('[DEBUG] calling chatFileManager.deleteMessage($key)');
         chatFileManager.deleteMessage(key);
       }
     } catch (e) {
-      print("Delete failed: $e");
+      debugPrint("Delete failed: $e");
     }
   }
 
   void editWidget(String key, String content, {bool isLocalEdit = false}) {
-    print('[DEBUG] editWidget called for key=$key');
     // 既存のメッセージデータを保持
     final existingMessage = chatHistory[key];
     if (existingMessage != null) {
@@ -191,7 +189,6 @@ class _MessageScreenState extends State<MessageScreen> {
       };
       chatHistory[key] = updatedMessage;
       // すべての編集イベントでDBを更新
-      print('[DEBUG] calling chatFileManager.updateMessage($key, ...)');
       chatFileManager.updateMessage(key, updatedMessage);
       // 表示を更新
       setState(() {
@@ -211,7 +208,7 @@ class _MessageScreenState extends State<MessageScreen> {
               );
               addWidget(voiceWidget, 0, shouldScroll: false);
             } catch(e) {
-              print('Error creating voice widget: $e');
+              debugPrint('Error creating voice widget: $e');
             }
           } else {
             final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
@@ -359,7 +356,6 @@ class _MessageScreenState extends State<MessageScreen> {
     final Color backgroundColor =
         Color.lerp(instance.theme[0], instance.theme[1], .5)!;
     final List<Color> textColor = instance.getTextColor(backgroundColor);
-    print("hello");
     if(widget.snapshot.data == null) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -367,7 +363,6 @@ class _MessageScreenState extends State<MessageScreen> {
       );
     }
     final content = convert.json.decode(widget.snapshot.data);
-    print(content);
     final a = FirebaseFirestore.instance
             .collection('user_account')
             .doc('${content["author"]}');
@@ -409,7 +404,7 @@ class _MessageScreenState extends State<MessageScreen> {
               final String modifiedDateTime = getTimeStringFormat(dateTime);
               bool edited = false;
               if (type == "delete_message") {
-                print('[DEBUG] delete_message event received for $messageId');
+                debugPrint('[DEBUG] delete_message event received for $messageId');
                 // 自分の削除操作かどうかを確認
                 final bool isLocalDelete = content["author"] == instance.id;
                 removeWidget(messageId, isLocalDelete: isLocalDelete);
@@ -440,7 +435,6 @@ class _MessageScreenState extends State<MessageScreen> {
               if (type == "edit_message") {
                 return Column(children: returnWidget);
               } else if(type == "call"){
-                print("来たあああああ");
                 chatHistory[messageId] = {
                   "author": content["author"],
                   "timeStamp": timestamp,
@@ -459,8 +453,6 @@ class _MessageScreenState extends State<MessageScreen> {
                   'lastUpdated': DateTime.now().millisecondsSinceEpoch,
                 });
                 rootChange() async {
-                  print("kiteru");
-                  print(content);
                   final String accessToken = content["token"];
                   if(content["author"]! == instance.id){
                     await Future.delayed(Duration(milliseconds: 0), () {
