@@ -38,7 +38,7 @@ class _UserIconState extends State<UserIcon> {
       }
       return data;
     } catch (e) {
-      print("Error fetching image: $e");
+      debugPrint("Error fetching image: $e");
       return null;
     }
   }

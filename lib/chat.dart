@@ -120,7 +120,6 @@ class _chat extends State<chat> {
     final double imagePreviewHeight = images.isNotEmpty ? 116.0 : 0.0; // 100px + 16px margin
     final double bottomBarHeight = baseBottomBarHeight + imagePreviewHeight;
     var offset = MediaQuery.of(context).viewInsets.bottom;
-    print(offset);
     if(_scrollController.hasClients){
       _scrollController.jumpTo(
         _scrollController.offset+offset,

@@ -33,7 +33,7 @@ Future<void> sendMessage(String? text, String channelId,
         String downloadUrl = await snapshot.ref.getDownloadURL();
         uploadedImageUrls.add(downloadUrl);
       } catch (e) {
-        print('画像のアップロードに失敗しました: $e');
+        debugPrint('画像のアップロードに失敗しました: $e');
         // Handle error, maybe show a snackbar to the user
       }
     }
@@ -62,7 +62,7 @@ Future<void> sendMessage(String? text, String channelId,
         buffer,
       );
     } catch (e) {
-      print('送信に失敗：${e}');
+      debugPrint('送信に失敗：${e}');
     }
   }
 }
@@ -90,14 +90,12 @@ Future<void> deleteMessage(String messageId, String channelId) async {
       buffer,
     );
   } catch (e) {
-    print('削除に失敗：${e}');
+    debugPrint('削除に失敗：${e}');
   }
 }
 
 /// 自分のメッセージを編集できます
 Future<void> editMessage(String messageId, String channelId, String content) async {
-  print("Called editMessage");
-  print(messageId);
   final instance = AuthContext();
   if (content.isNotEmpty) {
     final sendBody = {
@@ -121,7 +119,7 @@ Future<void> editMessage(String messageId, String channelId, String content) asy
         buffer,
       );
     } catch (e) {
-      print('編集に失敗：${e}');
+      debugPrint('編集に失敗：${e}');
     }
   }
 }
@@ -164,7 +162,7 @@ Future<void> saveImageToGallery(String imageUrlOrBase64) async {
       await GallerySaver.saveImage(file.path);
     }
   } catch (e) {
-    print('Failed to save image to gallery: $e');
+    debugPrint('Failed to save image to gallery: $e');
   }
 }
 

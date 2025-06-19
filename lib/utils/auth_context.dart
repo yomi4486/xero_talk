@@ -52,7 +52,7 @@ class AuthContext extends ChangeNotifier {
     if (mqttClient != null &&
         (mqttClient.connectionState == MqttConnectionState.connected ||
          mqttClient.connectionState == MqttConnectionState.connecting)) {
-      print('MQTT is already connecting or connected. Skipping startSession.');
+      debugPrint('MQTT is already connecting or connected. Skipping startSession.');
       return mqttClient.connectionState == MqttConnectionState.connected;
     }
     }catch(_){}
@@ -63,13 +63,13 @@ class AuthContext extends ChangeNotifier {
     mqttClient.logging(on: false);
     mqttClient.keepAlivePeriod = 20;
     mqttClient.onDisconnected = () {
-      print('MQTT Disconnected');
+      debugPrint('MQTT Disconnected');
     };
     mqttClient.onConnected = () {
-      print('MQTT Connected');
+      debugPrint('MQTT Connected');
     };
     mqttClient.onSubscribed = (String topic) {
-      print('Subscribed to: ' + topic);
+      debugPrint('Subscribed to: ' + topic);
     };
     mqttClient.connectionMessage = MqttConnectMessage()
         .withClientIdentifier(id)
@@ -87,7 +87,7 @@ class AuthContext extends ChangeNotifier {
       await checkConnection();
       return mqttClient.connectionState == MqttConnectionState.connected;
     } catch (e) {
-      print('MQTT connection error: $e');
+      debugPrint('MQTT connection error: $e');
       return false;
     }
   }
@@ -145,14 +145,13 @@ class AuthContext extends ChangeNotifier {
   }
 
   Future checkConnection() async {
-    print("こんちくわ");
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) async {
       if (results.isNotEmpty && results.first != ConnectivityResult.none) {
-        print('Network reconnected: ${results.first}');
+        debugPrint('Network reconnected: ${results.first}');
         try {
           await restoreConnection();
         } catch (e) {
-          print('Error restoring connection on network change: $e');
+          debugPrint('Error restoring connection on network change: $e');
         }
       }
     });
