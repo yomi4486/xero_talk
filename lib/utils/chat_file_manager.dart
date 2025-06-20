@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'dart:convert' as convert;
 import 'dart:convert' show utf8;
@@ -30,7 +31,7 @@ class ChatFileManager {
         storageType = data?['storage_type'] ?? "Firestore";
       }
     } catch (e) {
-      print('Error initializing storage type: $e');
+      debugPrint('Error initializing storage type: $e');
     }
   }
 
@@ -54,7 +55,6 @@ class ChatFileManager {
 
   Future<void> updateMessage(String messageId, Map<String, dynamic> messageData) async {
     await _initializeStorageType();
-    
     if (storageType == "Google Drive") {
       await _updateGoogleDriveMessage(messageId, messageData);
     } else {
@@ -69,7 +69,6 @@ class ChatFileManager {
       final docRef = FirebaseFirestore.instance
           .collection('chat_history')
           .doc(_chatId);
-      
       // 既存のメッセージを更新
       final doc = await docRef.get();
       if (doc.exists) {
@@ -77,13 +76,11 @@ class ChatFileManager {
         if (data?['messages'] != null) {
           final List<dynamic> messages = List<dynamic>.from(data!['messages']);
           final index = messages.indexWhere((msg) => msg['id'] == messageId);
-          
           if (index != -1) {
             messages[index] = {
               'id': messageId,
               ...messageData,
             };
-            
             await docRef.update({
               'messages': messages,
               'lastUpdated': DateTime.now().millisecondsSinceEpoch,
@@ -92,7 +89,7 @@ class ChatFileManager {
         }
       }
     } catch (e) {
-      print('Error updating message in Firestore: $e');
+      debugPrint('Error updating message in Firestore: $e');
     }
   }
 
@@ -139,7 +136,7 @@ class ChatFileManager {
         }
       }
     } catch (e) {
-      print('Error updating message in Google Drive: $e');
+      debugPrint('Error updating message in Google Drive: $e');
     }
   }
 
@@ -162,7 +159,7 @@ class ChatFileManager {
         uploadMedia: media,
       );
     } catch (e) {
-      print('Error saving chat history to Google Drive: $e');
+      debugPrint('Error saving chat history to Google Drive: $e');
     }
   }
 
@@ -208,7 +205,7 @@ class ChatFileManager {
         }
       }
     } catch (e) {
-      print('Error saving chat history to Firestore: $e');
+      debugPrint('Error saving chat history to Firestore: $e');
     }
   }
 
@@ -273,7 +270,7 @@ class ChatFileManager {
         return createdFile.id;
       }
     } catch (e) {
-      print('Error initializing Google Drive file: $e');
+      debugPrint('Error initializing Google Drive file: $e');
       return null;
     }
   }
@@ -283,7 +280,7 @@ class ChatFileManager {
       if (_chatId.isEmpty) return null;
       return _chatId;
     } catch (e) {
-      print('Error initializing Firestore file: $e');
+      debugPrint('Error initializing Firestore file: $e');
       return null;
     }
   }
@@ -316,7 +313,7 @@ class ChatFileManager {
       }
       return null;
     } catch (e) {
-      print('Error loading chat history from Google Drive: $e');
+      debugPrint('Error loading chat history from Google Drive: $e');
       return null;
     }
   }
@@ -349,14 +346,13 @@ class ChatFileManager {
       }
       return null;
     } catch (e) {
-      print('Error loading chat history from Firestore: $e');
+      debugPrint('Error loading chat history from Firestore: $e');
       return null;
     }
   }
 
   Future<void> deleteMessage(String messageId) async {
     await _initializeStorageType();
-    
     if (storageType == "Google Drive") {
       await _deleteFromGoogleDrive(messageId);
     } else {
@@ -378,10 +374,8 @@ class ChatFileManager {
         if (data?['messages'] != null) {
           final List<dynamic> messages = List<dynamic>.from(data!['messages']);
           final index = messages.indexWhere((msg) => msg['id'] == messageId);
-          
           if (index != -1) {
             messages.removeAt(index);
-            
             await docRef.update({
               'messages': messages,
               'lastUpdated': DateTime.now().millisecondsSinceEpoch,
@@ -390,7 +384,7 @@ class ChatFileManager {
         }
       }
     } catch (e) {
-      print('Error deleting message from Firestore: $e');
+      debugPrint('Error deleting message from Firestore: $e');
     }
   }
 
@@ -434,7 +428,7 @@ class ChatFileManager {
         }
       }
     } catch (e) {
-      print('Error deleting message from Google Drive: $e');
+      debugPrint('Error deleting message from Google Drive: $e');
     }
   }
 } 

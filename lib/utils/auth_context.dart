@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,6 +10,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:livekit_client/livekit_client.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:mqtt_client/mqtt_client.dart';
+import 'package:mqtt_client/mqtt_server_client.dart';
 
 /// アプリ全体の状態管理を担うクラス
 class AuthContext extends ChangeNotifier {
@@ -27,8 +28,10 @@ class AuthContext extends ChangeNotifier {
 
   // クラスのプロパティやメソッド
   late String id; // 現在ログインしているユーザーのサービス内でのID
-  late WebSocket channel; // サーバーとのWebSocket接続
-  late UserCredential userCredential; // Firebaseのログインインスタンス
+  late MqttServerClient mqttClient; // MQTTクライアント
+  late StreamController<String> mqttStreamController;
+  Stream<String> get mqttStream => mqttStreamController.stream;
+  late UserCredential userCredential;
   late drive.DriveApi googleDriveApi; // GoogleDriveにデータを書き込むためのインスタンス
   late String deviceName; // アプリが動作しているデバイスの機種名を保管
   late Widget lastOpenedChat; // スワイプでチャット画面を行き来した際の状態管理を行う
@@ -44,23 +47,54 @@ class AuthContext extends ChangeNotifier {
   ];
   StreamSubscription? _connectivitySubscription;
 
-  Future<void> startSession() async {
+  Future<bool> startSession() async {
+    try{// すでに接続中または接続試行中なら何もしない
+    if (mqttClient != null &&
+        (mqttClient.connectionState == MqttConnectionState.connected ||
+         mqttClient.connectionState == MqttConnectionState.connecting)) {
+      debugPrint('MQTT is already connecting or connected. Skipping startSession.');
+      return mqttClient.connectionState == MqttConnectionState.connected;
+    }
+    }catch(_){}
     String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-    channel = await WebSocket.connect(
-        'wss://${dotenv.env['BASE_URL']}/v1',
-        headers: {'token': token});
-    await checkConnection();
+    final baseUrl = dotenv.env['BASE_URL']!.replaceAll('wss://', '').replaceAll('https://', '');
+    mqttClient = MqttServerClient.withPort("wss://$baseUrl", id,443);
+    mqttClient.useWebSocket = true;
+    mqttClient.logging(on: false);
+    mqttClient.keepAlivePeriod = 20;
+    mqttClient.onDisconnected = () {
+      debugPrint('MQTT Disconnected');
+    };
+    mqttClient.onConnected = () {
+      debugPrint('MQTT Connected');
+    };
+    mqttClient.onSubscribed = (String topic) {
+      debugPrint('Subscribed to: ' + topic);
+    };
+    mqttClient.connectionMessage = MqttConnectMessage()
+        .withClientIdentifier(id)
+        .authenticateAs(token, '')
+        .startClean();
+    mqttStreamController = StreamController<String>.broadcast();
+    try {
+      await mqttClient.connect();
+      mqttClient.subscribe('response/$id', MqttQos.atMostOnce);
+      mqttClient.updates!.listen((List<MqttReceivedMessage<MqttMessage>> c) {
+        final recMess = c[0].payload as MqttPublishMessage;
+        final pt = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+        mqttStreamController.add(pt);
+      });
+      await checkConnection();
+      return mqttClient.connectionState == MqttConnectionState.connected;
+    } catch (e) {
+      debugPrint('MQTT connection error: $e');
+      return false;
+    }
   }
 
   /// セッションの復元を行うための関数です
   Future restoreConnection() async {
-    await channel.close();
-    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-    if (token == null) {
-      throw "token is undefined.";
-    }
-    channel = await WebSocket.connect('wss://${dotenv.env['BASE_URL']}/v1',
-        headers: {'token': token});
+    await startSession();
     notifyListeners();
   }
 
@@ -111,20 +145,19 @@ class AuthContext extends ChangeNotifier {
   }
 
   Future checkConnection() async {
-    print(id);
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) async {
       if (results.isNotEmpty && results.first != ConnectivityResult.none) {
-        print('Network reconnected: ${results.first}');
+        debugPrint('Network reconnected: ${results.first}');
         try {
           await restoreConnection();
         } catch (e) {
-          print('Error restoring connection on network change: $e');
+          debugPrint('Error restoring connection on network change: $e');
         }
       }
     });
 
     Timer.periodic(const Duration(seconds: 1), (timer) async {
-      if (channel.readyState != 1) {
+      if (mqttClient.connectionState != MqttConnectionState.connected) {
         try {
           await restoreConnection();
         } catch (_) {
@@ -139,7 +172,7 @@ class AuthContext extends ChangeNotifier {
       inHomeScreen = false;
       await _connectivitySubscription?.cancel();
       final googleSignIn = GoogleSignIn();
-      await channel.close();
+      mqttClient.disconnect();
       await googleSignIn.signOut();
       await FirebaseAuth.instance.signOut();
     } catch (_) {}

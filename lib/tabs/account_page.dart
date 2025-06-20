@@ -151,7 +151,7 @@ class _AccountPage extends State<AccountPage> {
                           _showFab = false;
                         });
                       }).catchError((err) {
-                        print(err);
+                        debugPrint(err);
                       });
                     },
                     backgroundColor: instance.theme[1],

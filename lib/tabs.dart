@@ -12,6 +12,7 @@ import 'package:xero_talk/utils/get_user_profile.dart';
 import 'package:xero_talk/utils/chat_file_manager.dart';
 import 'dart:convert' as convert;
 import 'dart:async';
+import 'package:mqtt_client/mqtt_client.dart';
 
 class TabsProvider with ChangeNotifier {
   final PageController pageController = PageController(keepPage: true,initialPage: 0);
@@ -84,7 +85,7 @@ class TabsProvider with ChangeNotifier {
         });
       }
     } catch (e) {
-      print('Error saving notification: $e');
+      debugPrint('Error saving notification: $e');
     }
   }
 }
@@ -109,7 +110,7 @@ class TabsScreen extends State<PageViewTabsScreen> {
   void _startConnectionMonitoring() {
     _connectionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final authContext = AuthContext();
-      if (authContext.channel.readyState != 1) {
+      if (authContext.mqttClient.connectionState != MqttConnectionState.connected) {
         if (!_isShowingDisconnectSnackBar) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -173,37 +174,35 @@ class TabsScreen extends State<PageViewTabsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<AuthContext,WebSocket>(
-      selector: (context,provider)=>provider.channel,
+    return Selector<AuthContext,Stream<String>>(
+      selector: (context,provider)=>provider.mqttStream,
       key:_streamKey,
-      builder: (context,asyncProvider,child){
-        return StreamBuilder(
-          stream:asyncProvider,
+      builder: (context,mqttStream,child){
+        return StreamBuilder<String>(
+          stream: mqttStream,
           builder:(context,snapshot){
             final provider = Provider.of<TabsProvider>(context,listen: true);
-            var content = {};
+            var content = <String, dynamic>{};
             try {
               if (snapshot.data != null) {
-                content = convert.json.decode(snapshot.data);
-              }
-              final String type = content['type'];
-              late String messageId;
+                content = convert.json.decode(snapshot.data!);
+                final String type = content['type'];
+                late String messageId;
 
-              if (type == "call"){
-                messageId = content["room_id"];
-              }else{
-                messageId = content["id"];
+                if (type == "call"){
+                  messageId = content["room_id"];
+                }else{
+                  messageId = content["id"];
+                }
+                if(type == 'send_message' && lastMessageId != messageId){
+                  if((instance.id != content['author'])&&(content['author'] != provider.showId || provider.pageController.page == 0)){
+                    showInfoSnack(context, content: content);
+                    provider.saveNotification(content);
+                  }     
+                }
+                lastMessageId = messageId;
               }
-              if(type == 'send_message' && lastMessageId != messageId){
-                if((instance.id != content['author'])&&(content['author'] != provider.showId || provider.pageController.page == 0)){
-                  showInfoSnack(context, content: content);
-                  provider.saveNotification(content);
-                }     
-              }
-              lastMessageId = messageId;
-            } catch (e) {
-              // print(e);
-            }
+            } catch (_) {}
             return DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

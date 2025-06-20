@@ -140,14 +140,14 @@ class _VoiceChatState extends State<VoiceChat> {
       final cameras = await availableCameras();
       hasCameraDevice = cameras.isNotEmpty;
     } catch (e) {
-      print('Error checking camera devices: $e');
+      debugPrint('Error checking camera devices: $e');
       hasCameraDevice = false;
     }
 
     // カメラの使用可否は権限とデバイスの両方が必要
     cameraAvailable = hasCameraPermission && hasCameraDevice;
     if (!cameraAvailable) {
-      print('Camera not available: Permission: $hasCameraPermission, Device: $hasCameraDevice');
+      debugPrint('Camera not available: Permission: $hasCameraPermission, Device: $hasCameraDevice');
     }
 
     // マイクの使用可否を確認
@@ -156,7 +156,7 @@ class _VoiceChatState extends State<VoiceChat> {
       micAvailable = true;
     } else {
       micAvailable = false;
-      print('Microphone permission not granted');
+      debugPrint('Microphone permission not granted');
     }
 
     // 権限の確認が完了したらルームを初期化
@@ -189,22 +189,22 @@ class _VoiceChatState extends State<VoiceChat> {
     // 特定のイベントを監視
     _listener
       ..on<RoomDisconnectedEvent>((_) {
-        print('Room disconnected');
+        debugPrint('Room disconnected');
       })
       ..on<ParticipantConnectedEvent>((e) {
-        print('Participant joined: ${e.participant.identity}');
+        debugPrint('Participant joined: ${e.participant.identity}');
         _updateParticipants();
       })
       ..on<ParticipantDisconnectedEvent>((e) {
-        print('Participant left: ${e.participant.identity}');
+        debugPrint('Participant left: ${e.participant.identity}');
         _updateParticipants();
       })
       ..on<TrackSubscribedEvent>((e) {
-        print('Track subscribed: ${e.track.kind}');
+        debugPrint('Track subscribed: ${e.track.kind}');
         setState(() {});
       })
       ..on<TrackUnsubscribedEvent>((e) {
-        print('Track unsubscribed: ${e.track.kind}');
+        debugPrint('Track unsubscribed: ${e.track.kind}');
         setState(() {});
       });
 
@@ -222,7 +222,7 @@ class _VoiceChatState extends State<VoiceChat> {
         localParticipant = instance.room.localParticipant;
       });
     } catch (e) {
-      print('Failed to connect: $e');
+      debugPrint('Failed to connect: $e');
       Navigator.of(context).pop();
     }
   }
@@ -531,9 +531,6 @@ class _VoiceChatState extends State<VoiceChat> {
                             child: IconButton(
                               onPressed: () async {
                                 _isFrontCamera = !_isFrontCamera;
-                                print("==============");
-                                print(_isFrontCamera);
-                                print("==============");
                                 await instance.room.localParticipant?.setCameraEnabled(false);
                                 await instance.room.localParticipant?.setCameraEnabled(true,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
                                 setState((){});
