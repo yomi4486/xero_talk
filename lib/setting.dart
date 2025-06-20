@@ -107,7 +107,7 @@ class _SettingPage extends State<SettingPage> {
                           instance.theme = [oneColor, twoColor];
                         });
                       }).catchError((err) {
-                        print(err);
+                        debugPrint(err);
                       });
                     }
                   },

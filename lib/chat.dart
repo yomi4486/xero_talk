@@ -4,11 +4,13 @@ import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/utils/voice_chat.dart';
 import 'dart:convert';
 import 'package:xero_talk/widgets/message_screen.dart';
+import 'package:xero_talk/widgets/message_screen.dart' show MessageScreenState;
 import 'package:xero_talk/utils/message_tools.dart';
 import 'package:xero_talk/widgets/image_viewer.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
+import 'package:uuid/uuid.dart';
 
 Uint8List base64ToUint8List(String base64String) {
   return base64Decode(base64String);
@@ -69,6 +71,8 @@ class _chat extends State<chat> {
   final ScrollController _scrollController = ScrollController();
   List<String> images = [];
   final tabsProvider = TabsProvider();
+  // MessageScreenのStateにアクセスするためのGlobalKey
+  final GlobalKey<MessageScreenState> messageScreenKey = GlobalKey<MessageScreenState>();
 
   @override
   void initState(){
@@ -116,7 +120,6 @@ class _chat extends State<chat> {
     final double imagePreviewHeight = images.isNotEmpty ? 116.0 : 0.0; // 100px + 16px margin
     final double bottomBarHeight = baseBottomBarHeight + imagePreviewHeight;
     var offset = MediaQuery.of(context).viewInsets.bottom;
-    print(offset);
     if(_scrollController.hasClients){
       _scrollController.jumpTo(
         _scrollController.offset+offset,
@@ -257,8 +260,23 @@ class _chat extends State<chat> {
                                 } else {
                                   chatScreenProvider.setSending(true);
                                   try {
+                                    // 送信内容を即時反映
+                                    final now = DateTime.now().millisecondsSinceEpoch;
+                                    final clientId = Uuid().v4();
+                                    final localMessage = {
+                                      "id": clientId,
+                                      "author": Provider.of<AuthContext>(context, listen: false).id,
+                                      "content": chatText,
+                                      "timeStamp": now,
+                                      "edited": false,
+                                      "attachments": images,
+                                      "voice": false,
+                                    };
+                                    if (messageScreenKey.currentState != null) {
+                                      messageScreenKey.currentState!.addLocalMessage(localMessage);
+                                    }
                                     await sendMessage(chatText, channelInfo["id"],
-                                        imageList: images);
+                                        imageList: images, id: clientId);
                                   } finally {
                                     chatScreenProvider.setSending(false);
                                   }
@@ -624,6 +642,7 @@ class _chat extends State<chat> {
                                       MainAxisAlignment.end,
                                   children: [
                                     MessageScreen(
+                                        key: messageScreenKey,
                                         focusNode: focusNode,
                                         scrollController:
                                             _scrollController,

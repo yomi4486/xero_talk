@@ -9,12 +9,16 @@ import 'package:gallery_saver_plus/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mqtt_client/mqtt_client.dart' show MqttQos, MqttConnectionState;
+import 'package:typed_data/typed_buffers.dart';
+import 'dart:typed_data';
+import 'package:image/image.dart' as img;
 
 const Uuid uuid = Uuid();
 
 /// メッセージの送信を行います
 Future<void> sendMessage(String? text, String channelId,
-    {List<String> imageList = const []}) async {
+    {List<String> imageList = const [], String? id}) async {
   /// instanceで有効になっているソケット通信に対してメッセージを送信する
   final instance = AuthContext();
   List<String> uploadedImageUrls = [];
@@ -23,14 +27,23 @@ Future<void> sendMessage(String? text, String channelId,
     for (String base64Image in imageList) {
       try {
         Uint8List imageData = base64Decode(base64Image);
-        String fileName = 'attachments/${uuid.v4()}.png'; // Unique filename for Firebase Storage
+
+        // 圧縮処理
+        img.Image? decodedImage = img.decodeImage(imageData);
+        if (decodedImage != null) {
+          // 最大幅512pxにリサイズし、JPEGで80%品質で圧縮
+          final compressed = img.encodeJpg(decodedImage, quality: 50);
+          imageData = Uint8List.fromList(compressed);
+        }
+
+        String fileName = 'attachments/${uuid.v4()}.jpg'; // 拡張子もjpgに
         Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
         UploadTask uploadTask = storageRef.putData(imageData);
         TaskSnapshot snapshot = await uploadTask;
         String downloadUrl = await snapshot.ref.getDownloadURL();
         uploadedImageUrls.add(downloadUrl);
       } catch (e) {
-        print('画像のアップロードに失敗しました: $e');
+        debugPrint('画像のアップロードに失敗しました: $e');
         // Handle error, maybe show a snackbar to the user
       }
     }
@@ -38,22 +51,28 @@ Future<void> sendMessage(String? text, String channelId,
 
   if (text!.isNotEmpty || uploadedImageUrls.isNotEmpty) {
     final sendBody = {
+      "user_id": instance.id,
       "type": "send_message",
       "content": text,
       "channel": channelId,
-      "attachments": uploadedImageUrls
+      "attachments": uploadedImageUrls,
+      if (id != null) "id": id,
     };
     final String data = convert.json.encode(sendBody);
-    if (instance.channel.readyState == 3) {
-      // WebSocketが接続されていない場合
+    if (instance.mqttClient.connectionState != MqttConnectionState.connected) {
       await instance.restoreConnection();
-      instance.channel.add(data);
-      return;
     }
     try {
-      instance.channel.add(data);
+      final bytes = utf8.encode(data);
+      Uint8Buffer buffer = Uint8Buffer();
+      buffer.addAll(bytes);
+      instance.mqttClient.publishMessage(
+        'request/send_message',
+        MqttQos.atMostOnce,
+        buffer,
+      );
     } catch (e) {
-      print('送信に失敗：${e}');
+      debugPrint('送信に失敗：${e}');
     }
   }
 }
@@ -62,21 +81,26 @@ Future<void> sendMessage(String? text, String channelId,
 Future<void> deleteMessage(String messageId, String channelId) async {
   final instance = AuthContext();
   final sendBody = {
+    "user_id": instance.id,
     "type": "delete_message",
     "id": messageId,
     "channel": channelId
   };
   final String data = convert.json.encode(sendBody);
-  if (instance.channel.readyState == 3) {
-    // WebSocketが接続されていない場合
+  if (instance.mqttClient.connectionState != MqttConnectionState.connected) {
     await instance.restoreConnection();
-    instance.channel.add(data);
-    return;
   }
   try {
-    instance.channel.add(data);
+    final bytes = utf8.encode(data); // ← ここが重要
+    Uint8Buffer buffer = Uint8Buffer();
+    buffer.addAll(bytes);
+    instance.mqttClient.publishMessage(
+      'request/delete_message',
+      MqttQos.atMostOnce,
+      buffer,
+    );
   } catch (e) {
-    print('削除に失敗：${e}');
+    debugPrint('削除に失敗：${e}');
   }
 }
 
@@ -85,23 +109,27 @@ Future<void> editMessage(String messageId, String channelId, String content) asy
   final instance = AuthContext();
   if (content.isNotEmpty) {
     final sendBody = {
+      "user_id": instance.id,
       "type": "edit_message",
       "id": messageId,
       "channel": channelId,
       "content": content
     };
     final String data = convert.json.encode(sendBody);
-    if (instance.channel.readyState == 3) {
-      // WebSocketが接続されていない場合
-      await instance.restoreConnection().then((v) {
-        instance.channel.add(data);
-      });
-      return;
+    if (instance.mqttClient.connectionState != MqttConnectionState.connected) {
+      await instance.restoreConnection();
     }
     try {
-      instance.channel.add(data);
+      final bytes = utf8.encode(data);
+      Uint8Buffer buffer = Uint8Buffer();
+      buffer.addAll(bytes);
+      instance.mqttClient.publishMessage(
+        'request/edit_message',
+        MqttQos.atMostOnce,
+        buffer,
+      );
     } catch (e) {
-      print('編集に失敗：${e}');
+      debugPrint('編集に失敗：${e}');
     }
   }
 }
@@ -144,7 +172,7 @@ Future<void> saveImageToGallery(String imageUrlOrBase64) async {
       await GallerySaver.saveImage(file.path);
     }
   } catch (e) {
-    print('Failed to save image to gallery: $e');
+    debugPrint('Failed to save image to gallery: $e');
   }
 }
 
