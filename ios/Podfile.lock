@@ -1206,7 +1206,7 @@ PODS:
   - BoringSSL-GRPC/Interface (0.0.37)
   - camera_avfoundation (0.0.1):
     - Flutter
-  - cloud_firestore (5.6.6):
+  - cloud_firestore (5.6.9):
     - Firebase/Firestore (= 11.13.0)
     - firebase_core
     - Flutter
@@ -1236,18 +1236,18 @@ PODS:
   - Firebase/Storage (11.13.0):
     - Firebase/CoreOnly
     - FirebaseStorage (~> 11.13.0)
-  - firebase_analytics (11.4.5):
+  - firebase_analytics (11.5.0):
     - Firebase/Analytics (= 11.13.0)
     - firebase_core
     - Flutter
-  - firebase_auth (5.5.2):
+  - firebase_auth (5.6.0):
     - Firebase/Auth (= 11.13.0)
     - firebase_core
     - Flutter
   - firebase_core (3.14.0):
     - Firebase/CoreOnly (= 11.13.0)
     - Flutter
-  - firebase_crashlytics (4.3.5):
+  - firebase_crashlytics (4.3.7):
     - Firebase/Crashlytics (= 11.13.0)
     - firebase_core
     - Flutter
@@ -1255,7 +1255,7 @@ PODS:
     - Firebase/Messaging (= 11.13.0)
     - firebase_core
     - Flutter
-  - firebase_storage (12.4.5):
+  - firebase_storage (12.4.7):
     - Firebase/Storage (= 11.13.0)
     - firebase_core
     - Flutter
@@ -1541,7 +1541,7 @@ PODS:
   - nanopb/encode (3.30910.0)
   - newrelic_mobile (1.1.8):
     - Flutter
-    - NewRelicAgent (~> 7.5.4)
+    - NewRelicAgent (~> 7.5.5)
   - NewRelicAgent (7.5.6)
   - path_provider_foundation (0.0.1):
     - Flutter
@@ -1670,16 +1670,16 @@ SPEC CHECKSUMS:
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
   BoringSSL-GRPC: dded2a44897e45f28f08ae87a55ee4bcd19bc508
   camera_avfoundation: be3be85408cd4126f250386828e9b1dfa40ab436
-  cloud_firestore: 6d06ca6ae751a0093fb002404f90c4929328a38b
+  cloud_firestore: 2fdc3301bcc486957ff7fa705430a185468c1987
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   Firebase: 3435bc66b4d494c2f22c79fd3aae4c1db6662327
-  firebase_analytics: c59414b7b68af0529382d638121fa0c3ed4757f6
-  firebase_auth: 91b2206d17400ccd01e42e68a1b51b5f23c64f5e
+  firebase_analytics: 4af7b20cf0c2da4e0473117e01a69507db8d7c16
+  firebase_auth: ebc1f561cc3077efebad5005974c9ed58008973b
   firebase_core: 700bac7ed92bb754fd70fbf01d72b36ecdd6d450
-  firebase_crashlytics: 609497e2fbb9b8e862bef01bd997547ad14320d3
+  firebase_crashlytics: d101fbdc2dba187f483f13ae3ce9281779d664db
   firebase_messaging: 860c017fcfbb5e27c163062d1d3135388f3ef954
-  firebase_storage: 7bbc9f80fdd2dfc56243bcc225ee27973aeb8cb3
+  firebase_storage: 17e3f7e7ee83680abb6aad6a28fe1404bf6b5a53
   FirebaseAnalytics: 630349facf4a114a0977e5d7570e104261973287
   FirebaseAppCheckInterop: a92ba81d0ee3c4cddb1a2e52c668ea51dc63c3ae
   FirebaseAuth: 175cb5503dfdb52191b8ff81cdd52c1d9dee9ac9
@@ -1696,7 +1696,7 @@ SPEC CHECKSUMS:
   FirebaseSessions: eaa8ec037e7793769defe4201c20bd4d976f9677
   FirebaseSharedSwift: bdd5c8674c4712a98e70287c936bc5cca5d640f6
   FirebaseStorage: 2a3e5402a565e06e121308dadfe0626976fd6b45
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_webrtc: fd0d3bdef8766a0736dbbe2e5b7e85f1f3c52117
   gallery_saver_plus: 61c8a831d5975e2bf57f87bcd64379dcc7d29ff2
   google_sign_in_ios: b48bb9af78576358a168361173155596c845f0b9
@@ -1713,7 +1713,7 @@ SPEC CHECKSUMS:
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
   livekit_client: 9e901890552514206e5ff828903ed271531da264
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  newrelic_mobile: 7888e51dbdd219a58a922d7b21a1b3e0839181fb
+  newrelic_mobile: 2a68542861bda259ba2302221059b9706b429482
   NewRelicAgent: d5628f58fa2928b1377fe866c6f52750d21c1a4b
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
