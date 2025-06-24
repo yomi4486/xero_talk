@@ -115,7 +115,12 @@ class _chat extends State<chat> {
     final chatProvider chatScreenProvider = Provider.of<chatProvider>(context);
     final Color backgroundColor = lightenColor(instance.theme[0], .2);
     final List<Color> textColor = instance.getTextColor(backgroundColor);
-    final String displayName = channelInfo["display_name"] ?? "-";
+    print(channelInfo);
+    final bool isGroup = channelInfo['type'] == 'group';
+    final String chatId = channelInfo['id'];
+    final String displayName = isGroup
+        ? (channelInfo['name'] ?? 'グループ')
+        : (channelInfo['display_name'] ?? '-');
     final double baseBottomBarHeight = MediaQuery.of(context).size.height * 0.1799;
     final double imagePreviewHeight = images.isNotEmpty ? 116.0 : 0.0; // 100px + 16px margin
     final double bottomBarHeight = baseBottomBarHeight + imagePreviewHeight;
@@ -198,7 +203,6 @@ class _chat extends State<chat> {
                       children: [
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.7,
-                          height: 48,
                           child: TextField(
                             focusNode: focusNode,
                             cursorColor:
@@ -222,7 +226,7 @@ class _chat extends State<chat> {
                                     const BorderSide(color: Colors.transparent),
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              hintText: '$displayNameにメッセージを送信',
+                              hintText: isGroup ? '${displayName}にメッセージを送信' : '$displayNameにメッセージを送信',
                               labelStyle: const TextStyle(
                                 color: Color.fromARGB(255, 255, 255, 255),
                                 fontSize: 16,
@@ -253,10 +257,11 @@ class _chat extends State<chat> {
                                     Colors.transparent),
                               ),
                               onPressed: chatScreenProvider.isSending ? null : () async {
+                                if(chatText.isEmpty && images.isEmpty)return;
                                 if (chatScreenProvider.editing) {
                                   chatScreenProvider.toggleEditMode();
                                   await editMessage(chatScreenProvider.editingMessageId,
-                                      channelInfo["id"], chatText);
+                                      chatId, chatText);
                                 } else {
                                   chatScreenProvider.setSending(true);
                                   try {
@@ -275,8 +280,8 @@ class _chat extends State<chat> {
                                     if (messageScreenKey.currentState != null) {
                                       messageScreenKey.currentState!.addLocalMessage(localMessage);
                                     }
-                                    await sendMessage(chatText, channelInfo["id"],
-                                        imageList: images, id: clientId);
+                                    await sendMessage(chatText, chatId,
+                                        imageList: images, id: clientId, isGroup: isGroup);
                                   } finally {
                                     chatScreenProvider.setSending(false);
                                   }

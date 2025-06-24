@@ -81,7 +81,7 @@ Widget getMessageCard(
     bool edited,
     List<dynamic> attachments,
     String messageId,
-    {Function(Uint8List, bool)? showImage}) {
+    {Function(Uint8List, bool)? showImage, bool isLocal = false}) {
   final Widget _chatWidget = Container(
     // メッセージウィジェットのUI部分
     margin: const EdgeInsets.only(bottom: 10, top: 10),
@@ -304,8 +304,9 @@ Widget getMessageCard(
     ),
   );
 
-  final chatWidget = GestureDetector(
-      // メッセージのウィジェットのIDとタップイベントハンドラーを担当
+  final chatWidget = Opacity(
+    opacity: isLocal ? 0.5 : 1.0,
+    child: GestureDetector(
       onLongPress: () {
         showModalBottomSheet(
           context: context,
@@ -323,97 +324,100 @@ Widget getMessageCard(
                     padding: const EdgeInsets.only(top: 20),
                     child: ListView(
                       children: [
-                        if (author == Provider.of<AuthContext>(context, listen: false).id) ...[
-                          SimpleDialogOption(
-                              // メッセージ削除ボタン
-                              padding: const EdgeInsets.all(15),
-                              child: const Row(children: [
-                                Icon(Icons.delete),
-                                Padding(
-                                    padding: EdgeInsets.only(left: 5),
-                                    child: Text('メッセージを削除',
-                                        style: TextStyle(fontSize: 16)))
-                              ]),
-                              onPressed: () async {
-                                Navigator.pop(context);
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return SimpleDialog(
-                                      title: const Text(
-                                        'メッセージを削除',
-                                        style: TextStyle(fontSize: 16),
+                        SimpleDialogOption(
+                            // メッセージ削除ボタン
+                            padding: const EdgeInsets.all(15),
+                            child: const Row(children: [
+                              Icon(Icons.delete),
+                              Padding(
+                                  padding: EdgeInsets.only(left: 5),
+                                  child: Text('メッセージを削除',
+                                      style: TextStyle(fontSize: 16)))
+                            ]),
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return SimpleDialog(
+                                    title: const Text(
+                                      'メッセージを削除',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    children: <Widget>[
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(10),
+                                            child: _chatWidget,
+                                          ),                  
+                                        ],
                                       ),
-                                      children: <Widget>[
-                                        Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.all(10),
-                                              child: _chatWidget,
-                                            ),                  
-                                          ],
+                                      SimpleDialogOption(
+                                        child: const Text(
+                                          '削除',
+                                          style: TextStyle(
+                                              color: Color.fromARGB(
+                                                  255, 255, 10, 10)),
                                         ),
-                                        SimpleDialogOption(
-                                            child: const Text(
-                                              '削除',
-                                              style: TextStyle(
-                                                  color: Color.fromARGB(
-                                                      255, 255, 10, 10)),
-                                            ),
-                                            onPressed: () async {
-                                              await deleteMessage(messageId,
-                                                  widget.channelInfo["id"]);
-                                              Navigator.pop(context);
-                                            }),
-                                        SimpleDialogOption(
-                                            child: const Text('キャンセル'),
-                                            onPressed: () async {
-                                              Navigator.pop(context);
-                                            }),
-                                      ],
-                                    );
-                                  },
-                                );
-                              }),
-                          SimpleDialogOption(
-                              // メッセージ編集ボタン
-                              padding: const EdgeInsets.all(15),
-                              child: const Row(children: [
-                                Icon(Icons.edit),
-                                Padding(
-                                    padding: EdgeInsets.only(left: 5),
-                                    child: Text('編集',
-                                        style: TextStyle(fontSize: 16)))
-                              ]),
-                              onPressed: () async {
-                                Navigator.pop(context);
-                                widget.focusNode.requestFocus();
-                                widget.fieldText.text = content;
-                                widget.EditMode(messageId, true);
-                              }),
-                        ],
-                        if (attachments.isNotEmpty)
-                          SimpleDialogOption(
-                              padding: const EdgeInsets.all(15),
-                              child: const Row(children: [
-                                Icon(Icons.download),
-                                Padding(
-                                    padding: EdgeInsets.only(left: 5),
-                                    child: Text('画像を保存',
-                                        style: TextStyle(fontSize: 16)))
-                              ]),
-                              onPressed: () async {
-                                await saveImageToGallery(attachments[0]);
-                                Navigator.pop(context);
-                              }),
-                      ],
-                    )));
+                                        onPressed: () async {
+                                          await deleteMessage(messageId,
+                                              widget.channelInfo["id"]);
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                      SimpleDialogOption(
+                                        child: const Text('キャンセル'),
+                                        onPressed: () async {
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }),
+                        SimpleDialogOption(
+                            // メッセージ編集ボタン
+                            padding: const EdgeInsets.all(15),
+                            child: const Row(children: [
+                              Icon(Icons.edit),
+                              Padding(
+                                  padding: EdgeInsets.only(left: 5),
+                                  child: Text('編集',
+                                      style: TextStyle(fontSize: 16)))
+                            ]),
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              widget.focusNode.requestFocus();
+                              widget.fieldText.text = content;
+                              widget.EditMode(messageId, true);
+                            }),
+                      
+                      if (attachments.isNotEmpty)
+                        SimpleDialogOption(
+                            padding: const EdgeInsets.all(15),
+                            child: const Row(children: [
+                              Icon(Icons.download),
+                              Padding(
+                                  padding: EdgeInsets.only(left: 5),
+                                  child: Text('画像を保存',
+                                      style: TextStyle(fontSize: 16)))
+                            ]),
+                            onPressed: () async {
+                              await saveImageToGallery(attachments[0]);
+                              Navigator.pop(context);
+                            }),
+                    ],
+                  )));
           },
         );
       },
-      child: _chatWidget);
+      child: _chatWidget,
+    ),
+  );
   return chatWidget;
 }
 

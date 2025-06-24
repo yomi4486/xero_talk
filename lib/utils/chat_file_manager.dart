@@ -11,11 +11,14 @@ class ChatFileManager {
   String storageType = "Firestore";
   String? _userId;
   final String? _friendId;
+  final String? _groupId;
 
   ChatFileManager({
     required this.chatFileId,
     String? friendId,
-  }) : _friendId = friendId;
+    String? groupId,
+  })  : _friendId = friendId,
+        _groupId = groupId;
 
   Future<void> _initializeStorageType() async {
     try {
@@ -36,6 +39,9 @@ class ChatFileManager {
   }
 
   String get _chatId {
+    if (_groupId != null && _groupId!.isNotEmpty) {
+      return _groupId!;
+    }
     if (_userId == null || _friendId == null) return '';
     // ユーザーIDとフレンドIDを組み合わせて一意のチャットIDを生成
     // アルファベット順にソートして、同じペアのチャットが同じIDになるようにする
