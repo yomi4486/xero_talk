@@ -152,10 +152,6 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                   return Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Padding(
-                                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                                        child: Text('グループ', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                      ),
                                       ...groups.map((doc) {
                                         final data = doc.data() as Map<String, dynamic>;
                                         return GestureDetector(
