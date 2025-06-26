@@ -599,7 +599,7 @@ class _chat extends State<chat> {
                                       child: const Text('開始'),
                                       onPressed: ()async {
                                         Navigator.of(context).pop();
-                                        call(channelInfo["id"]);
+                                        call(channelInfo["id"],isGroup);
                                       },
                                     ),
                                   ],
