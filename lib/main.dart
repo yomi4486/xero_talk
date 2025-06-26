@@ -17,6 +17,10 @@ import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+import 'package:flutter_callkit_incoming/entities/call_kit_params.dart';
+import 'package:flutter_callkit_incoming/entities/android_params.dart';
+import 'package:flutter_callkit_incoming/entities/ios_params.dart';
 
 late drive.DriveApi googleDriveApi;
 bool failed = false;
@@ -60,6 +64,45 @@ Future<void> initializeFirebase() async {
   }
 }
 
+// Future<void> showCallkitIncoming(Map<String, dynamic> data,String? displayName) async {
+//   final params = CallKitParams(
+//     id: data['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+//     nameCaller: displayName ?? "着信",
+//     appName: 'Xero Talk',
+//     type: 0, // 0: audio, 1: video
+//     duration: 30000, // 30秒で自動切断
+//     textAccept: '応答',
+//     textDecline: '拒否',
+//     extra: {'userId': data['author']},
+//     headers: {'apiKey': 'Abc@123!', 'platform': 'flutter'},
+//     android: AndroidParams(
+//       isCustomNotification: true,
+//       isShowLogo: false,
+//       ringtonePath: 'system_ringtone_default',
+//       backgroundColor: '#0955fa',
+//       backgroundUrl: 'assets/images/logo.png',
+//       actionColor: '#4CAF50',
+//     ),
+//     ios: IOSParams(
+//       iconName: 'CallKitLogo',
+//       handleType: 'generic',
+//       supportsVideo: true,
+//       maximumCallGroups: 2,
+//       maximumCallsPerCallGroup: 1,
+//       audioSessionMode: 'default',
+//       audioSessionActive: true,
+//       audioSessionPreferredSampleRate: 44100.0,
+//       audioSessionPreferredIOBufferDuration: 0.005,
+//       supportsDTMF: true,
+//       supportsHolding: true,
+//       supportsGrouping: false,
+//       supportsUngrouping: false,
+//       ringtonePath: 'system_ringtone_default',
+//     ),
+//   );
+//   await FlutterCallkitIncoming.showCallkitIncoming(params);
+// }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
@@ -78,11 +121,16 @@ void main() async {
     sound: true,
   );
 
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
+    print('Message data: [38;5;2m${message.data}[0m');
+
+    if (message.data['type'] == 'call') {
+      // await showCallkitIncoming(message.data,message.notification!.title);
+    }
 
     if (message.notification != null) {
+      print(message.data);
       print('Message also contained a notification: ${message.notification!.title} / ${message.notification!.body}');
       // ここでローカル通知を表示するなどの処理を実装
     }

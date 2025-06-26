@@ -11,11 +11,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 final AuthContext instance = AuthContext();
 const Uuid uuid = Uuid();
 
-void call(String to_user_id) async {
+void call(String to_user_id, bool isGroup) async {
   final sendBody = {
     "type": "call",
     "author": instance.id,
-    "channel": to_user_id
+    "channel": to_user_id,
+    "isGroup": isGroup
   };
   final String data = convert.json.encode(sendBody);
   if (instance.mqttClient.connectionState != MqttConnectionState.connected) {
