@@ -350,7 +350,7 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       authContext.inHomeScreen = true;
       authContext.userCredential = userCredential;
     } catch (e) {
-      print("SignIn Error: $e");
+      debugPrint("SignIn Error: $e");
       setState(() {
         failed = true;
       });
@@ -373,9 +373,6 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       if (event != null && event.event == Event.actionCallAccept) {
         final roomId = event.body["id"];
         final token = await getRoom(roomId);
-        print(token);
-
-        print("遷移！");
         navigatorKey.currentState?.push(
           MaterialPageRoute(
             builder: (context) => VoiceChat(
