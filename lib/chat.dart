@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
 import 'package:uuid/uuid.dart';
+import 'package:xero_talk/widgets/chat_list_widget.dart';
 
 Uint8List base64ToUint8List(String base64String) {
   return base64Decode(base64String);
@@ -115,7 +116,12 @@ class _chat extends State<chat> {
     final chatProvider chatScreenProvider = Provider.of<chatProvider>(context);
     final Color backgroundColor = lightenColor(instance.theme[0], .2);
     final List<Color> textColor = instance.getTextColor(backgroundColor);
-    final String displayName = channelInfo["display_name"] ?? "-";
+    print(channelInfo);
+    final bool isGroup = channelInfo['type'] == 'group';
+    final String chatId = channelInfo['id'];
+    final String displayName = isGroup
+        ? (channelInfo['name'] ?? 'グループ')
+        : (channelInfo['display_name'] ?? '-');
     final double baseBottomBarHeight = MediaQuery.of(context).size.height * 0.1799;
     final double imagePreviewHeight = images.isNotEmpty ? 116.0 : 0.0; // 100px + 16px margin
     final double bottomBarHeight = baseBottomBarHeight + imagePreviewHeight;
@@ -198,7 +204,6 @@ class _chat extends State<chat> {
                       children: [
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.7,
-                          height: 48,
                           child: TextField(
                             focusNode: focusNode,
                             cursorColor:
@@ -222,7 +227,7 @@ class _chat extends State<chat> {
                                     const BorderSide(color: Colors.transparent),
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              hintText: '$displayNameにメッセージを送信',
+                              hintText: isGroup ? '${displayName}にメッセージを送信' : '$displayNameにメッセージを送信',
                               labelStyle: const TextStyle(
                                 color: Color.fromARGB(255, 255, 255, 255),
                                 fontSize: 16,
@@ -253,10 +258,11 @@ class _chat extends State<chat> {
                                     Colors.transparent),
                               ),
                               onPressed: chatScreenProvider.isSending ? null : () async {
+                                if(chatText.isEmpty && images.isEmpty)return;
                                 if (chatScreenProvider.editing) {
                                   chatScreenProvider.toggleEditMode();
                                   await editMessage(chatScreenProvider.editingMessageId,
-                                      channelInfo["id"], chatText);
+                                      chatId, chatText);
                                 } else {
                                   chatScreenProvider.setSending(true);
                                   try {
@@ -275,8 +281,8 @@ class _chat extends State<chat> {
                                     if (messageScreenKey.currentState != null) {
                                       messageScreenKey.currentState!.addLocalMessage(localMessage);
                                     }
-                                    await sendMessage(chatText, channelInfo["id"],
-                                        imageList: images, id: clientId);
+                                    await sendMessage(chatText, chatId,
+                                        imageList: images, id: clientId, isGroup: isGroup);
                                   } finally {
                                     chatScreenProvider.setSending(false);
                                   }
@@ -403,196 +409,226 @@ class _chat extends State<chat> {
                                 SimpleDialogOption(
                                   // ユーザープロフィールの表示
                                   padding: const EdgeInsets.all(15),
-                                  child: Column(children: [
-                                    Container(
-                                      height:
-                                          MediaQuery.of(context).size.width *
-                                              0.2,
-                                      width:
-                                          MediaQuery.of(context).size.width *
-                                              0.2,
-                                      margin: const EdgeInsets.only(left: 5),
-                                      child: ClipRRect(
-                                        // アイコン表示（角丸）
-                                        borderRadius:
-                                            BorderRadius.circular(200),
-                                        child: UserIcon(userId: channelInfo["id"])
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Text(
-                                        channelInfo["display_name"],
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 24,
-                                          color: textColor[0],
-                                          overflow: TextOverflow.ellipsis,
-                                        )
-                                      )
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(10),
-                                      child: Text(
-                                        "@${channelInfo["name"]}",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: textColor[1],
-                                          overflow: TextOverflow.ellipsis,
-                                        )
-                                      )
-                                    ),
-                                    Container(
-                                      width:
-                                          MediaQuery.of(context).size.width * 0.8,
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: const BoxDecoration(
-                                        color:
-                                            Color.fromARGB(22, 255, 255, 255),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(10.0),
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        height:
+                                            MediaQuery.of(context).size.width *
+                                                0.2,
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.2,
+                                        margin: const EdgeInsets.only(left: 5),
+                                        child: ClipRRect(
+                                          // アイコン表示（角丸）
+                                          borderRadius:
+                                              BorderRadius.circular(200),
+                                          child: UserIcon(userId: channelInfo["id"])
                                         ),
                                       ),
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 10,
-                                                left: 10,
-                                                right: 10,
-                                                bottom: 0
-                                              ),
-                                              child: Text(
-                                                "自己紹介",
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: textColor[1],
-                                                  overflow: TextOverflow.ellipsis,
+                                      Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: Text(
+                                          isGroup ? channelInfo["name"] : channelInfo["display_name"],
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 24,
+                                            color: textColor[0],
+                                            overflow: TextOverflow.ellipsis,
+                                          )
+                                        )
+                                      ),
+                                      isGroup ? Container() : Padding(
+                                        padding: const EdgeInsets.all(10),
+                                        child: Text(
+                                          "@${channelInfo["name"]}",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: textColor[1],
+                                            overflow: TextOverflow.ellipsis,
+                                          )
+                                        )
+                                      ),
+                                      Container(
+                                        width:
+                                            MediaQuery.of(context).size.width * 0.8,
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: const BoxDecoration(
+                                          color:
+                                              Color.fromARGB(22, 255, 255, 255),
+                                          borderRadius: BorderRadius.all(
+                                            Radius.circular(10.0),
+                                          ),
+                                        ),
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          children: [
+                                            Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                  top: 10,
+                                                  left: 10,
+                                                  right: 10,
+                                                  bottom: 0
+                                                ),
+                                                child: Text(
+                                                  isGroup ? "チャンネルの説明" : "自己紹介",
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: textColor[1],
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          Align(
-                                            alignment: Alignment.topLeft,
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(10),
-                                              child: Text(
-                                                channelInfo["description"],
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: textColor[0],
+                                            Align(
+                                              alignment: Alignment.topLeft,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(10),
+                                                child: Text(
+                                                  isGroup ? "" : channelInfo["description"],
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: textColor[0],
+                                                  )
                                                 )
                                               )
                                             )
-                                          )
-                                        ]
+                                          ]
+                                        ),
                                       ),
-                                    )
-                                  ]
+
+                                      // --- ここからグループメンバー一覧 ---
+                                      if (channelInfo['type'] == 'group' && channelInfo['members'] != null)
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 20),
+                                            Text(
+                                              'メンバー',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18,
+                                                color: textColor[0],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            ...List<Widget>.from(
+                                              (channelInfo['members'] as List)
+                                                .map((userId) => ChatListWidget(userId: userId))
+                                            ),
+                                          ],
+                                        ),
+                                      // --- ここまでグループメンバー一覧 ---
+                                    ]
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            )
                           )
-                        )
-                      );
-                    },
-                  );
-                },
-                child:Row(
-                  mainAxisAlignment: MainAxisAlignment.start, 
-                  children: [
-                    SizedBox(
-                      child: Row(
-                        children: [
-                          Container(
-                            height: 34,
-                            width: 34,
-                            margin: const EdgeInsets.only(left: 5),
-                            child: ClipRRect(
-                              // アイコン表示（角丸）
-                              borderRadius: BorderRadius.circular(200),
-                              child: UserIcon(userId: channelInfo["id"],)
+                        );
+                      },
+                    );
+                  },
+                  child:Row(
+                    mainAxisAlignment: MainAxisAlignment.start, 
+                    children: [
+                      SizedBox(
+                        child: Row(
+                          children: [
+                            Container(
+                              height: 34,
+                              width: 34,
+                              margin: const EdgeInsets.only(left: 5),
+                              child: ClipRRect(
+                                // アイコン表示（角丸）
+                                borderRadius: BorderRadius.circular(200),
+                                child: UserIcon(userId: channelInfo["id"],)
+                              ),
                             ),
-                          ),
-                        ],
-                      )
-                    ),
-                    Container(
-                      width: 150,
-                      margin: const EdgeInsets.only(left: 10),
-                      child: Text(
-                        displayName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color.fromARGB(200, 255, 255, 255),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                          ],
+                        )
                       ),
-                    )
-                  ]
-                ),
-              ),
-            ]
-          ),
-          actions: [
-            Container(
-              margin: const EdgeInsets.only(right: 16, bottom: 10),
-              child: Wrap(spacing: 10, runSpacing: 10, 
-              children: [
-                FittedBox(
-                  fit: BoxFit.cover,
-                  child: ClipRRect(
-                    // アイコン表示（角丸）
-                    borderRadius: BorderRadius.circular(30),
-                    child: Container(
-                        color: const Color.fromARGB(0, 255, 255, 255),
-                        child: IconButton(
-                            onPressed: () async {
-                              await showDialog<bool>(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text('通話を開始'),
-                                    content: const Text('通話を開始しますか？'),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        child: const Text('キャンセル'),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                      TextButton(
-                                        child: const Text('開始'),
-                                        onPressed: ()async {
-                                          Navigator.of(context).pop();
-                                          call(channelInfo["id"]);
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                            icon: const Icon(Icons.phone,
-                                color:
-                                    Color.fromARGB(128, 255, 255, 255)))),
+                      Container(
+                        width: 150,
+                        margin: const EdgeInsets.only(left: 10),
+                        child: Text(
+                          displayName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Color.fromARGB(200, 255, 255, 255),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      )
+                    ]
                   ),
                 ),
-                FittedBox(
-                  child: ClipRRect(
-                    // アイコン表示（角丸）
-                    borderRadius: BorderRadius.circular(30),
-                    child: Container(
+              ]
+            ),
+            actions: [
+              Container(
+                margin: const EdgeInsets.only(right: 16, bottom: 10),
+                child: Wrap(spacing: 10, runSpacing: 10, 
+                children: [
+                  FittedBox(
+                    fit: BoxFit.cover,
+                    child: ClipRRect(
+                      // アイコン表示（角丸）
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
                         color: const Color.fromARGB(0, 255, 255, 255),
                         child: IconButton(
-                            onPressed: () {},
-                            icon: const Icon(Icons.search,
-                                color:
-                                    Color.fromARGB(128, 255, 255, 255)))),
+                          onPressed: () async {
+                            await showDialog<bool>(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('通話を開始'),
+                                  content: const Text('通話を開始しますか？'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      child: const Text('キャンセル'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: const Text('開始'),
+                                      onPressed: ()async {
+                                        Navigator.of(context).pop();
+                                        call(channelInfo["id"],isGroup);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.phone,
+                            color: Color.fromARGB(128, 255, 255, 255)
+                          )
+                        )
+                      ),
+                    ),
+                  ),
+                  FittedBox(
+                    child: ClipRRect(
+                      // アイコン表示（角丸）
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        color: const Color.fromARGB(0, 255, 255, 255),
+                        child: IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.search,
+                            color: Color.fromARGB(128, 255, 255, 255)
+                          )
+                        )
+                      ),
                   ),
                 ),
               ]

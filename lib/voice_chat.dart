@@ -4,10 +4,13 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
 import './utils/auth_context.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+import 'package:flutter_callkit_incoming/entities/entities.dart';
 
 class ParticipantWidget extends StatefulWidget {
   final Participant participant;
-  ParticipantWidget(this.participant);
+  final RoomInfo roomInfo;
+  ParticipantWidget(this.participant, this.roomInfo);
 
   @override
   State<StatefulWidget> createState() {
@@ -22,12 +25,67 @@ class _ParticipantState extends State<ParticipantWidget> {
   @override
   void initState() {
     super.initState();
+    // 例: UUIDや相手の名前などを用意
+    final instance = AuthContext();
+    final uuid = instance.room.name; // 通話ごとにユニークなIDを生成
+    final displayName = widget.roomInfo.displayName;
+
+    final params = CallKitParams(
+      id: uuid,
+      nameCaller: displayName,
+      appName: 'Xero Talk',
+      avatar: 'https://i.pravatar.cc/100',
+      handle: '0123456789',
+      type: 0, // 0: audio, 1: video
+      duration: 30000,
+      textAccept: 'Accept',
+      textDecline: 'Decline',
+      missedCallNotification: const NotificationParams(
+        showNotification: true,
+        isShowCallback: true,
+        subtitle: 'Missed call',
+        callbackText: 'Call back',
+      ),
+      extra: <String, dynamic>{'userId': '1a2b3c4d'},
+      headers: <String, dynamic>{'apiKey': 'Abc@123!', 'platform': 'flutter'},
+      android: const AndroidParams(
+        isCustomNotification: true,
+        isShowLogo: true,
+        logoUrl: 'assets/test.png',
+        ringtonePath: 'system_ringtone_default',
+        backgroundColor: '#0955fa',
+        backgroundUrl: 'assets/test.png',
+        actionColor: '#4CAF50',
+        textColor: '#ffffff',
+      ),
+      ios: const IOSParams(
+        iconName: 'CallKitLogo',
+        handleType: '',
+        supportsVideo: true,
+        maximumCallGroups: 2,
+        maximumCallsPerCallGroup: 1,
+        audioSessionMode: 'default',
+        audioSessionActive: true,
+        audioSessionPreferredSampleRate: 44100.0,
+        audioSessionPreferredIOBufferDuration: 0.005,
+        supportsDTMF: true,
+        supportsHolding: true,
+        supportsGrouping: false,
+        supportsUngrouping: false,
+        ringtonePath: 'system_ringtone_default',
+      ),
+    );
+
+    // CallKitで通話開始（発信）を宣言
+    FlutterCallkitIncoming.startCall(params);
+
     widget.participant.addListener(_onChange);
     _updateVideoTrack();
   }
 
   @override
   void dispose() {
+    FlutterCallkitIncoming.endAllCalls();
     _isDisposed = true;
     widget.participant.removeListener(_onChange);
     super.dispose();
@@ -297,6 +355,7 @@ class _VoiceChatState extends State<VoiceChat> {
                             children: [
                               ParticipantWidget(
                                 _selectedParticipant!,
+                                widget.roomInfo
                               ),
                               if (_selectedParticipant == localParticipant)
                                 Positioned(
@@ -361,6 +420,7 @@ class _VoiceChatState extends State<VoiceChat> {
                                 children: [
                                   ParticipantWidget(
                                     participant,
+                                    widget.roomInfo
                                   ),
                                   if (isLocal)
                                     Positioned(
@@ -433,6 +493,7 @@ class _VoiceChatState extends State<VoiceChat> {
                             children: [
                               ParticipantWidget(
                                 participant,
+                                widget.roomInfo
                               ),
                               if (isLocal)
                                 Positioned(

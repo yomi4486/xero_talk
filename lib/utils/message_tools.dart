@@ -18,11 +18,11 @@ const Uuid uuid = Uuid();
 
 /// メッセージの送信を行います
 Future<void> sendMessage(String? text, String channelId,
-    {List<String> imageList = const [], String? id}) async {
+    {List<String> imageList = const [], String? id, bool isGroup = false}) async {
   /// instanceで有効になっているソケット通信に対してメッセージを送信する
   final instance = AuthContext();
   List<String> uploadedImageUrls = [];
-
+  if(text!.length == 0){return;}
   if (imageList.isNotEmpty) {
     for (String base64Image in imageList) {
       try {
@@ -56,6 +56,7 @@ Future<void> sendMessage(String? text, String channelId,
       "content": text,
       "channel": channelId,
       "attachments": uploadedImageUrls,
+      "is_group": isGroup,
       if (id != null) "id": id,
     };
     final String data = convert.json.encode(sendBody);
