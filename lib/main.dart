@@ -17,9 +17,26 @@ import 'package:flutter_webrtc/flutter_webrtc.dart' as webrtc;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
+import 'package:flutter_callkit_incoming/entities/entities.dart';
+import 'package:xero_talk/voice_chat.dart';
+import 'utils/voice_chat.dart';
+// import 'services/navigation_service.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 late drive.DriveApi googleDriveApi;
 bool failed = false;
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Firebase初期化が必要な場合（Isolateの実行環境による）
+  if(message.data["type"] == "call"){
+    showCallkitIncoming(message.data["room_id"],message.data["display_name"]);
+  }
+  
+  // ここでバックグラウンドでの処理（ローカル通知の表示など）
+}
 
 Future<void> _initializeAndroidAudioSettings() async {
   await webrtc.WebRTC.initialize(options: {
@@ -27,17 +44,6 @@ Future<void> _initializeAndroidAudioSettings() async {
   });
   webrtc.Helper.setAndroidAudioConfiguration(
       webrtc.AndroidAudioConfiguration.media);
-}
-
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Firebase初期化が必要な場合（Isolateの実行環境による）
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform,);
-  print("Handling a background message: ${message.messageId}");
-  if (message.notification != null) {
-    print('Background message contained a notification: ${message.notification!.title} / ${message.notification!.body}');
-  }
-  // ここでバックグラウンドでの処理（ローカル通知の表示など）
 }
 
 Future<void> initializeFirebase() async {
@@ -60,6 +66,55 @@ Future<void> initializeFirebase() async {
   }
 }
 
+Future<void> showCallkitIncoming(String uuid,String? displayName) async {
+  final params = CallKitParams(
+    id: uuid,
+    nameCaller: displayName ?? "不明な着信",
+    appName: 'Callkit',
+    avatar: 'https://i.pravatar.cc/100',
+    handle: '0123456789',
+    type: 0,
+    duration: 30000,
+    textAccept: 'Accept',
+    textDecline: 'Decline',
+    missedCallNotification: const NotificationParams(
+      showNotification: true,
+      isShowCallback: true,
+      subtitle: 'Missed call',
+      callbackText: 'Call back',
+    ),
+    extra: <String, dynamic>{'userId': '1a2b3c4d'},
+    headers: <String, dynamic>{'apiKey': 'Abc@123!', 'platform': 'flutter'},
+    android: const AndroidParams(
+      isCustomNotification: true,
+      isShowLogo: true,
+      logoUrl: 'assets/test.png',
+      ringtonePath: 'system_ringtone_default',
+      backgroundColor: '#0955fa',
+      backgroundUrl: 'assets/test.png',
+      actionColor: '#4CAF50',
+      textColor: '#ffffff',
+    ),
+    ios: const IOSParams(
+      iconName: 'CallKitLogo',
+      handleType: '',
+      supportsVideo: true,
+      maximumCallGroups: 2,
+      maximumCallsPerCallGroup: 1,
+      audioSessionMode: 'default',
+      audioSessionActive: true,
+      audioSessionPreferredSampleRate: 44100.0,
+      audioSessionPreferredIOBufferDuration: 0.005,
+      supportsDTMF: true,
+      supportsHolding: true,
+      supportsGrouping: false,
+      supportsUngrouping: false,
+      ringtonePath: 'system_ringtone_default',
+    ),
+  );
+  await FlutterCallkitIncoming.showCallkitIncoming(params);
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
@@ -78,15 +133,26 @@ void main() async {
     sound: true,
   );
 
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
+  // // CallKitのイベントリスナーを設定
+  // FlutterCallkitIncoming.onEvent.listen((event) {
+  //   print('CallKit Event: $event');
+  //   // イベントの処理
+  // });
 
-    if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification!.title} / ${message.notification!.body}');
-      // ここでローカル通知を表示するなどの処理を実装
-    }
-  });
+  // FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+  //   print('Got a message whilst in the foreground!');
+  //   print('Message data: [38;5;2m${message.data}[0m');
+
+  //   if (message.data['type'] == 'call') {
+  //     await showCallkitIncoming(UuidV4().toString());
+  //   }
+
+  //   if (message.notification != null) {
+  //     print(message.data);
+  //     print('Message also contained a notification: ${message.notification!.title} / ${message.notification!.body}');
+  //     // ここでローカル通知を表示するなどの処理を実装
+  //   }
+  // });
 
   runApp(
     MultiProvider(
@@ -115,6 +181,7 @@ class MyApp extends StatelessWidget {
       ),
       scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
       home: const MyHomePage(),
+      navigatorKey: navigatorKey,
     );
   }
 }
@@ -126,7 +193,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<MyHomePage> {
+class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
   bool failed = false;
 
   void signInWithGoogle(bool isExistUser) async {
@@ -283,11 +350,99 @@ class _LoginPageState extends State<MyHomePage> {
       authContext.inHomeScreen = true;
       authContext.userCredential = userCredential;
     } catch (e) {
-      print("SignIn Error: $e");
+      debugPrint("SignIn Error: $e");
       setState(() {
         failed = true;
       });
     }
+  }
+
+
+  String? _currentUuid;
+
+  late final FirebaseMessaging _firebaseMessaging;
+
+  @override
+  void initState(){
+    super.initState();
+    initFirebase();
+    WidgetsBinding.instance.addObserver(this);
+    FlutterCallkitIncoming.requestFullIntentPermission();
+
+    FlutterCallkitIncoming.onEvent.listen((event) async {
+      if (event != null && event.event == Event.actionCallAccept) {
+        final roomId = event.body["id"];
+        final token = await getRoom(roomId);
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => VoiceChat(
+              RoomInfo(
+                token: token,
+                displayName: "",
+                userId:""
+              )
+            )
+          ),
+        );
+      }
+    });
+
+    //Check call when open app from terminated
+    checkAndNavigationCallingPage();
+  }
+
+  Future<dynamic> getCurrentCall() async {
+    //check current call from pushkit if possible
+    var calls = await FlutterCallkitIncoming.activeCalls();
+    if (calls is List) {
+      if (calls.isNotEmpty) {
+        print('DATA: $calls');
+        _currentUuid = calls[0]['id'];
+        return calls[0];
+      } else {
+        _currentUuid = "";
+        return null;
+      }
+    }
+  }
+
+  Future<void> checkAndNavigationCallingPage() async {
+    var currentCall = await getCurrentCall();
+    if (currentCall != null) {
+      // NavigationService.instance.pushNamedIfNotCurrent(AppRoute.callingPage, args: currentCall);
+    }
+  }
+
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    print("これ");
+    print(state);
+    if (state == AppLifecycleState.resumed) {
+      //Check call when open app from background
+      checkAndNavigationCallingPage();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  Future<void> initFirebase() async {
+    await Firebase.initializeApp();
+    _firebaseMessaging = FirebaseMessaging.instance;
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+      print('Message title: ${message.notification?.title}, body: ${message.notification?.body}, data: ${message.data}');
+      if(message.data["type"] == "call"){      
+        showCallkitIncoming(message.data["room_id"],message.data["display_name"]);
+      }
+
+    });
+    _firebaseMessaging.getToken().then((token) {
+      print('Device Token FCM: $token');
+    });
   }
 
   @override

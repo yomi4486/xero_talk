@@ -64,6 +64,8 @@
 		<string>audio</string>
 		<string>fetch</string>
 		<string>remote-notification</string>
+		<string>voip</string>
+		<string>background-processing</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -82,5 +84,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app needs access to local network for voice calls</string>
+	<key>MetricKitEnabled</key>
+	<true/>
 </dict>
 </plist>

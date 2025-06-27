@@ -51,16 +51,18 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   Future<void> _initializeChatFileManager() async {
-    // channelInfoからフレンドのIDを取得
-    final String? friendId = widget.channelInfo['id'];
+    final isGroup = widget.channelInfo['type'] == 'group';
+    final String? id = widget.channelInfo['id'];
     chatFileManager = ChatFileManager(
       chatFileId: null,
-      friendId: friendId,
+      friendId: isGroup ? null : id,
+      groupId: isGroup ? id : null,
     );
     chatFileId = await chatFileManager.loadOrCreateChatFile();
     chatFileManager = ChatFileManager(
       chatFileId: chatFileId,
-      friendId: friendId,
+      friendId: isGroup ? null : id,
+      groupId: isGroup ? id : null,
     );
     await _loadChatHistory();
   }
@@ -138,6 +140,14 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   void addWidget(Widget newWidget, double currentPosition, {bool shouldScroll = true}) {
+    // すでに同じValueKeyを持つウィジェットが存在する場合は追加しない
+    if (newWidget.key is ValueKey) {
+      final newKeyValue = (newWidget.key as ValueKey).value;
+      final exists = returnWidget.any((w) =>
+        w.key is ValueKey && (w.key as ValueKey).value == newKeyValue
+      );
+      if (exists) return;
+    }
     returnWidget.add(newWidget);
     if (shouldScroll) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -352,6 +362,7 @@ class _MessageScreenState extends State<MessageScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     final instance = Provider.of<AuthContext>(context);
     final Color backgroundColor =
         Color.lerp(instance.theme[0], instance.theme[1], .5)!;
@@ -390,7 +401,7 @@ class _MessageScreenState extends State<MessageScreen> {
               }else{
                 messageId = content["id"];
               }
-              if (content["author"] != instance.id && content["author"]  != widget.channelInfo['id']){ 
+              if (content["author"] != instance.id && content["author"]  != widget.channelInfo['id'] && widget.channelInfo["id"] != content['channel']){ 
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: returnWidget,
@@ -430,7 +441,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: returnWidget,
                 );
-              }
+              }  
               lastMessageId = messageId; // 最終受信を上書き
               if (type == "edit_message") {
                 return Column(children: returnWidget);

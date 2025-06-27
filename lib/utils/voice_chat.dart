@@ -11,11 +11,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 final AuthContext instance = AuthContext();
 const Uuid uuid = Uuid();
 
-void call(String to_user_id) async {
+void call(String to_user_id, bool isGroup) async {
   final sendBody = {
     "type": "call",
     "author": instance.id,
-    "channel": to_user_id
+    "channel": to_user_id,
+    "isGroup": isGroup
   };
   final String data = convert.json.encode(sendBody);
   if (instance.mqttClient.connectionState != MqttConnectionState.connected) {
@@ -35,7 +36,6 @@ void call(String to_user_id) async {
 }
 
 Future<String> getRoom(String roomId) async {
-  print(roomId);
   String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
   final response = await http.get(
       Uri.parse("https://${dotenv.env['BASE_URL']}/voiceclient"),
@@ -45,7 +45,6 @@ Future<String> getRoom(String roomId) async {
         'roomId':roomId
       }
   );
-  print(response.body);
   if (response.statusCode != 200) {
     print('Request failed with status: ${response.statusCode}');
   }

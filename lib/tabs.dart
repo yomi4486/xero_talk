@@ -13,6 +13,7 @@ import 'package:xero_talk/utils/chat_file_manager.dart';
 import 'dart:convert' as convert;
 import 'dart:async';
 import 'package:mqtt_client/mqtt_client.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TabsProvider with ChangeNotifier {
   final PageController pageController = PageController(keepPage: true,initialPage: 0);
@@ -34,7 +35,21 @@ class TabsProvider with ChangeNotifier {
 
   String showId = "";
 
+  /// ユーザーが所属する全グループのresponse/{group_id}をsubscribe
+  Future<void> subscribeAllGroupChannels(String userId) async {
+    final groupSnapshot = await FirebaseFirestore.instance
+        .collection('groups')
+        .where('members', arrayContains: userId)
+        .get();
+    final authContext = AuthContext();
+    for (final doc in groupSnapshot.docs) {
+      final groupId = doc.id;
+      authContext.mqttClient.subscribe('response/$groupId', MqttQos.atMostOnce);
+    }
+  }
+
   Future<void> showChatScreen({String? id})async{
+    print("表示中:$id");
     if(id == null){
       pageController.animateToPage(
         0,
@@ -45,6 +60,9 @@ class TabsProvider with ChangeNotifier {
       return;
     }
     userData = await getUserProfile(id);
+    // グループチャンネルもsubscribe
+    final authContext = AuthContext();
+    await subscribeAllGroupChannels(authContext.id);
     pageController.animateToPage(        
         1,
         duration: Duration(milliseconds: 200),
@@ -195,7 +213,7 @@ class TabsScreen extends State<PageViewTabsScreen> {
                   messageId = content["id"];
                 }
                 if(type == 'send_message' && lastMessageId != messageId){
-                  if((instance.id != content['author'])&&(content['author'] != provider.showId || provider.pageController.page == 0)){
+                  if((instance.id != content['author'])&&(content['author'] != provider.showId && content['channel'] != provider.showId || provider.pageController.page == 0)){
                     showInfoSnack(context, content: content);
                     provider.saveNotification(content);
                   }     
