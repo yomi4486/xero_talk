@@ -36,7 +36,6 @@ void call(String to_user_id, bool isGroup) async {
 }
 
 Future<String> getRoom(String roomId) async {
-  print(roomId);
   String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
   final response = await http.get(
       Uri.parse("https://${dotenv.env['BASE_URL']}/voiceclient"),
@@ -46,7 +45,6 @@ Future<String> getRoom(String roomId) async {
         'roomId':roomId
       }
   );
-  print(response.body);
   if (response.statusCode != 200) {
     print('Request failed with status: ${response.statusCode}');
   }
