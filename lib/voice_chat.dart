@@ -6,6 +6,7 @@ import './utils/auth_context.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart';
+import 'dart:io' show Platform;
 
 class ParticipantWidget extends StatefulWidget {
   final Participant participant;
@@ -26,59 +27,60 @@ class _ParticipantState extends State<ParticipantWidget> {
   void initState() {
     super.initState();
     // 例: UUIDや相手の名前などを用意
-    final instance = AuthContext();
-    final uuid = instance.room.name; // 通話ごとにユニークなIDを生成
-    final displayName = widget.roomInfo.displayName;
+    if(Platform.isIOS){  
+      final instance = AuthContext();
+      final uuid = instance.room.name; // 通話ごとにユニークなIDを生成
+      final displayName = widget.roomInfo.displayName;
 
-    final params = CallKitParams(
-      id: uuid,
-      nameCaller: displayName,
-      appName: 'Xero Talk',
-      avatar: 'https://i.pravatar.cc/100',
-      handle: '0123456789',
-      type: 0, // 0: audio, 1: video
-      duration: 30000,
-      textAccept: 'Accept',
-      textDecline: 'Decline',
-      missedCallNotification: const NotificationParams(
-        showNotification: true,
-        isShowCallback: true,
-        subtitle: 'Missed call',
-        callbackText: 'Call back',
-      ),
-      extra: <String, dynamic>{'userId': '1a2b3c4d'},
-      headers: <String, dynamic>{'apiKey': 'Abc@123!', 'platform': 'flutter'},
-      android: const AndroidParams(
-        isCustomNotification: true,
-        isShowLogo: true,
-        logoUrl: 'assets/test.png',
-        ringtonePath: 'system_ringtone_default',
-        backgroundColor: '#0955fa',
-        backgroundUrl: 'assets/test.png',
-        actionColor: '#4CAF50',
-        textColor: '#ffffff',
-      ),
-      ios: const IOSParams(
-        iconName: 'CallKitLogo',
-        handleType: '',
-        supportsVideo: true,
-        maximumCallGroups: 2,
-        maximumCallsPerCallGroup: 1,
-        audioSessionMode: 'default',
-        audioSessionActive: true,
-        audioSessionPreferredSampleRate: 44100.0,
-        audioSessionPreferredIOBufferDuration: 0.005,
-        supportsDTMF: true,
-        supportsHolding: true,
-        supportsGrouping: false,
-        supportsUngrouping: false,
-        ringtonePath: 'system_ringtone_default',
-      ),
-    );
+      final params = CallKitParams(
+        id: uuid,
+        nameCaller: displayName,
+        appName: 'Xero Talk',
+        avatar: 'https://i.pravatar.cc/100',
+        handle: '0123456789',
+        type: 0, // 0: audio, 1: video
+        duration: 30000,
+        textAccept: 'Accept',
+        textDecline: 'Decline',
+        missedCallNotification: const NotificationParams(
+          showNotification: true,
+          isShowCallback: true,
+          subtitle: 'Missed call',
+          callbackText: 'Call back',
+        ),
+        extra: <String, dynamic>{'userId': '1a2b3c4d'},
+        headers: <String, dynamic>{'apiKey': 'Abc@123!', 'platform': 'flutter'},
+        android: const AndroidParams(
+          isCustomNotification: true,
+          isShowLogo: true,
+          logoUrl: 'assets/test.png',
+          ringtonePath: 'system_ringtone_default',
+          backgroundColor: '#0955fa',
+          backgroundUrl: 'assets/test.png',
+          actionColor: '#4CAF50',
+          textColor: '#ffffff',
+        ),
+        ios: const IOSParams(
+          iconName: 'CallKitLogo',
+          handleType: '',
+          supportsVideo: true,
+          maximumCallGroups: 2,
+          maximumCallsPerCallGroup: 1,
+          audioSessionMode: 'default',
+          audioSessionActive: true,
+          audioSessionPreferredSampleRate: 44100.0,
+          audioSessionPreferredIOBufferDuration: 0.005,
+          supportsDTMF: true,
+          supportsHolding: true,
+          supportsGrouping: false,
+          supportsUngrouping: false,
+          ringtonePath: 'system_ringtone_default',
+        ),
+      );
 
-    // CallKitで通話開始（発信）を宣言
-    FlutterCallkitIncoming.startCall(params);
-
+      // CallKitで通話開始（発信）を宣言
+      FlutterCallkitIncoming.startCall(params);
+    }
     widget.participant.addListener(_onChange);
     _updateVideoTrack();
   }
