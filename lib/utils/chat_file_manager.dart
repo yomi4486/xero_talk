@@ -30,7 +30,7 @@ class ChatFileManager {
           .get();
       
       if (doc.exists) {
-        final data = doc.data() as Map<String, dynamic>?;
+        final data = doc.data();
         storageType = data?['storage_type'] ?? "Firestore";
       }
     } catch (e) {
@@ -39,8 +39,8 @@ class ChatFileManager {
   }
 
   String get _chatId {
-    if (_groupId != null && _groupId!.isNotEmpty) {
-      return _groupId!;
+    if (_groupId != null && _groupId.isNotEmpty) {
+      return _groupId;
     }
     if (_userId == null || _friendId == null) return '';
     // ユーザーIDとフレンドIDを組み合わせて一意のチャットIDを生成
