@@ -72,6 +72,7 @@ dependencies:
   firebase_messaging: ^15.2.7
   mqtt_client: ^10.8.0
   flutter_callkit_incoming: ^2.5.2
+  flutter_webrtc: ^0.14.1
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
