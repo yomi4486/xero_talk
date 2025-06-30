@@ -301,27 +301,25 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
         // 新規ユーザーの場合
         bool connected = await authContext.startSession();
 
-        if (connected && mounted) {
+        if (connected) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AccountStartup()),
           );
         } else {
-          if(mounted){
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text('接続エラー'),
-                content: Text('サーバーに接続できませんでした。ネットワークやサーバー設定を確認してください。'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
-                  ),
-                ],
-              ),
-            );
-          }
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('接続エラー'),
+              content: Text('サーバーに接続できませんでした。ネットワークやサーバー設定を確認してください。'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('OK'),
+                ),
+              ],
+            ),
+          );
           return;
         }
       } else if (!authContext.inHomeScreen) {
@@ -333,21 +331,19 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
             MaterialPageRoute(builder: (context) => PageViewTabsScreen()),
           );
         } else {
-          if(mounted){
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text('接続エラー'),
-                content: Text('サーバーに接続できませんでした。ネットワークやサーバー設定を確認してください。'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text('OK'),
-                  ),
-                ],
-              ),
-            );
-          }
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('接続エラー'),
+              content: Text('サーバーに接続できませんでした。ネットワークやサーバー設定を確認してください。'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('OK'),
+                ),
+              ],
+            ),
+          );
           return;
         }
       }
@@ -362,7 +358,7 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
   }
 
 
-  // String? _currentUuid;
+  String? _currentUuid;
 
   late final FirebaseMessaging _firebaseMessaging;
 
@@ -401,10 +397,10 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
     if (calls is List) {
       if (calls.isNotEmpty) {
         print('DATA: $calls');
-        // _currentUuid = calls[0]['id'];
+        _currentUuid = calls[0]['id'];
         return calls[0];
       } else {
-        // _currentUuid = "";
+        _currentUuid = "";
         return null;
       }
     }

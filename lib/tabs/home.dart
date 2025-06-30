@@ -126,198 +126,194 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                     child: Stack(
                       clipBehavior: Clip.none, 
                       children: [
-                        ListView(
-                          children:[
-                            Padding(
-                              padding: const EdgeInsets.only(left: 95.0, right: 30.0, top: 30.0, bottom: 30.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // グループ一覧
-                                  StreamBuilder<QuerySnapshot>(
-                                    stream: FirebaseFirestore.instance
-                                        .collection('groups')
-                                        .where('members', arrayContains: instance.id)
-                                        .snapshots(),
-                                    builder: (context, groupSnapshot) {
-                                      if (groupSnapshot.hasError) {
-                                        return Center(child: Text('グループ取得エラー: ${groupSnapshot.error}'));
-                                      }
-                                      if (!groupSnapshot.hasData) {
-                                        return const Center(child: CircularProgressIndicator());
-                                      }
-                                      final groups = groupSnapshot.data!.docs;
-                                      if (groups.isEmpty) {
-                                        return Container(); // グループがなければ何も表示しない
-                                      }
-                                      final parentContext = context;
-                                      return Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          ...groups.map((doc) {
-                                            final data = doc.data() as Map<String, dynamic>;
-                                            return GestureDetector(
-                                              onTap: () {
-                                                final channelInfo = {
-                                                  'type': 'group',
-                                                  'id': doc.id,
-                                                  'name': data['name'],
-                                                  'members': data['members'],
-                                                  'createdAt': data['createdAt'],
-                                                };
-                                                tabsProvider.userData = channelInfo;
-                                                tabsProvider.showChatScreen(id: doc.id);
-                                              },
-                                              onLongPress: () {
-                                                showModalBottomSheet(
-                                                  context: context,
-                                                  shape: const RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                                                  ),
-                                                  builder: (context) {
-                                                    return SafeArea(
-                                                      child: Column(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          ListTile(
-                                                            leading: const Icon(Icons.edit),
-                                                            title: const Text('編集'),
-                                                            onTap: () {
-                                                              Navigator.pop(context); // まずボトムシートを閉じる
-                                                              Future.delayed(const Duration(milliseconds: 200), () {
-                                                                final TextEditingController nameController = TextEditingController(text: data['name'] ?? '');
-                                                                showDialog(
-                                                                  context: parentContext,
-                                                                  builder: (context) {
-                                                                    return AlertDialog(
-                                                                      title: const Text('グループ名を編集'),
-                                                                      content: TextField(
-                                                                        controller: nameController,
-                                                                        decoration: const InputDecoration(
-                                                                          labelText: 'グループ名',
-                                                                        ),
-                                                                      ),
-                                                                      actions: [
-                                                                        TextButton(
-                                                                          onPressed: () {
-                                                                            Navigator.pop(context);
-                                                                          },
-                                                                          child: const Text('キャンセル'),
-                                                                        ),
-                                                                        ElevatedButton(
-                                                                          onPressed: () async {
-                                                                            final newName = nameController.text.trim();
-                                                                            if (newName.isNotEmpty && newName != data['name']) {
-                                                                              await FirebaseFirestore.instance.collection('groups').doc(doc.id).update({'name': newName});
-                                                                            }
-                                                                            Navigator.pop(context);
-                                                                          },
-                                                                          child: const Text('保存'),
-                                                                        ),
-                                                                      ],
-                                                                    );
-                                                                  },
-                                                                );
-                                                              });
-                                                            },
-                                                          ),
-                                                          ListTile(
-                                                            leading: const Icon(Icons.delete, color: Colors.red),
-                                                            title: const Text('削除', style: TextStyle(color: Colors.red)),
-                                                            onTap: () async {
-                                                              Navigator.pop(context);
-                                                              final confirm = await showDialog<bool>(
-                                                                context: context,
-                                                                builder: (context) => AlertDialog(
-                                                                  title: const Text('グループ削除'),
-                                                                  content: const Text('本当にこのグループを削除しますか？'),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 95.0, right: 30.0, top: 30.0, bottom: 30.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // グループ一覧
+                              StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('groups')
+                                    .where('members', arrayContains: instance.id)
+                                    .snapshots(),
+                                builder: (context, groupSnapshot) {
+                                  if (groupSnapshot.hasError) {
+                                    return Center(child: Text('グループ取得エラー: ${groupSnapshot.error}'));
+                                  }
+                                  if (!groupSnapshot.hasData) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  }
+                                  final groups = groupSnapshot.data!.docs;
+                                  if (groups.isEmpty) {
+                                    return Container(); // グループがなければ何も表示しない
+                                  }
+                                  final parentContext = context;
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      ...groups.map((doc) {
+                                        final data = doc.data() as Map<String, dynamic>;
+                                        return GestureDetector(
+                                          onTap: () {
+                                            final channelInfo = {
+                                              'type': 'group',
+                                              'id': doc.id,
+                                              'name': data['name'],
+                                              'members': data['members'],
+                                              'createdAt': data['createdAt'],
+                                            };
+                                            tabsProvider.userData = channelInfo;
+                                            tabsProvider.showChatScreen(id: doc.id);
+                                          },
+                                          onLongPress: () {
+                                            showModalBottomSheet(
+                                              context: context,
+                                              shape: const RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                                              ),
+                                              builder: (context) {
+                                                return SafeArea(
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      ListTile(
+                                                        leading: const Icon(Icons.edit),
+                                                        title: const Text('編集'),
+                                                        onTap: () {
+                                                          Navigator.pop(context); // まずボトムシートを閉じる
+                                                          Future.delayed(const Duration(milliseconds: 200), () {
+                                                            final TextEditingController nameController = TextEditingController(text: data['name'] ?? '');
+                                                            showDialog(
+                                                              context: parentContext,
+                                                              builder: (context) {
+                                                                return AlertDialog(
+                                                                  title: const Text('グループ名を編集'),
+                                                                  content: TextField(
+                                                                    controller: nameController,
+                                                                    decoration: const InputDecoration(
+                                                                      labelText: 'グループ名',
+                                                                    ),
+                                                                  ),
                                                                   actions: [
                                                                     TextButton(
-                                                                      onPressed: () => Navigator.pop(context, false),
+                                                                      onPressed: () {
+                                                                        Navigator.pop(context);
+                                                                      },
                                                                       child: const Text('キャンセル'),
                                                                     ),
-                                                                    TextButton(
-                                                                      onPressed: () => Navigator.pop(context, true),
-                                                                      child: const Text('削除', style: TextStyle(color: Colors.red)),
+                                                                    ElevatedButton(
+                                                                      onPressed: () async {
+                                                                        final newName = nameController.text.trim();
+                                                                        if (newName.isNotEmpty && newName != data['name']) {
+                                                                          await FirebaseFirestore.instance.collection('groups').doc(doc.id).update({'name': newName});
+                                                                        }
+                                                                        Navigator.pop(context);
+                                                                      },
+                                                                      child: const Text('保存'),
                                                                     ),
                                                                   ],
-                                                                ),
-                                                              );
-                                                              if (confirm == true) {
-                                                                await FirebaseFirestore.instance.collection('groups').doc(doc.id).delete();
-                                                              }
-                                                            },
-                                                          ),
-                                                        ],
+                                                                );
+                                                              },
+                                                            );
+                                                          });
+                                                        },
                                                       ),
-                                                    );
-                                                  },
+                                                      ListTile(
+                                                        leading: const Icon(Icons.delete, color: Colors.red),
+                                                        title: const Text('削除', style: TextStyle(color: Colors.red)),
+                                                        onTap: () async {
+                                                          Navigator.pop(context);
+                                                          final confirm = await showDialog<bool>(
+                                                            context: context,
+                                                            builder: (context) => AlertDialog(
+                                                              title: const Text('グループ削除'),
+                                                              content: const Text('本当にこのグループを削除しますか？'),
+                                                              actions: [
+                                                                TextButton(
+                                                                  onPressed: () => Navigator.pop(context, false),
+                                                                  child: const Text('キャンセル'),
+                                                                ),
+                                                                TextButton(
+                                                                  onPressed: () => Navigator.pop(context, true),
+                                                                  child: const Text('削除', style: TextStyle(color: Colors.red)),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                          if (confirm == true) {
+                                                            await FirebaseFirestore.instance.collection('groups').doc(doc.id).delete();
+                                                          }
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
                                                 );
                                               },
-                                              child: ListTile(
-                                                leading: CircleAvatar(
-                                                  backgroundColor: Colors.white,
-                                                  child: Icon(Icons.group, color: Colors.blue),
-                                                ),
-                                                title: Text(
-                                                  data['name'] ?? 'グループ',
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                                              ),
                                             );
-                                          }),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                  // フレンド一覧
-                                  StreamBuilder<List<Friend>>(
-                                    stream: _friendService.getFriends(instance.id),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasError) {
-                                        return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
-                                      }
-
-                                      if (!snapshot.hasData) {
-                                        return const Center(child: CircularProgressIndicator());
-                                      }
-
-                                      final friends = snapshot.data!;
-                                      if (friends.isEmpty) {
-                                        return const Center(
-                                          child: Text(
-                                            'フレンドがいません',
-                                            style: TextStyle(color: Colors.white),
+                                          },
+                                          child: ListTile(
+                                            leading: CircleAvatar(
+                                              backgroundColor: Colors.white,
+                                              child: Icon(Icons.group, color: Colors.blue),
+                                            ),
+                                            title: Text(
+                                              data['name'] ?? 'グループ',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                                           ),
                                         );
-                                      }
-
-                                      return Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: friends.map((friend) {
-                                          final friendId = friend.senderId == instance.id
-                                              ? friend.receiverId
-                                              : friend.senderId;
-                                          return GestureDetector(
-                                            onTap: () {
-                                              tabsProvider.showChatScreen(id: friendId);
-                                            },
-                                            child: ChatListWidget(
-                                              userId: friendId,
-                                            ),
-                                          );
-                                        }).toList(),
-                                      );
-                                    },
-                                  ),
-                                ],
+                                      }),
+                                    ],
+                                  );
+                                },
                               ),
-                            ),
-                          ]
+                              // フレンド一覧
+                              StreamBuilder<List<Friend>>(
+                                stream: _friendService.getFriends(instance.id),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasError) {
+                                    return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
+                                  }
+
+                                  if (!snapshot.hasData) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  }
+
+                                  final friends = snapshot.data!;
+                                  if (friends.isEmpty) {
+                                    return const Center(
+                                      child: Text(
+                                        'フレンドがいません',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    );
+                                  }
+
+                                  return Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: friends.map((friend) {
+                                      final friendId = friend.senderId == instance.id
+                                          ? friend.receiverId
+                                          : friend.senderId;
+                                      return GestureDetector(
+                                        onTap: () {
+                                          tabsProvider.showChatScreen(id: friendId);
+                                        },
+                                        child: ChatListWidget(
+                                          userId: friendId,
+                                        ),
+                                      );
+                                    }).toList(),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                         Positioned(
                           top: 0,

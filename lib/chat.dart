@@ -12,7 +12,6 @@ import 'package:xero_talk/tabs.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
 import 'package:uuid/uuid.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 Uint8List base64ToUint8List(String base64String) {
   return base64Decode(base64String);
@@ -75,95 +74,15 @@ class _chat extends State<chat> {
   final tabsProvider = TabsProvider();
   // MessageScreenのStateにアクセスするためのGlobalKey
   final GlobalKey<MessageScreenState> messageScreenKey = GlobalKey<MessageScreenState>();
-  
-  // Hiveボックス
-  late Box _chatDraftBox;
-  String get _draftKey => 'draft_${channelInfo["id"]}';
 
   @override
   void initState(){
     super.initState();
-    _initializeHiveAndLoadDraft();
-  }
-
-  Future<void> _initializeHiveAndLoadDraft() async {
-    await _initializeHive();
-    await _loadDraft();
-  }
-
-  Future<void> _initializeHive() async {
-    _chatDraftBox = await Hive.openBox('chat_drafts');
-  }
-
-  Future<void> _loadDraft() async {
-    try {
-      // Hiveボックスが初期化されているかチェック
-      if (!_chatDraftBox.isOpen) {
-        print('Hive box is not open, skipping draft load');
-        return;
-      }
-      
-      final draft = _chatDraftBox.get(_draftKey);
-      if (draft != null) {
-        final Map<String, dynamic> draftData = Map<String, dynamic>.from(draft);
-        setState(() {
-          chatText = draftData['text'] ?? '';
-          images = List<String>.from(draftData['images'] ?? []);
-        });
-        fieldText.text = chatText;
-        print('Draft loaded for channel ${channelInfo["id"]}: text="${chatText}", images=${images.length}');
-      }
-    } catch (e) {
-      print('Draft load error: $e');
-    }
-  }
-
-  Future<void> _saveDraft() async {
-    try {
-      // Hiveボックスが初期化されているかチェック
-      if (!_chatDraftBox.isOpen) {
-        print('Hive box is not open, skipping draft save');
-        return;
-      }
-      
-      if (chatText.isNotEmpty || images.isNotEmpty) {
-        await _chatDraftBox.put(_draftKey, {
-          'text': chatText,
-          'images': images,
-          'timestamp': DateTime.now().millisecondsSinceEpoch,
-        });
-        print('Draft saved for channel ${channelInfo["id"]}: text="${chatText}", images=${images.length}');
-      } else {
-        await _chatDraftBox.delete(_draftKey);
-        print('Draft cleared for channel ${channelInfo["id"]} (empty content)');
-      }
-    } catch (e) {
-      print('Draft save error: $e');
-    }
-  }
-
-  Future<void> _clearDraft() async {
-    try {
-      // Hiveボックスが初期化されているかチェック
-      if (!_chatDraftBox.isOpen) {
-        print('Hive box is not open, skipping draft clear');
-        return;
-      }
-      
-      await _chatDraftBox.delete(_draftKey);
-      print('Draft cleared for channel ${channelInfo["id"]}');
-    } catch (e) {
-      print('Draft clear error: $e');
-    }
   }
 
   @override
   void dispose() {
     fieldText.dispose();
-    // Hiveボックスをクローズ
-    if (_chatDraftBox.isOpen) {
-      _chatDraftBox.close();
-    }
     super.dispose();
   }
 
@@ -271,7 +190,6 @@ class _chat extends State<chat> {
                                         setState(() {
                                           images.removeAt(index);
                                         });
-                                        _saveDraft(); // 画像削除時にドラフトを保存
                                       },
                                     ),
                                   ),
@@ -326,7 +244,6 @@ class _chat extends State<chat> {
                             ),
                             onChanged: (text) {
                               chatText = text;
-                              _saveDraft(); // テキスト変更時にドラフトを保存
                             },
                           ),
                         ),
@@ -373,7 +290,6 @@ class _chat extends State<chat> {
                                 chatText = "";
                                 images = [];
                                 fieldText.clear();
-                                await _clearDraft(); // 送信後にドラフトを削除
                               },
                               icon: Container(
                                 padding: const EdgeInsets.all(12),
@@ -433,7 +349,6 @@ class _chat extends State<chat> {
                             setState(() {
                               images.add(image);
                             });
-                            _saveDraft(); // 画像追加時にドラフトを保存
                           }
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(

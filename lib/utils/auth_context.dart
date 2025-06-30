@@ -49,10 +49,9 @@ class AuthContext extends ChangeNotifier {
 
   Future<bool> startSession() async {
     try{// すでに接続中または接続試行中なら何もしない
-    if (
+    if (mqttClient != null &&
         (mqttClient.connectionState == MqttConnectionState.connected ||
-         mqttClient.connectionState == MqttConnectionState.connecting)
-    ) {
+         mqttClient.connectionState == MqttConnectionState.connecting)) {
       debugPrint('MQTT is already connecting or connected. Skipping startSession.');
       return mqttClient.connectionState == MqttConnectionState.connected;
     }

@@ -22,7 +22,7 @@ Future<void> sendMessage(String? text, String channelId,
   /// instanceで有効になっているソケット通信に対してメッセージを送信する
   final instance = AuthContext();
   List<String> uploadedImageUrls = [];
-  if(text!.isEmpty && imageList.isEmpty){return;}
+  if(text!.length == 0){return;}
   if (imageList.isNotEmpty) {
     for (String base64Image in imageList) {
       try {
@@ -49,7 +49,7 @@ Future<void> sendMessage(String? text, String channelId,
     }
   }
 
-  if (text.isNotEmpty || uploadedImageUrls.isNotEmpty) {
+  if (text!.isNotEmpty || uploadedImageUrls.isNotEmpty) {
     final sendBody = {
       "user_id": instance.id,
       "type": "send_message",
@@ -160,17 +160,18 @@ Future<void> saveImageToGallery(String imageUrlOrBase64) async {
       imageData = base64Decode(imageUrlOrBase64);
     }
 
-    // 一時ディレクトリを取得
-    final tempDir = await getTemporaryDirectory();
-    final filePath = '${tempDir.path}/${uuid.v4()}.png';
+    if (imageData != null) {
+      // 一時ディレクトリを取得
+      final tempDir = await getTemporaryDirectory();
+      final filePath = '${tempDir.path}/${uuid.v4()}.png';
 
-    // ファイルにデコードしたデータを書き込む
-    final file = File(filePath);
-    await file.writeAsBytes(imageData);
+      // ファイルにデコードしたデータを書き込む
+      final file = File(filePath);
+      await file.writeAsBytes(imageData);
 
-    // ギャラリーに保存
-    await GallerySaver.saveImage(file.path);
-  
+      // ギャラリーに保存
+      await GallerySaver.saveImage(file.path);
+    }
   } catch (e) {
     debugPrint('Failed to save image to gallery: $e');
   }

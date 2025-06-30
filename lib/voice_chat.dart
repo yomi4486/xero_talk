@@ -6,7 +6,7 @@ import './utils/auth_context.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart';
-// import 'dart:io' show Platform;
+import 'dart:io' show Platform;
 
 class ParticipantWidget extends StatefulWidget {
   final Participant participant;
