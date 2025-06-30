@@ -8,8 +8,6 @@ import 'package:xero_talk/widgets/user_icon.dart';
 import 'dart:convert' as convert;
 import '../utils/voice_chat.dart';
 import '../voice_chat.dart';
-import 'package:provider/provider.dart';
-import 'package:xero_talk/utils/auth_context.dart';
 import 'dart:io'; // Ensure dart:io is imported for HttpClient
 import 'package:flutter/foundation.dart'; // Ensure flutter/foundation.dart is imported for consolidateHttpClientResponseBytes
 

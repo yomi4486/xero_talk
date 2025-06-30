@@ -1,49 +1,55 @@
 import 'package:xero_talk/utils/auth_context.dart';
 import 'dart:convert' as convert;
-import 'package:mqtt_client/mqtt_client.dart' show MqttQos, MqttConnectionState;
-import 'package:typed_data/typed_buffers.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image/image.dart' as img;
+import 'dart:typed_data';
 
 final AuthContext instance = AuthContext();
 
 Future<void> upload(String token, String imageData) async {
-  final sendBody = {
-    "user_id": instance.id,
-    "content": imageData,
-  };
-  final String data = convert.json.encode(sendBody);
-  if (instance.mqttClient.connectionState != MqttConnectionState.connected) {
-    await instance.restoreConnection();
-  }
   try {
-    Uint8Buffer buffer = Uint8Buffer();
-    buffer.addAll(data.codeUnits);
-    instance.mqttClient.publishMessage(
-      'request/seticon',
-      MqttQos.atMostOnce,
-      buffer,
+    // Base64デコード
+    final Uint8List imageBytes = Uint8List.fromList(
+      convert.base64Decode(imageData.split(',').last)
     );
+    
+    // 画像をデコード
+    final img.Image? originalImage = img.decodeImage(imageBytes);
+    if (originalImage == null) {
+      throw Exception('Failed to decode image');
+    }
+    
+    // 1024x1024にリサイズ（アスペクト比を保持）
+    final img.Image resizedImage = img.copyResize(
+      originalImage,
+      width: 1024,
+      height: 1024,
+      interpolation: img.Interpolation.cubic
+    );
+    
+    // PNG形式でエンコード（圧縮）
+    final Uint8List compressedImageBytes = Uint8List.fromList(
+      img.encodePng(resizedImage, level: 6) // 圧縮レベル6（0-9、9が最高圧縮）
+    );
+    
+    // Firebase Storage の参照を作成
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child('icons/users/${instance.id}.png');
+    
+    // 画像をアップロード
+    final uploadTask = storageRef.putData(
+      compressedImageBytes,
+      SettableMetadata(
+        contentType: 'image/png',
+        cacheControl: 'public, max-age=31536000', // 1年間キャッシュ
+      ),
+    );
+    
+    // アップロード完了を待つ
+    await uploadTask;
   } catch (e) {
-    print('送信に失敗：${e}');
+    print('アイコンアップロードに失敗：$e');
     rethrow;
-  }
-
-  // レスポンスを待つ
-  final response = await instance.mqttStream
-      .where((msg) {
-        try {
-          final json = convert.json.decode(msg);
-          return json["status"] == "ok" || json["status"] == "error";
-        } catch (_) {
-          return false;
-        }
-      })
-      .first
-      .timeout(const Duration(seconds: 10), onTimeout: () {
-        throw Exception("seticon response timeout");
-      });
-
-  final json = convert.json.decode(response);
-  if (json["status"] != "ok") {
-    print('Request failed: [31m${json["message"]}[0m');
   }
 }
