@@ -176,6 +176,9 @@ class AuthContext extends ChangeNotifier {
       mqttClient.disconnect();
       await googleSignIn.signOut();
       await FirebaseAuth.instance.signOut();
+      // HiveからuserIdを削除
+      var userInfoBox = await Hive.openBox('userInfo');
+      await userInfoBox.delete('userId');
     } catch (_) {}
   }
 
