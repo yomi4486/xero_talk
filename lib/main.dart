@@ -276,15 +276,16 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
           await FirebaseAuth.instance.signInWithCredential(credential);
       final httpClient = (await googleSignIn.authenticatedClient())!;
       googleDriveApi = drive.DriveApi(httpClient);
-      authContext.id = await userCredential.additionalUserInfo?.profile?['sub'];
+
       // idが取得できなかった場合はHiveから取得
-      if (authContext.id == null || authContext.id.isEmpty) {
+      if (userCredential.additionalUserInfo?.profile?['sub'] == null) {
         var userInfoBox = await Hive.openBox('userInfo');
-        authContext.id = userInfoBox.get('userId', defaultValue: '');
+        authContext.id = userInfoBox.get('userId', defaultValue: userCredential.additionalUserInfo?.profile?['sub']);
       } else {
         // idが取得できた場合はHiveに保存
         var userInfoBox = await Hive.openBox('userInfo');
-        await userInfoBox.put('userId', authContext.id);
+        await userInfoBox.put('userId', userCredential.additionalUserInfo?.profile?['sub']);
+        authContext.id = await userCredential.additionalUserInfo?.profile?['sub'];
       }
       
       authContext.googleDriveApi = googleDriveApi;
