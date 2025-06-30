@@ -468,7 +468,7 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
               children: <Widget>[
                 Image.asset('assets/images/logo.png',
                     fit: BoxFit.contain,
-                    width: MediaQuery.of(context).size.width * 0.5),
+                    width: MediaQuery.of(context).size.width * 0.5 > 300 ? 300 : MediaQuery.of(context).size.width * 0.5) ,
                 (FirebaseAuth.instance.currentUser == null || failed
                     ? Column(children: [
                         Container(
