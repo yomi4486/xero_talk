@@ -12,6 +12,7 @@ import 'dart:convert' as convert;
 import 'dart:async';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class TabsProvider with ChangeNotifier {
   final PageController pageController = PageController(keepPage: true,initialPage: 0);
@@ -49,11 +50,13 @@ class TabsProvider with ChangeNotifier {
   Future<void> showChatScreen({String? id})async{
     print("表示中:$id");
     if(id == null){
-      pageController.animateToPage(
-        0,
-        duration: Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        pageController.animateToPage(
+          0,
+          duration: Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+        );
+      });
       notifyListeners();
       return;
     }
@@ -61,11 +64,13 @@ class TabsProvider with ChangeNotifier {
     // グループチャンネルもsubscribe
     final authContext = AuthContext();
     await subscribeAllGroupChannels(authContext.id);
-    pageController.animateToPage(        
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      pageController.animateToPage(
         1,
         duration: Duration(milliseconds: 200),
         curve: Curves.easeInOut,
       );
+    });
     showId = id;
     notifyListeners();
   }
@@ -111,7 +116,7 @@ class PageViewTabsScreen extends StatefulWidget {
   TabsScreen createState() => TabsScreen();
 }
 
-class TabsScreen extends State<PageViewTabsScreen> {
+class TabsScreen extends State<PageViewTabsScreen> with WidgetsBindingObserver {
   bool _isShowingDisconnectSnackBar = false;
   Timer? _connectionTimer;
 
@@ -121,6 +126,17 @@ class TabsScreen extends State<PageViewTabsScreen> {
     oneColor = instance.theme[0];
     twoColor = instance.theme[1];
     _startConnectionMonitoring();
+    WidgetsBinding.instance.addObserver(this);
+    // プッシュ通知からアプリを開いたときのイベント
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message)async {
+      print('onMessageOpenedApp: [38;5;246m[48;5;236m${message.data}[0m');
+      if(message.data["type"] == "send_message"){
+        print("きた");
+        final tabsProvider = Provider.of<TabsProvider>(context, listen: false);
+        tabsProvider.showChatScreen(id: message.data["author"]);
+      }
+      // 他のtypeの場合もここで分岐可能
+    });
   }
 
   void _startConnectionMonitoring() {
