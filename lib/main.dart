@@ -277,6 +277,15 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       final httpClient = (await googleSignIn.authenticatedClient())!;
       googleDriveApi = drive.DriveApi(httpClient);
       authContext.id = await userCredential.additionalUserInfo?.profile?['sub'];
+      // idが取得できなかった場合はHiveから取得
+      if (authContext.id == null || authContext.id.isEmpty) {
+        var userInfoBox = await Hive.openBox('userInfo');
+        authContext.id = userInfoBox.get('userId', defaultValue: '');
+      } else {
+        // idが取得できた場合はHiveに保存
+        var userInfoBox = await Hive.openBox('userInfo');
+        await userInfoBox.put('userId', authContext.id);
+      }
       
       authContext.googleDriveApi = googleDriveApi;
       authContext.userCredential = userCredential;
