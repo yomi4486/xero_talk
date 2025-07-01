@@ -29,7 +29,7 @@ late drive.DriveApi googleDriveApi;
 bool failed = false;
 
 @pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Firebase初期化が必要な場合（Isolateの実行環境による）
   if(message.data["type"] == "call"){
     showCallkitIncoming(message.data["room_id"],message.data["display_name"]);
@@ -446,7 +446,7 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
   Future<void> initFirebase() async {
     await Firebase.initializeApp();
     _firebaseMessaging = FirebaseMessaging.instance;
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       print('Message title: ${message.notification?.title}, body: ${message.notification?.body}, data: ${message.data}');
       if(message.data["type"] == "call"){      
