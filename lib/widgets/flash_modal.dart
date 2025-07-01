@@ -21,20 +21,17 @@ Future<void> showInfoSnack(
   final userProfile = await getUserProfile(content['author']);
   context.showFlash<bool>(
     duration: Duration(seconds: 5),
+    barrierColor: Colors.transparent, // 画面全体のタッチイベントを吸収しない
+    barrierDismissible: false, // バリアタップで閉じない
     builder: (context, controller){
       return Flash(
         controller: controller,
         position: FlashPosition.top,
-        child: Dismissible(
-          key: UniqueKey(),
-          direction: DismissDirection.up, // 上方向のみ許可
-          onDismissed: (_) => controller.dismiss(),
-          child:ProgressFlash(
-            controller: controller,
-            content: content,
-            userProfile: userProfile,
-          ),
-        )
+        child: ProgressFlash(
+          controller: controller,
+          content: content,
+          userProfile: userProfile,
+        ),
       );
     }
   );
@@ -53,6 +50,7 @@ class ProgressFlash extends StatefulWidget {
 class _ProgressFlashState extends State<ProgressFlash> {
   final instance = AuthContext();
   double _progress = 0.0;
+  bool _isDismissed = false;
 
   @override
   void initState() {
@@ -60,15 +58,17 @@ class _ProgressFlashState extends State<ProgressFlash> {
     _startProgress();
   }
 
-  void _startProgress() {
-    Future.delayed(Duration(milliseconds: 100), () async {
-      for (int i = 0; i <= 100; i++) {
-        await Future.delayed(Duration(milliseconds: 50));
-        if (!mounted) return;
-        setState(() => _progress = i / 100);
-      }
+  void _startProgress() async {
+    await Future.delayed(Duration(milliseconds: 100));
+    for (int i = 0; i <= 100; i++) {
+      await Future.delayed(Duration(milliseconds: 50));
+      if (!mounted || _isDismissed) return;
+      setState(() => _progress = i / 100);
+    }
+    if (!_isDismissed) {
+      _isDismissed = true;
       widget.controller.dismiss(); // バーが最大になったら閉じる
-    });
+    }
   }
 
   @override
@@ -77,84 +77,94 @@ class _ProgressFlashState extends State<ProgressFlash> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children:[
-        Container(
-          decoration: BoxDecoration(
-            color: Color.fromARGB(255, 22, 22, 22),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.5), // 影の色と透明度
-                spreadRadius: 2, // 影の広がり
-                blurRadius: 5, // ぼかしの強さ
-                offset: Offset(3, 3), // 影の位置 (x, y)
-              ),
-            ],
-          ),
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.3,
-          ),
-          margin: EdgeInsets.only(top: 60,left: 20,right: 20),
-          child:Wrap(
-            children: [
-              Container(      
-                width: MediaQuery.of(context).size.width * 0.9,
-                padding: EdgeInsets.all(22),
-                child: Row(
-                  spacing: 10,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children:[
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ClipRRect(
-                          // アイコン表示（角丸）
-                          borderRadius: BorderRadius.circular(1000),
-                          child: UserIcon(userId: widget.content['author'],size:MediaQuery.of(context).size.width * 0.1)
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        DefaultTextStyle(
-                          style: TextStyle(),
-                          child: Text(
-                            widget.userProfile['display_name'],
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
+        Dismissible(
+          key: const ValueKey('progress_flash'),
+          direction: DismissDirection.up, // 上方向のみ許可
+          onDismissed: (_) {
+            if (!_isDismissed) {
+              _isDismissed = true;
+              widget.controller.dismiss();
+            }
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 22, 22, 22),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5), // 影の色と透明度
+                  spreadRadius: 2, // 影の広がり
+                  blurRadius: 5, // ぼかしの強さ
+                  offset: Offset(3, 3), // 影の位置 (x, y)
+                ),
+              ],
+            ),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.3,
+            ),
+            margin: EdgeInsets.only(top: 60,left: 20,right: 20),
+            child:Wrap(
+              children: [
+                Container(      
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  padding: EdgeInsets.all(22),
+                  child: Row(
+                    spacing: 10,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children:[
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            // アイコン表示（角丸）
+                            borderRadius: BorderRadius.circular(1000),
+                            child: UserIcon(userId: widget.content['author'],size:MediaQuery.of(context).size.width * 0.1)
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          DefaultTextStyle(
+                            style: TextStyle(),
+                            child: Text(
+                              widget.userProfile['display_name'],
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          child: DefaultTextStyle(
-                            overflow: TextOverflow.fade,
-                            style: TextStyle(),
-                            child: RichText(
-                              text: TextSpan(
-                                children: getTextSpans(widget.content["content"], false, textColor),
-                                style:
-                                    TextStyle(color: textColor[1], fontSize: 16.0),
-                              ),
-                            )
+                          SizedBox(
+                            child: DefaultTextStyle(
+                              overflow: TextOverflow.fade,
+                              style: TextStyle(),
+                              child: RichText(
+                                text: TextSpan(
+                                  children: getTextSpans(widget.content["content"], false, textColor),
+                                  style:
+                                      TextStyle(color: textColor[1], fontSize: 16.0),
+                                ),
+                              )
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ]
-                )
-              ),
-              LinearProgressIndicator(
-                minHeight: 5,
-                value: _progress,
-                backgroundColor: Color.fromARGB(0, 22, 22, 22),
-                valueColor: AlwaysStoppedAnimation<Color>(instance.theme[0]),
-              ),
-            ],
-          )
+                        ],
+                      ),
+                    ]
+                  )
+                ),
+                LinearProgressIndicator(
+                  minHeight: 5,
+                  value: _progress,
+                  backgroundColor: Color.fromARGB(0, 22, 22, 22),
+                  valueColor: AlwaysStoppedAnimation<Color>(instance.theme[0]),
+                ),
+              ],
+            )
+          ),
         ),
       ]
     );
