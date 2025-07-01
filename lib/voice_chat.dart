@@ -99,15 +99,16 @@ class _ParticipantState extends State<ParticipantWidget> {
     var visibleVideos = widget.participant.videoTrackPublications.where((pub) {
       return pub.kind == TrackType.VIDEO && pub.subscribed && !pub.muted;
     });
-
-    if (visibleVideos.isNotEmpty) {
-      setState(() {
-        videoPub = visibleVideos.first;
-      });
-    } else {
-      setState(() {
-        videoPub = null;
-      });
+    if(mounted){
+      if (visibleVideos.isNotEmpty) {
+        setState(() {
+          videoPub = visibleVideos.first;
+        });
+      } else {
+        setState(() {
+          videoPub = null;
+        });
+      }
     }
   }
 
@@ -261,11 +262,11 @@ class _VoiceChatState extends State<VoiceChat> {
       })
       ..on<TrackSubscribedEvent>((e) {
         debugPrint('Track subscribed: ${e.track.kind}');
-        setState(() {});
+        if(mounted) setState(() {});
       })
       ..on<TrackUnsubscribedEvent>((e) {
         debugPrint('Track unsubscribed: ${e.track.kind}');
-        setState(() {});
+        if(mounted) setState(() {});
       });
 
     try {
@@ -278,9 +279,11 @@ class _VoiceChatState extends State<VoiceChat> {
       }
       await instance.room.localParticipant?.setMicrophoneEnabled(true);
 
-      setState(() {   
-        localParticipant = instance.room.localParticipant;
-      });
+      if(mounted){ 
+        setState(() {   
+          localParticipant = instance.room.localParticipant;
+        });
+      }
     } catch (e) {
       debugPrint('Failed to connect: $e');
       Navigator.of(context).pop();
@@ -288,16 +291,20 @@ class _VoiceChatState extends State<VoiceChat> {
   }
 
   void _updateParticipants() {
-    setState(() {
-      remoteParticipants = instance.room.remoteParticipants.values.toList();
-    });
+    if(mounted){
+      setState(() {
+        remoteParticipants = instance.room.remoteParticipants.values.toList();
+      });
+    }
   }
 
   void _onRoomChange() {
-    setState(() {
-      localParticipant = instance.room.localParticipant;
-      remoteParticipants = instance.room.remoteParticipants.values.toList();
-    });
+    if(mounted){
+      setState(() {
+        localParticipant = instance.room.localParticipant;
+        remoteParticipants = instance.room.remoteParticipants.values.toList();
+      });
+    }
   }
 
   @override
@@ -337,9 +344,11 @@ class _VoiceChatState extends State<VoiceChat> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        setState(() {
-                          _selectedParticipant = null;
-                        });
+                        if(mounted){
+                          setState(() {
+                            _selectedParticipant = null;
+                          });
+                        }
                       },
                       child: Container(
                         margin: const EdgeInsets.all(16),
@@ -401,9 +410,11 @@ class _VoiceChatState extends State<VoiceChat> {
                         final isLocal = participant == localParticipant;
                         return GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _selectedParticipant = participant;
-                            });
+                            if(mounted){
+                              setState(() {
+                                _selectedParticipant = participant;
+                              });
+                            }
                           },
                           child: Container(
                             width: size.width * 0.3,
@@ -473,9 +484,11 @@ class _VoiceChatState extends State<VoiceChat> {
                     final isLocal = participant == localParticipant;
                     return GestureDetector(
                       onTap: () {
-                        setState(() {
-                          _selectedParticipant = participant;
-                        });
+                        if(mounted){
+                          setState(() {
+                            _selectedParticipant = participant;
+                          });
+                        }
                       },
                       child: Container(
                         constraints: BoxConstraints(
@@ -552,7 +565,7 @@ class _VoiceChatState extends State<VoiceChat> {
                               } else {
                                 await instance.room.localParticipant?.setCameraEnabled(true,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
                               }
-                              setState(() {});
+                              if(mounted) setState(() {});
                             } : null,
                             icon: cameraAvailable
                                 ? Icon(
@@ -596,7 +609,7 @@ class _VoiceChatState extends State<VoiceChat> {
                                 _isFrontCamera = !_isFrontCamera;
                                 await instance.room.localParticipant?.setCameraEnabled(false);
                                 await instance.room.localParticipant?.setCameraEnabled(true,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
-                                setState((){});
+                                if(mounted) setState((){});
                               },
                               icon: Icon(
                                 Icons.cameraswitch,
@@ -647,7 +660,7 @@ class _VoiceChatState extends State<VoiceChat> {
                                 await instance.room.localParticipant
                                     ?.setMicrophoneEnabled(false);
                               }
-                              setState(() {});
+                              if(mounted) setState(() {});
                             },
                             icon: micAvailable
                                 ? Icon(
