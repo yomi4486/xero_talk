@@ -352,20 +352,27 @@ class _chat extends State<chat> {
                                     // 送信内容を即時反映
                                     final now = DateTime.now().millisecondsSinceEpoch;
                                     final clientId = Uuid().v4();
+                                    // Firestore保存時はattachmentsは空リストにする（URLはsendMessageでアップロード後に反映される）
                                     final localMessage = {
                                       "id": clientId,
                                       "author": Provider.of<AuthContext>(context, listen: false).id,
                                       "content": chatText,
                                       "timeStamp": now,
                                       "edited": false,
-                                      "attachments": images,
+                                      // Firestore保存時はUint8List/base64を入れない
+                                      "attachments": [],
                                       "voice": false,
                                     };
                                     if (messageScreenKey.currentState != null) {
                                       messageScreenKey.currentState!.addLocalMessage(localMessage);
                                     }
-                                    await sendMessage(chatText, chatId,
+                                    // 画像アップロード＆送信
+                                    final uploadedImageUrls = await sendMessage(chatText, chatId,
                                         imageList: images, id: clientId, isGroup: isGroup);
+                                    // 画像URLでローカルメッセージを上書き
+                                    if (uploadedImageUrls.isNotEmpty && messageScreenKey.currentState != null) {
+                                      messageScreenKey.currentState!.updateMessageAttachments(clientId, uploadedImageUrls);
+                                    }
                                   } finally {
                                     chatScreenProvider.setSending(false);
                                   }
@@ -436,6 +443,7 @@ class _chat extends State<chat> {
                             _saveDraft(); // 画像追加時にドラフトを保存
                           }
                         } catch (e) {
+                          print(e);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('画像の選択に失敗しました'),

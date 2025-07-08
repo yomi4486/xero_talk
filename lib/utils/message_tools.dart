@@ -17,12 +17,12 @@ import 'package:image/image.dart' as img;
 const Uuid uuid = Uuid();
 
 /// メッセージの送信を行います
-Future<void> sendMessage(String? text, String channelId,
+Future<List<String>> sendMessage(String? text, String channelId,
     {List<String> imageList = const [], String? id, bool isGroup = false}) async {
   /// instanceで有効になっているソケット通信に対してメッセージを送信する
   final instance = AuthContext();
   List<String> uploadedImageUrls = [];
-  if(text!.isEmpty && imageList.isEmpty){return;}
+  if(text!.isEmpty && imageList.isEmpty){throw Exception("メッセージが空です");}
   if (imageList.isNotEmpty) {
     for (String base64Image in imageList) {
       try {
@@ -50,6 +50,7 @@ Future<void> sendMessage(String? text, String channelId,
   }
 
   if (text.isNotEmpty || uploadedImageUrls.isNotEmpty) {
+    print("uploadedImageUrls: $uploadedImageUrls");
     final sendBody = {
       "user_id": instance.id,
       "type": "send_message",
@@ -76,6 +77,7 @@ Future<void> sendMessage(String? text, String channelId,
       debugPrint('送信に失敗：${e}');
     }
   }
+  return uploadedImageUrls;
 }
 
 /// メッセージの削除を行います。
