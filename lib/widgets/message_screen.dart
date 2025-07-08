@@ -360,6 +360,19 @@ class _MessageScreenState extends State<MessageScreen> {
     });
   }
 
+  void updateMessageAttachments(String messageId, List<String> urls) {
+    setState(() {
+      if (chatHistory.containsKey(messageId)) {
+        chatHistory[messageId]['attachments'] = urls;
+        // Firestoreにも即時反映
+        chatFileManager.saveChatHistory({
+          'messages': chatHistory,
+          'lastUpdated': DateTime.now().millisecondsSinceEpoch,
+        });
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
 
