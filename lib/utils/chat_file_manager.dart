@@ -186,6 +186,7 @@ class ChatFileManager {
             'id': lastMessage.key,
             ...lastMessage.value,
           };
+          print("messageData: $messageData");
           
           // メッセージの送信者と受信者を検証
           final senderId = messageData['author'];
