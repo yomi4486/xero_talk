@@ -8,6 +8,12 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'package:xero_talk/utils/user_icon_tools.dart' as uit;
 import 'package:image_cropper/image_cropper.dart';
+import 'dart:math';
+
+String generateRandomAlphaNumeric(int length) {
+  const String chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  return String.fromCharCodes(Iterable.generate(length, (_) => chars.codeUnitAt(Random().nextInt(chars.length))));
+}
 
 class AccountStartup extends StatefulWidget {
   @override
@@ -31,9 +37,7 @@ class _AccountStartupState extends State<AccountStartup> {
   @override
   void initState() {
     super.initState();
-    name = instance.userCredential.user!.email!
-        .replaceAll('@gmail.com', '')
-        .replaceAll('@icloud.com', '');
+    name = generateRandomAlphaNumeric(Random().nextInt(12) > 10000 ? 12 : Random().nextInt(12));
     displayName = "${instance.userCredential.user!.displayName}";
     _nameController.text = name;
     _displayNameController.text = displayName;
