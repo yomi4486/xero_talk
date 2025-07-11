@@ -94,13 +94,13 @@ class AuthContext extends ChangeNotifier {
     }
   }
 
-  /// セッションの復元を行うための関数です
+  /// セッションの復元を行うための関数
   Future restoreConnection() async {
     await startSession();
     notifyListeners();
   }
 
-  /// HEXカラーコードをColorオブジェクトに変換します
+  /// HEXカラーコードをColorオブジェクトに変換
   Color hexToColor(String hexColor) {
     hexColor = hexColor.toUpperCase().replaceAll("#", "");
     if (hexColor.length == 6) {
