@@ -48,35 +48,36 @@ class AuthContext extends ChangeNotifier {
   StreamSubscription? _connectivitySubscription;
 
   Future<bool> startSession() async {
-    try{// すでに接続中または接続試行中なら何もしない
-    if (
-        (mqttClient.connectionState == MqttConnectionState.connected ||
-         mqttClient.connectionState == MqttConnectionState.connecting)
-    ) {
-      debugPrint('MQTT is already connecting or connected. Skipping startSession.');
-      return mqttClient.connectionState == MqttConnectionState.connected;
-    }
+    // すでに接続中または接続試行中なら何もしない
+    try{
+      if (
+          (mqttClient.connectionState == MqttConnectionState.connected ||
+          mqttClient.connectionState == MqttConnectionState.connecting)
+      ) {
+        debugPrint('MQTT is already connecting or connected. Skipping startSession.');
+        return mqttClient.connectionState == MqttConnectionState.connected;
+      }
     }catch(_){}
-    String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
-    final baseUrl = dotenv.env['BASE_URL']!.replaceAll('wss://', '').replaceAll('https://', '');
-    mqttClient = MqttServerClient.withPort("wss://$baseUrl", id,443);
-    mqttClient.useWebSocket = true;
-    mqttClient.logging(on: false);
-    mqttClient.keepAlivePeriod = 20;
-    mqttClient.onDisconnected = () {
-      debugPrint('MQTT Disconnected');
-    };
-    mqttClient.onConnected = () {
-      debugPrint('MQTT Connected');
-    };
-    mqttClient.onSubscribed = (String topic) {
-      debugPrint('Subscribed to: ' + topic);
-    };
-    mqttClient.connectionMessage = MqttConnectMessage()
-        .withClientIdentifier(id)
-        .authenticateAs(token, '')
-        .startClean();
-    mqttStreamController = StreamController<String>.broadcast();
+      String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      final baseUrl = dotenv.env['BASE_URL']!.replaceAll('wss://', '').replaceAll('https://', '');
+      mqttClient = MqttServerClient.withPort("wss://$baseUrl", id,443);
+      mqttClient.useWebSocket = true;
+      mqttClient.logging(on: false);
+      mqttClient.keepAlivePeriod = 20;
+      mqttClient.onDisconnected = () {
+        debugPrint('MQTT Disconnected');
+      };
+      mqttClient.onConnected = () {
+        debugPrint('MQTT Connected');
+      };
+      mqttClient.onSubscribed = (String topic) {
+        debugPrint('Subscribed to: ' + topic);
+      };
+      mqttClient.connectionMessage = MqttConnectMessage()
+          .withClientIdentifier(id)
+          .authenticateAs(token, '')
+          .startClean();
+      mqttStreamController = StreamController<String>.broadcast();
     try {
       await mqttClient.connect();
       mqttClient.subscribe('response/$id', MqttQos.atMostOnce);
