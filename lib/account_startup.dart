@@ -135,10 +135,9 @@ class _AccountStartupState extends State<AccountStartup> {
               );
               return;
             }
-            var profile = instance.userCredential.additionalUserInfo?.profile;
             FirebaseFirestore.instance
                 .collection('user_account')
-                .doc('${profile?["sub"]}')
+                .doc(instance.id)
                 .set({
               'description': description,
               'display_name': displayName,
