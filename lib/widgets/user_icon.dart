@@ -25,7 +25,11 @@ class _UserIconState extends State<UserIcon> {
   Future<Uint8List?> _getImageData() async {
     // すでにキャッシュがあればそれを返す
     if (_cacheBox.containsKey(widget.userId)) {
-      return _cacheBox.get(widget.userId) as Uint8List?;
+      final cached = _cacheBox.get(widget.userId);
+      if (cached == 'NO_ICON') {
+        return null; // デフォルトアイコンを返す
+      }
+      return cached as Uint8List?;
     }
     // キャッシュがなければFirebase Storageから取得
     try {
@@ -35,9 +39,16 @@ class _UserIconState extends State<UserIcon> {
           .getData();
       if (data != null) {
         _cacheBox.put(widget.userId, data);
+        return data;
+      } else {
+        _cacheBox.put(widget.userId, 'NO_ICON');
+        return null;
       }
-      return data;
     } catch (e) {
+      // オブジェクトが存在しない場合もキャッシュ
+      if (e is FirebaseException && e.code == 'object-not-found') {
+        _cacheBox.put(widget.userId, 'NO_ICON');
+      }
       debugPrint("Error fetching image: $e");
       return null;
     }
