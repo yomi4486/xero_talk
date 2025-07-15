@@ -297,44 +297,71 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                       }
 
                                       return FutureBuilder<List<Map<String, dynamic>>>(
-                                        future: Future.wait(friends.map((friend) async {
-                                          final friendId = friend.senderId == instance.id
-                                              ? friend.receiverId
-                                              : friend.senderId;
-                                          // チャットID生成
-                                          final ids = [instance.id, friendId]..sort();
-                                          final chatId = "${ids[0]}_${ids[1]}";
-                                          final doc = await FirebaseFirestore.instance
-                                              .collection('chat_history')
-                                              .doc(chatId)
-                                              .get();
-                                          final lastUpdated = doc.data()?['lastUpdated'] ?? 0;
-                                          String latestMessageText = '';
-                                          final messages = doc.data()?['messages'];
-                                          if (messages != null && messages is List && messages.isNotEmpty) {
-                                            final sortedMessages = List<Map<String, dynamic>>.from(messages)
-                                              ..sort((a, b) => (b['timeStamp'] ?? 0).compareTo(a['timeStamp'] ?? 0));
-                                            final latestMessage = sortedMessages.first;
-                                            final authorId = latestMessage['author']?.toString() ?? '';
-                                            String authorName = '';
-                                            if (authorId.isNotEmpty) {
-                                              if(authorId != instance.id){
-                                                final userDoc = await FirebaseFirestore.instance.collection('user_account').doc(authorId).get();
-                                                authorName = userDoc.data()?['display_name']?.toString() ?? authorId;
-                                              }else{
-                                                authorName = "あなた";
+                                        future: () async {
+                                          // 1. 各チャットの最新メッセージ情報を取得
+                                          final chatData = await Future.wait(friends.map((friend) async {
+                                            final friendId = friend.senderId == instance.id
+                                                ? friend.receiverId
+                                                : friend.senderId;
+                                            final ids = [instance.id, friendId]..sort();
+                                            final chatId = "${ids[0]}_${ids[1]}";
+                                            final doc = await FirebaseFirestore.instance
+                                                .collection('chat_history')
+                                                .doc(chatId)
+                                                .get();
+                                            final lastUpdated = doc.data()?['lastUpdated'] ?? 0;
+                                            String latestMessageText = '';
+                                            String authorId = '';
+                                            final messages = doc.data()?['messages'];
+                                            if (messages != null && messages is List && messages.isNotEmpty) {
+                                              final sortedMessages = List<Map<String, dynamic>>.from(messages)
+                                                ..sort((a, b) => (b['timeStamp'] ?? 0).compareTo(a['timeStamp'] ?? 0));
+                                              final latestMessage = sortedMessages.first;
+                                              authorId = latestMessage['author']?.toString() ?? '';
+                                              latestMessageText = latestMessage['content']?.toString() ?? '';
+                                            }
+                                            return {
+                                              'friend': friend,
+                                              'friendId': friendId,
+                                              'lastUpdated': lastUpdated,
+                                              'latestMessageText': latestMessageText,
+                                              'authorId': authorId,
+                                            };
+                                          }).toList());
+
+                                          // 2. 全authorIdをユニークに集める
+                                          final authorIds = chatData.map((d) => d['authorId']).where((id) => id != null && id != '').toSet().toList();
+                                          // 自分自身のIDは除外
+                                          final otherAuthorIds = authorIds.where((id) => id != instance.id).toList();
+
+                                          // 3. Firestoreで一括取得
+                                          Map<String, String> authorIdToName = {};
+                                          if (otherAuthorIds.isNotEmpty) {
+                                            // FirestoreのwhereInは最大10件までなので分割
+                                            for (var i = 0; i < otherAuthorIds.length; i += 10) {
+                                              final batchIds = otherAuthorIds.skip(i).take(10).toList();
+                                              final userDocs = await FirebaseFirestore.instance
+                                                  .collection('user_account')
+                                                  .where(FieldPath.documentId, whereIn: batchIds)
+                                                  .get();
+                                              for (var doc in userDocs.docs) {
+                                                authorIdToName[doc.id] = doc.data()['display_name']?.toString() ?? doc.id;
                                               }
                                             }
-                                            final content = latestMessage['content']?.toString() ?? '';
-                                            latestMessageText = authorName.isNotEmpty ? '$authorName: $content' : content;
                                           }
-                                          return {
-                                            'friend': friend,
-                                            'friendId': friendId,
-                                            'lastUpdated': lastUpdated,
-                                            'latestMessageText': latestMessageText,
-                                          };
-                                        }).toList()),
+                                          // 自分自身
+                                          authorIdToName[instance.id] = 'あなた';
+
+                                          // 4. 各チャットに表示名を割り当て
+                                          for (var d in chatData) {
+                                            final authorId = d['authorId'];
+                                            final authorName = authorIdToName[authorId] ?? '';
+                                            if (authorName.isNotEmpty && d['latestMessageText'] != '') {
+                                              d['latestMessageText'] = '$authorName: ${d['latestMessageText']}';
+                                            }
+                                          }
+                                          return chatData;
+                                        }(),
                                         builder: (context, chatSnapshot) {
                                           if (chatSnapshot.hasError) {
                                             return Center(
