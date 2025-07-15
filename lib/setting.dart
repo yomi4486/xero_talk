@@ -42,11 +42,10 @@ class _SettingPage extends State<SettingPage> {
       oneColor = instance.theme[0];
       twoColor = instance.theme[1];
     }
-    var profile = instance.userCredential.additionalUserInfo?.profile;
     return FutureBuilder(
       future: FirebaseFirestore.instance
           .collection('user_account') // コレクションID
-          .doc('${profile?["sub"]}') // ドキュメントID
+          .doc(instance.id) // ドキュメントID
           .get(),
       builder: (context, snapshot) {
         if (!_showFab) {
@@ -95,7 +94,7 @@ class _SettingPage extends State<SettingPage> {
                       // ドキュメント作成
                       FirebaseFirestore.instance
                           .collection('user_account') // コレクションID
-                          .doc('${profile?["sub"]}') // ドキュメントID
+                          .doc(instance.id) // ドキュメントID
                           .update({
                         'color_theme': [
                           colorToHex(oneColor),
@@ -236,7 +235,7 @@ class _SettingPage extends State<SettingPage> {
                     widget: FutureBuilder<DocumentSnapshot>(
                       future: FirebaseFirestore.instance
                           .collection('user_account')
-                          .doc('${profile?["sub"]}')
+                          .doc(instance.id)
                           .get(),
                       builder: (context, snapshot) {
                         String storageType = "Firestore";
@@ -258,7 +257,7 @@ class _SettingPage extends State<SettingPage> {
                               final internalValue = newValue == "サーバー" ? "Firestore" : newValue;
                               FirebaseFirestore.instance
                                   .collection('user_account')
-                                  .doc('${profile?["sub"]}')
+                                  .doc(instance.id)
                                   .update({
                                 'storage_type': internalValue
                               });
