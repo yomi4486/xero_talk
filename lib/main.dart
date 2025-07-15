@@ -311,8 +311,9 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
         } else {
           debugPrint("FCM token is null. Skipping Firestore write operation.");
         }
-      }catch(e){ // Rejectされた場合
-        debugPrint(e.toString());
+      }catch(e, stack){ // Rejectされた場合
+        debugPrint('Exception: ${e.toString()}');
+        debugPrint('Stack trace: $stack');
       }
 
       if (userCredential.additionalUserInfo!.isNewUser || !userDoc.exists) {
