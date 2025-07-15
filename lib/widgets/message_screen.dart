@@ -53,15 +53,20 @@ class _MessageScreenState extends State<MessageScreen> {
   Future<void> _initializeChatFileManager() async {
     final isGroup = widget.channelInfo['type'] == 'group';
     final String? id = widget.channelInfo['id'];
+    final String? myId = widget.channelInfo['myId'];
     chatFileManager = ChatFileManager(
       chatFileId: null,
       friendId: isGroup ? null : id,
+      // myIdをChatFileManagerの_userIdとして使う
+      // groupIdはグループチャット時のみ
       groupId: isGroup ? id : null,
+      // _userIdを直接セットする場合はChatFileManagerのコンストラクタを拡張する必要あり
     );
     chatFileId = await chatFileManager.loadOrCreateChatFile();
     chatFileManager = ChatFileManager(
       chatFileId: chatFileId,
       friendId: isGroup ? null : id,
+      // myIdをChatFileManagerの_userIdとして使う
       groupId: isGroup ? id : null,
     );
     await _loadChatHistory();

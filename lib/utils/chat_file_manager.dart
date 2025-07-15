@@ -22,8 +22,7 @@ class ChatFileManager {
 
   Future<void> _initializeStorageType() async {
     try {
-      final profile = authContext.userCredential.additionalUserInfo?.profile;
-      _userId = profile?["sub"];
+      _userId = authContext.id;
       final doc = await FirebaseFirestore.instance
           .collection('user_account')
           .doc('$_userId')
@@ -327,7 +326,9 @@ class ChatFileManager {
 
   Future<Map<String, dynamic>?> _loadFromFirestore() async {
     try {
+      print("チャットID: ${_chatId}");
       if (_chatId.isEmpty) return null;
+
 
       final doc = await FirebaseFirestore.instance
           .collection('chat_history')
