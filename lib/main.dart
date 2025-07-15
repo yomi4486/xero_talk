@@ -299,13 +299,17 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
           .get();
 
       final messaging = FirebaseMessaging.instance;
+      
+      try{
+        final fcmToken = await messaging.getToken();
 
-      final fcmToken = await messaging.getToken();
-
-      await FirebaseFirestore.instance
-          .collection('fcm_token')
-          .doc(authContext.id)
-          .set({"fcm_token": fcmToken}, SetOptions(merge: true));
+        await FirebaseFirestore.instance
+            .collection('fcm_token')
+            .doc(authContext.id)
+            .set({"fcm_token": fcmToken}, SetOptions(merge: true));
+      }catch(e){ // Rejectされた場合
+        debugPrint(e.toString());
+      }
 
       if (userCredential.additionalUserInfo!.isNewUser || !userDoc.exists) {
         // 新規ユーザーの場合
