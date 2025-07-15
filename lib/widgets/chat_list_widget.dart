@@ -7,7 +7,8 @@ final AuthContext instance = AuthContext();
 
 class ChatListWidget extends StatefulWidget {
   final String userId;
-  ChatListWidget({Key? key, required this.userId}) : super(key: key);
+  final String? latestMessageText;
+  ChatListWidget({Key? key, required this.userId, this.latestMessageText}) : super(key: key);
 
   @override
   _chatLiatWidgetState createState() => _chatLiatWidgetState();
@@ -48,6 +49,7 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
                   margin: const EdgeInsets.only(left: 10),
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
                           child: Text(
@@ -61,9 +63,19 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
                             textAlign: TextAlign.left,
                           ),
                         ),
-                        // SizedBox(
-                        //   child:Text("あなた: こんにちは！",style:TextStyle(color:Color.fromARGB(200, 255, 255, 255)),textAlign: TextAlign.left),
-                        // )
+                        if (widget.latestMessageText != null && widget.latestMessageText!.isNotEmpty)
+                          SizedBox(
+                            child: Text(
+                              widget.latestMessageText!,
+                              style: const TextStyle(
+                                color: Color.fromARGB(120, 255, 255, 255),
+                                fontSize: 13,
+                                fontWeight: FontWeight.normal,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                       ]));
             }),
       ]),
