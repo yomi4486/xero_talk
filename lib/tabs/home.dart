@@ -336,6 +336,14 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                           };
                                         }).toList()),
                                         builder: (context, chatSnapshot) {
+                                          if (chatSnapshot.hasError) {
+                                            return Center(
+                                              child: Text(
+                                                'An error occurred: ${chatSnapshot.error}',
+                                                style: TextStyle(color: Colors.red),
+                                              ),
+                                            );
+                                          }
                                           if (!chatSnapshot.hasData) {
                                             return const Center(child: CircularProgressIndicator());
                                           }
