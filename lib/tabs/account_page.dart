@@ -261,7 +261,7 @@ class _AccountPage extends State<AccountPage> {
                                               )
                                             ),
                                             onChanged: (text) {
-                                              displayName = text ?? "";
+                                              displayName = text;
                                               if (!_showFab) {
                                                 _showFab = true;
                                               }
@@ -276,7 +276,7 @@ class _AccountPage extends State<AccountPage> {
                                   ),
                                   Container(
                                     margin: const EdgeInsets.only(left: 10,top: 7),
-                                    child:Text("@${userName ?? ""}",style: TextStyle(color: Colors.white70),)
+                                    child:Text("@$userName",style: TextStyle(color: Colors.white70),)
                                   )
                                 ]
                               )
@@ -290,7 +290,7 @@ class _AccountPage extends State<AccountPage> {
                       child: Container(
                     margin: const EdgeInsets.only(left: 30, right: 30),
                     child: TextField(
-                        controller: TextEditingController(text: description ?? ""),
+                        controller: TextEditingController(text: description),
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
                         style: const TextStyle(
@@ -313,7 +313,7 @@ class _AccountPage extends State<AccountPage> {
                           fillColor: Color.fromARGB(16, 255, 255, 255),
                         ),
                         onChanged: (text) {
-                          description = text ?? "";
+                          description = text;
                           if (!_showFab) {
                             _showFab = true;
                           }
