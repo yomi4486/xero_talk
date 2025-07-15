@@ -303,10 +303,14 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       try{
         final fcmToken = await messaging.getToken();
 
-        await FirebaseFirestore.instance
-            .collection('fcm_token')
-            .doc(authContext.id)
-            .set({"fcm_token": fcmToken}, SetOptions(merge: true));
+        if (fcmToken != null) {
+          await FirebaseFirestore.instance
+              .collection('fcm_token')
+              .doc(authContext.id)
+              .set({"fcm_token": fcmToken}, SetOptions(merge: true));
+        } else {
+          debugPrint("FCM token is null. Skipping Firestore write operation.");
+        }
       }catch(e){ // Rejectされた場合
         debugPrint(e.toString());
       }
