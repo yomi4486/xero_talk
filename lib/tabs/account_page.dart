@@ -81,6 +81,8 @@ class _AccountPage extends State<AccountPage> {
               displayName = "";
             } else if (snapshot.hasError) {
               displayName = "";
+              description = "";
+              userName = "";
             } else if (snapshot.hasData && snapshot.data != null && snapshot.data!.exists && snapshot.data!.data() != null) {
               final res = snapshot.data!.data() as Map<String, dynamic>;
               // successful
