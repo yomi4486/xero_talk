@@ -79,6 +79,8 @@ class _AccountPage extends State<AccountPage> {
           if (!_showFab) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               displayName = "";
+              description = "";
+              userName = "";
             } else if (snapshot.hasError) {
               displayName = "";
               description = "";
