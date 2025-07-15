@@ -22,9 +22,9 @@ class AccountPage extends StatefulWidget {
 class _AccountPage extends State<AccountPage> {
   _AccountPage();
   bool _showFab = false; // falseなら未編集、trueなら編集済み
-  var description = "";
-  var displayName = "";
-  var userName = "";
+  String description = "";
+  String displayName = "";
+  String userName = "";
 
   @override
   void dispose() {
@@ -67,31 +67,37 @@ class _AccountPage extends State<AccountPage> {
   @override
   Widget build(BuildContext context) {
     final instance = Provider.of<AuthContext>(context);
-    var profile = instance.userCredential.additionalUserInfo?.profile;
     return WillPopScope(
       key: GlobalKey(),
       onWillPop: () async => true,
       child: FutureBuilder(
         future: FirebaseFirestore.instance
             .collection('user_account') // コレクションID
-            .doc('${profile?["sub"]}') // ドキュメントID
+            .doc('${instance.id}') // ドキュメントID
             .get(),
         builder: (context, snapshot) {
           if (!_showFab) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               displayName = "";
+              description = "";
+              userName = "";
             } else if (snapshot.hasError) {
               displayName = "";
-            } else if (snapshot.hasData) {
-              final res = (snapshot.data?.data() as Map<String, dynamic>);
+              description = "";
+              userName = "";
+            } else if (snapshot.hasData && snapshot.data != null && snapshot.data!.exists && snapshot.data!.data() != null) {
+              final res = snapshot.data!.data() as Map<String, dynamic>;
               // successful
-              displayName = res["display_name"] ??
-                  "-";
-              description = res["description"] ??
-                  "";
-              userName = res["name"];
+              final displayNameValue = res["display_name"];
+              displayName = (displayNameValue is String) ? displayNameValue : "-";
+              final descriptionValue = res["description"];
+              description = (descriptionValue is String) ? descriptionValue : "";
+              final nameValue = res["name"];
+              userName = (nameValue is String) ? nameValue : "";
             } else {
               displayName = "";
+              description = "";
+              userName = "";
             }
           }
           return DecoratedBox(
@@ -142,7 +148,7 @@ class _AccountPage extends State<AccountPage> {
                       // ドキュメント作成
                       FirebaseFirestore.instance
                           .collection('user_account') // コレクションID
-                          .doc('${profile?["sub"]}') // ドキュメントID
+                          .doc('${instance.id}') // ドキュメントID
                           .update({
                         'description': description,
                         'display_name': displayName,
@@ -195,7 +201,7 @@ class _AccountPage extends State<AccountPage> {
                                       // アイコン表示（角丸）
                                       borderRadius:
                                           BorderRadius.circular(1000),
-                                      child: UserIcon(userId: profile?["sub"],size:MediaQuery.of(context).size.width * 0.2)
+                                      child: UserIcon(userId: instance.id,size:MediaQuery.of(context).size.width * 0.2)
                                     ),
                                     Positioned(
                                       bottom: 0,
@@ -255,7 +261,7 @@ class _AccountPage extends State<AccountPage> {
                                               )
                                             ),
                                             onChanged: (text) {
-                                              displayName = text;
+                                              displayName = text ?? "";
                                               if (!_showFab) {
                                                 _showFab = true;
                                               }
@@ -270,7 +276,7 @@ class _AccountPage extends State<AccountPage> {
                                   ),
                                   Container(
                                     margin: const EdgeInsets.only(left: 10,top: 7),
-                                    child:Text("@$userName",style: TextStyle(color: Colors.white70),)
+                                    child:Text("@${userName ?? ""}",style: TextStyle(color: Colors.white70),)
                                   )
                                 ]
                               )
@@ -284,7 +290,7 @@ class _AccountPage extends State<AccountPage> {
                       child: Container(
                     margin: const EdgeInsets.only(left: 30, right: 30),
                     child: TextField(
-                        controller: TextEditingController(text: description),
+                        controller: TextEditingController(text: description ?? ""),
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
                         style: const TextStyle(
@@ -307,7 +313,7 @@ class _AccountPage extends State<AccountPage> {
                           fillColor: Color.fromARGB(16, 255, 255, 255),
                         ),
                         onChanged: (text) {
-                          description = text;
+                          description = text ?? "";
                           if (!_showFab) {
                             _showFab = true;
                           }
