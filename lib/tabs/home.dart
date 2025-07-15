@@ -330,7 +330,7 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                           }).toList());
 
                                           // 2. 全authorIdをユニークに集める
-                                          final authorIds = chatData.map((d) => d['authorId']).where((id) => id != null && id != '').toSet().toList();
+                                          final authorIds = chatData.map((d) => d['authorId']).where((id) => id != '').toSet().toList();
                                           // 自分自身のIDは除外
                                           final otherAuthorIds = authorIds.where((id) => id != instance.id).toList();
 
