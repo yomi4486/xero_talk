@@ -53,7 +53,7 @@ class _MessageScreenState extends State<MessageScreen> {
   Future<void> _initializeChatFileManager() async {
     final isGroup = widget.channelInfo['type'] == 'group';
     final String? id = widget.channelInfo['id'];
-    final String? myId = widget.channelInfo['myId'];
+    // final String? myId = widget.channelInfo['myId'];
     chatFileManager = ChatFileManager(
       chatFileId: null,
       friendId: isGroup ? null : id,
