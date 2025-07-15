@@ -279,7 +279,7 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                     stream: _friendService.getFriends(instance.id),
                                     builder: (context, snapshot) {
                                       if (snapshot.hasError) {
-                                        return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
+                                        return Center(child: Text('エラーが発生しました:  {snapshot.error}'));
                                       }
 
                                       if (!snapshot.hasData) {
@@ -296,21 +296,67 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                         );
                                       }
 
-                                      return Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: friends.map((friend) {
+                                      return FutureBuilder<List<Map<String, dynamic>>>(
+                                        future: Future.wait(friends.map((friend) async {
                                           final friendId = friend.senderId == instance.id
                                               ? friend.receiverId
                                               : friend.senderId;
-                                          return GestureDetector(
-                                            onTap: () {
-                                              tabsProvider.showChatScreen(id: friendId);
-                                            },
-                                            child: ChatListWidget(
-                                              userId: friendId,
-                                            ),
+                                          // チャットID生成
+                                          final ids = [instance.id, friendId]..sort();
+                                          final chatId = "${ids[0]}_${ids[1]}";
+                                          final doc = await FirebaseFirestore.instance
+                                              .collection('chat_history')
+                                              .doc(chatId)
+                                              .get();
+                                          final lastUpdated = doc.data()?['lastUpdated'] ?? 0;
+                                          String latestMessageText = '';
+                                          final messages = doc.data()?['messages'];
+                                          if (messages != null && messages is List && messages.isNotEmpty) {
+                                            final sortedMessages = List<Map<String, dynamic>>.from(messages)
+                                              ..sort((a, b) => (b['timeStamp'] ?? 0).compareTo(a['timeStamp'] ?? 0));
+                                            final latestMessage = sortedMessages.first;
+                                            final authorId = latestMessage['author']?.toString() ?? '';
+                                            String authorName = '';
+                                            if (authorId.isNotEmpty) {
+                                              if(authorId != instance.id){
+                                                final userDoc = await FirebaseFirestore.instance.collection('user_account').doc(authorId).get();
+                                                authorName = userDoc.data()?['display_name']?.toString() ?? authorId;
+                                              }else{
+                                                authorName = "あなた";
+                                              }
+                                            }
+                                            final content = latestMessage['content']?.toString() ?? '';
+                                            latestMessageText = authorName.isNotEmpty ? '$authorName: $content' : content;
+                                          }
+                                          return {
+                                            'friend': friend,
+                                            'friendId': friendId,
+                                            'lastUpdated': lastUpdated,
+                                            'latestMessageText': latestMessageText,
+                                          };
+                                        }).toList()),
+                                        builder: (context, chatSnapshot) {
+                                          if (!chatSnapshot.hasData) {
+                                            return const Center(child: CircularProgressIndicator());
+                                          }
+                                          final friendData = chatSnapshot.data!;
+                                          friendData.sort((a, b) => (b['lastUpdated'] as int).compareTo(a['lastUpdated'] as int));
+                                          return Column(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            children: friendData.map((data) {
+                                              final friendId = data['friendId'];
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  tabsProvider.showChatScreen(id: friendId);
+                                                },
+                                                child: ChatListWidget(
+                                                  userId: friendId,
+                                                  latestMessageText: data['latestMessageText'] ?? '',
+                                                ),
+                                              );
+                                            }).toList(),
                                           );
-                                        }).toList(),
+                                        },
                                       );
                                     },
                                   ),
