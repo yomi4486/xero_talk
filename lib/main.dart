@@ -316,6 +316,8 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
         debugPrint('Stack trace: $stack');
       }
 
+      debugPrint("ログインしたID: ${authContext.id}");
+
       if (userCredential.additionalUserInfo!.isNewUser || !userDoc.exists) {
         // 新規ユーザーの場合
         bool connected = await authContext.startSession();
