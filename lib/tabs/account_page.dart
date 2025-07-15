@@ -238,7 +238,7 @@ class _AccountPage extends State<AccountPage> {
                                         children: [
                                           TextField(
                                             controller: TextEditingController(
-                                              text: displayName ?? ""
+                                              text: displayName
                                             ),
                                             style: const TextStyle(
                                               color: Color.fromARGB(
