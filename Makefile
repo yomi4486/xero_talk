@@ -42,3 +42,5 @@ A. 稚内っピ... \
 \
 Co-authored-by: t3tra <t3tra-dev@users.noreply.github.com> \
 "
+
+# ごめんなさい
