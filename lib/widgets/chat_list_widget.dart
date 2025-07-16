@@ -62,19 +62,17 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
-                              child: Text(
-                                (widget.userId == instance.id ? "$displayName (自分)" : displayName),
-                                style: const TextStyle(
-                                  color: Color.fromARGB(200, 255, 255, 255),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.left,
-                                overflow: TextOverflow.ellipsis,
+                            Text(
+                              (widget.userId == instance.id ? "$displayName (自分)" : displayName),
+                              style: const TextStyle(
+                                color: Color.fromARGB(200, 255, 255, 255),
+                                fontWeight: FontWeight.bold,
                               ),
+                              textAlign: TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              timeAgo(widget.lastUpdated),
+                              "・${timeAgo(widget.lastUpdated)}",
                               style: const TextStyle(
                                 color: Color.fromARGB(120, 255, 255, 255),
                                 fontSize: 12,
