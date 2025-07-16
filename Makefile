@@ -37,7 +37,7 @@ format:
 
 wakkanai:
 	@git add .
-	@git commit -m "Q. 北海道最北端は？（おちんちんが腫れてイタイよぉー！） \
+	@git commit -m "Q. 北海道最北端は？ \
 A. 稚内っピ... \
 \
 Co-authored-by: t3tra <t3tra-dev@users.noreply.github.com> \
