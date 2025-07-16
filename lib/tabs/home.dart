@@ -49,7 +49,7 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
     super.build(context);
     return WillPopScope(
       onWillPop: () async => false,
-      child:DecoratedBox(                       
+      child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: FractionalOffset.topLeft,
@@ -58,68 +58,69 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
             stops: const [0.0, 1.0],
           ),
         ),
-        child: Stack(
-          children:[
-            Scaffold(
-              appBar: AppBar(
-                centerTitle: false,
-                automaticallyImplyLeading: false,
-                title: const Text(
-                  'メッセージ',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  )
+        child: Scaffold(
+          appBar: AppBar(
+            centerTitle: false,
+            automaticallyImplyLeading: false,
+            title: const Text(
+              'メッセージ',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              )
+            ),
+            titleTextStyle: const TextStyle(
+              color: Color.fromARGB(255, 255, 255, 255), fontSize: 20
+            ),
+            backgroundColor: darkenColor(const Color.fromARGB(255, 68, 68, 68),0.2).withOpacity(.1),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              final selectedFriends = await showModalBottomSheet<List<Friend>>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => GroupSelectBottomSheet(
+                  friendService: _friendService,
+                  userId: instance.id,
                 ),
-                titleTextStyle: const TextStyle(
-                  color: Color.fromARGB(255, 255, 255, 255), fontSize: 20
-                ),
-                backgroundColor: darkenColor(const Color.fromARGB(255, 68, 68, 68),0.2).withOpacity(.1),
-              ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: () async {
-                  final selectedFriends = await showModalBottomSheet<List<Friend>>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => GroupSelectBottomSheet(
-                      friendService: _friendService,
-                      userId: instance.id,
-                    ),
-                  );
-                  if (selectedFriends != null && selectedFriends.isNotEmpty) {
-                    final memberIds = [
-                      instance.id,
-                      ...selectedFriends.map((f) => f.senderId == instance.id ? f.receiverId : f.senderId)
-                    ];
-                    final groupDoc = await FirebaseFirestore.instance.collection('groups').add({
-                      'name': '新しいグループ',
-                      'members': memberIds,
-                      'createdAt': FieldValue.serverTimestamp(),
-                    });
-                    final groupSnapshot = await groupDoc.get();
-                    final groupData = groupSnapshot.data() as Map<String, dynamic>;
-                    final channelInfo = {
-                      'type': 'group',
-                      'id': groupDoc.id,
-                      'name': groupData['name'],
-                      'members': groupData['members'],
-                      'createdAt': groupData['createdAt'],
-                    };
-                    tabsProvider.userData = channelInfo;
-                    tabsProvider.showChatScreen(id: groupDoc.id);
-                  }
-                },
-                backgroundColor: instance.theme[1],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(128),
-                ),
-                child: const Icon(
-                  Icons.add,
-                  color: Color.fromARGB(200, 255, 255, 255),
-                ),
-              ),
-              backgroundColor: Colors.transparent,
-              body: Column(
+              );
+              if (selectedFriends != null && selectedFriends.isNotEmpty) {
+                final memberIds = [
+                  instance.id,
+                  ...selectedFriends.map((f) => f.senderId == instance.id ? f.receiverId : f.senderId)
+                ];
+                final groupDoc = await FirebaseFirestore.instance.collection('groups').add({
+                  'name': '新しいグループ',
+                  'members': memberIds,
+                  'createdAt': FieldValue.serverTimestamp(),
+                });
+                final groupSnapshot = await groupDoc.get();
+                final groupData = groupSnapshot.data() as Map<String, dynamic>;
+                final channelInfo = {
+                  'type': 'group',
+                  'id': groupDoc.id,
+                  'name': groupData['name'],
+                  'members': groupData['members'],
+                  'createdAt': groupData['createdAt'],
+                };
+                tabsProvider.userData = channelInfo;
+                tabsProvider.showChatScreen(id: groupDoc.id);
+              }
+            },
+            backgroundColor: instance.theme[1],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(128),
+            ),
+            child: const Icon(
+              Icons.add,
+              color: Color.fromARGB(200, 255, 255, 255),
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          body: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
@@ -382,10 +383,10 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                               final friendId = data['friendId'];
                                               return GestureDetector(
                                                 onTap: () {
-                                                  final instance = Provider.of<AuthContext>(context, listen: false);
-                                                  final myId = instance.id;
-                                                  final ids = [myId, friendId]..sort();
-                                                  final chatId = "${ids[0]}_${ids[1]}";
+                                                  // final instance = Provider.of<AuthContext>(context, listen: false);
+                                                  // final myId = instance.id;
+                                                  // final ids = [myId, friendId]..sort();
+                                                  final chatId = friendId;
                                                   tabsProvider.showChatScreen(id: chatId);
                                                 },
                                                 child: ChatListWidget(
@@ -462,11 +463,11 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                     )
                   )
                 ],
-              )
-            ),
-          ]
-        )
-      )
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
