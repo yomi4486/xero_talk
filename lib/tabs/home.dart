@@ -382,11 +382,16 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                               final friendId = data['friendId'];
                                               return GestureDetector(
                                                 onTap: () {
-                                                  tabsProvider.showChatScreen(id: friendId);
+                                                  final instance = Provider.of<AuthContext>(context, listen: false);
+                                                  final myId = instance.id;
+                                                  final ids = [myId, friendId]..sort();
+                                                  final chatId = "${ids[0]}_${ids[1]}";
+                                                  tabsProvider.showChatScreen(id: chatId);
                                                 },
                                                 child: ChatListWidget(
                                                   userId: friendId,
                                                   latestMessageText: data['latestMessageText'] ?? '',
+                                                  lastUpdated: data['lastUpdated'] as int?,
                                                 ),
                                               );
                                             }).toList(),
