@@ -1,4 +1,4 @@
-.PHONY: android, release, ios, clean, cache_clear, cache_clean,format
+.PHONY: android, release, ios, clean, cache_clear, cache_clean,format, wakkanai
 android:
 	@cd android \
 	&& flutter build appbundle \
@@ -34,3 +34,13 @@ cache_clean:
 	
 format:
 	@dart format lib
+
+wakkanai:
+	@git add .
+	@git commit -m "Q. 北海道最北端は？（おちんちんが腫れてイタイよぉー！） \
+A. 稚内っピ... \
+\
+Co-authored-by: t3tra <t3tra-dev@users.noreply.github.com> \
+"
+
+# ごめんなさい

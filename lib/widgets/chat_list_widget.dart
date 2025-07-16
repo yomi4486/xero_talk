@@ -8,13 +8,25 @@ final AuthContext instance = AuthContext();
 class ChatListWidget extends StatefulWidget {
   final String userId;
   final String? latestMessageText;
-  ChatListWidget({Key? key, required this.userId, this.latestMessageText}) : super(key: key);
+  final int? lastUpdated;
+  ChatListWidget({Key? key, required this.userId, this.latestMessageText, this.lastUpdated}) : super(key: key);
 
   @override
   _chatLiatWidgetState createState() => _chatLiatWidgetState();
 }
 
 class _chatLiatWidgetState extends State<ChatListWidget> {
+  String timeAgo(int? lastUpdated) {
+    if (lastUpdated == null) return '';
+    final now = DateTime.now();
+    final updated = DateTime.fromMillisecondsSinceEpoch(lastUpdated);
+    final diff = now.difference(updated);
+    if (diff.inMinutes < 1) return 'たった今';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}分前';
+    if (diff.inHours < 24) return '${diff.inHours}時間前';
+    return '${diff.inDays}日前';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -22,14 +34,13 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
       margin: const EdgeInsets.only(bottom: 10),
       child: Row(children: [
         ClipRRect(
-          // アイコン表示（角丸）
           borderRadius: BorderRadius.circular(2000000),
           child: UserIcon(userId: widget.userId, size: MediaQuery.of(context).size.height * 0.05)
         ),
         FutureBuilder(
             future: FirebaseFirestore.instance
-                .collection('user_account') // コレクションID
-                .doc(widget.userId) // ドキュメントID
+                .collection('user_account')
+                .doc(widget.userId)
                 .get(),
             builder: (context, snapshot) {
               late String displayName = "";
@@ -38,10 +49,7 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
               } else if (snapshot.hasError) {
                 displayName = "";
               } else if (snapshot.hasData) {
-                // successful
-                displayName = (snapshot.data?.data()
-                        as Map<String, dynamic>)["display_name"] ??
-                    "No description";
+                displayName = (snapshot.data?.data() as Map<String, dynamic>)["display_name"] ?? "No description";
               } else {
                 displayName = "";
               }
@@ -51,17 +59,28 @@ class _chatLiatWidgetState extends State<ChatListWidget> {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          child: Text(
-                            (widget.userId == instance.id
-                                ? "$displayName (自分)"
-                                : displayName),
-                            style: const TextStyle(
-                              color: Color.fromARGB(200, 255, 255, 255),
-                              fontWeight: FontWeight.bold,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                (widget.userId == instance.id ? "$displayName (自分)" : displayName),
+                                style: const TextStyle(
+                                  color: Color.fromARGB(200, 255, 255, 255),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.left,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            textAlign: TextAlign.left,
-                          ),
+                            Text(
+                              timeAgo(widget.lastUpdated),
+                              style: const TextStyle(
+                                color: Color.fromARGB(120, 255, 255, 255),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                         if (widget.latestMessageText != null && widget.latestMessageText!.isNotEmpty)
                           SizedBox(
