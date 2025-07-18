@@ -42,6 +42,8 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>MetricKitEnabled</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -51,6 +53,8 @@
 	<string>Access to pick a photo</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Access to take a photo by camera</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>This app needs access to local network for voice calls</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>XeroTalk uses your microphone</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
@@ -65,6 +69,11 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 		<string>voip</string>
+		<string>processing</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.example.xero_talk.refresh</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -83,9 +92,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>This app needs access to local network for voice calls</string>
-	<key>MetricKitEnabled</key>
-	<true/>
 </dict>
 </plist>
