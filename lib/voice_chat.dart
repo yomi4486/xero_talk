@@ -171,7 +171,7 @@ class _VoiceChatState extends State<VoiceChat> {
   bool micAvailable = false;
   bool cameraAvailable = false;
   late final EventsListener<RoomEvent> _listener;
-  bool _isFrontCamera = false;
+  bool _isFrontCamera = false; // デフォルトは外カメラを使用
 
   Participant? localParticipant;
   List<Participant> remoteParticipants = [];
@@ -273,9 +273,12 @@ class _VoiceChatState extends State<VoiceChat> {
       await requestPermissions();
       await instance.room.connect('wss://xerotalk-zhj3ofry.livekit.cloud', widget.roomInfo.token);
       
-      // カメラが使用可能な場合のみカメラを有効化
+      // カメラは初期状態でオフにする
       if (cameraAvailable) {
-        await instance.room.localParticipant?.setCameraEnabled(false,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
+        debugPrint('Camera available but keeping it off initially');
+        await instance.room.localParticipant?.setCameraEnabled(false);
+      } else {
+        debugPrint('Camera not available');
       }
       await instance.room.localParticipant?.setMicrophoneEnabled(true);
 
@@ -560,12 +563,16 @@ class _VoiceChatState extends State<VoiceChat> {
                           color: textColor[0].withOpacity(.5),
                           child: IconButton(
                             onPressed: cameraAvailable ? () async {
-                              if (instance.room.localParticipant?.isCameraEnabled() ?? false) {
-                                await instance.room.localParticipant?.setCameraEnabled(false,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
-                              } else {
-                                await instance.room.localParticipant?.setCameraEnabled(true,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
+                              try {
+                                if (instance.room.localParticipant?.isCameraEnabled() ?? false) {
+                                  await instance.room.localParticipant?.setCameraEnabled(false);
+                                } else {
+                                  await instance.room.localParticipant?.setCameraEnabled(true, cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
+                                }
+                                if(mounted) setState(() {});
+                              } catch (e) {
+                                debugPrint('Error toggling camera: $e');
                               }
-                              if(mounted) setState(() {});
                             } : null,
                             icon: cameraAvailable
                                 ? Icon(
@@ -606,13 +613,65 @@ class _VoiceChatState extends State<VoiceChat> {
                             color: textColor[0].withOpacity(.5),
                             child: IconButton(
                               onPressed: () async {
-                                _isFrontCamera = !_isFrontCamera;
-                                await instance.room.localParticipant?.setCameraEnabled(false);
-                                await instance.room.localParticipant?.setCameraEnabled(true,cameraCaptureOptions: CameraCaptureOptions(cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back));
-                                if(mounted) setState((){});
+                                try {
+                                  debugPrint('Switching camera from ${_isFrontCamera ? "front" : "back"} to ${!_isFrontCamera ? "front" : "back"}');
+                                  
+                                  final localParticipant = instance.room.localParticipant;
+                                  if (localParticipant != null && localParticipant.isCameraEnabled()) {
+                                    // カメラの状態を切り替え
+                                    _isFrontCamera = !_isFrontCamera;
+                                    
+                                    // LiveKit の推奨方法を試す
+                                    final videoTracks = localParticipant.videoTrackPublications;
+                                    if (videoTracks.isNotEmpty) {
+                                      final videoTrack = videoTracks.first.track;
+                                      if (videoTrack is LocalVideoTrack) {
+                                        try {
+                                          // setCameraPosition を使用してカメラを切り替え
+                                          await videoTrack.setCameraPosition(
+                                            _isFrontCamera ? CameraPosition.front : CameraPosition.back
+                                          );
+                                          debugPrint('Camera switched using setCameraPosition');
+                                        } catch (positionError) {
+                                          debugPrint('setCameraPosition failed, recreating camera: $positionError');
+                                          // fallback: カメラを再作成
+                                          await localParticipant.setCameraEnabled(false);
+                                          await Future.delayed(const Duration(milliseconds: 500));
+                                          await localParticipant.setCameraEnabled(
+                                            true, 
+                                            cameraCaptureOptions: CameraCaptureOptions(
+                                              cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back
+                                            )
+                                          );
+                                        }
+                                      }
+                                    } else {
+                                      debugPrint('No video tracks found, recreating camera');
+                                      // ビデオトラックがない場合は、カメラを再作成
+                                      await localParticipant.setCameraEnabled(false);
+                                      await Future.delayed(const Duration(milliseconds: 500));
+                                      await localParticipant.setCameraEnabled(
+                                        true, 
+                                        cameraCaptureOptions: CameraCaptureOptions(
+                                          cameraPosition: _isFrontCamera ? CameraPosition.front : CameraPosition.back
+                                        )
+                                      );
+                                    }
+                                    
+                                    debugPrint('Camera switched to: ${_isFrontCamera ? "front" : "back"}');
+                                    if(mounted) setState((){});
+                                  } else {
+                                    debugPrint('Camera not enabled or participant not found');
+                                  }
+                                } catch (e) {
+                                  debugPrint('Error switching camera: $e');
+                                  // エラーが発生した場合は状態を元に戻す
+                                  _isFrontCamera = !_isFrontCamera;
+                                  if(mounted) setState((){});
+                                }
                               },
                               icon: Icon(
-                                Icons.cameraswitch,
+                                _isFrontCamera ? Icons.camera_front : Icons.camera_rear,
                                 color: Colors.white,
                               ),
                             ),
