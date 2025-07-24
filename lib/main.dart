@@ -132,28 +132,7 @@ void main() async {
     provisional: false,
     sound: true,
   );
-
-  // // CallKitのイベントリスナーを設定
-  // FlutterCallkitIncoming.onEvent.listen((event) {
-  //   print('CallKit Event: $event');
-  //   // イベントの処理
-  // });
-
-  // FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-  //   print('Got a message whilst in the foreground!');
-  //   print('Message data: [38;5;2m${message.data}[0m');
-
-  //   if (message.data['type'] == 'call') {
-  //     await showCallkitIncoming(UuidV4().toString());
-  //   }
-
-  //   if (message.notification != null) {
-  //     print(message.data);
-  //     print('Message also contained a notification: ${message.notification!.title} / ${message.notification!.body}');
-  //     // ここでローカル通知を表示するなどの処理を実装
-  //   }
-  // });
-
+  
   runApp(
     MultiProvider(
       providers: [
