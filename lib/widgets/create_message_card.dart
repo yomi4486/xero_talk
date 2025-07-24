@@ -366,15 +366,63 @@ Widget getMessageCard(
                                         style: TextStyle(fontSize: 16),
                                       ),
                                       children: <Widget>[
-                                        Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.all(10),
-                                              child: _chatWidget,
-                                            ),                  
-                                          ],
+                                        Padding(
+                                          padding: const EdgeInsets.all(10),
+                                          child: Row(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(20),
+                                                child: UserIcon(userId: author, size: 30)
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      displayName,
+                                                      style: TextStyle(
+                                                        color: textColor[2],
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 12,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                    ),
+                                                    if (content.isNotEmpty)
+                                                      Text(
+                                                        content,
+                                                        style: TextStyle(
+                                                          color: textColor[1], 
+                                                          fontSize: 14,
+                                                        ),
+                                                        maxLines: 3,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                    if (attachments.isNotEmpty)
+                                                      Padding(
+                                                        padding: const EdgeInsets.only(top: 4),
+                                                        child: Row(
+                                                          children: [
+                                                            const Icon(Icons.image, size: 16, color: Colors.grey),
+                                                            const SizedBox(width: 4),
+                                                            Text(
+                                                              '画像 ${attachments.length}枚',
+                                                              style: TextStyle(
+                                                                color: Colors.grey[600],
+                                                                fontSize: 12,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                         SimpleDialogOption(
                                           child: const Text(

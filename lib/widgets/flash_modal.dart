@@ -124,34 +124,34 @@ class _ProgressFlashState extends State<ProgressFlash> {
                           ),
                         ],
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          DefaultTextStyle(
-                            style: TextStyle(),
-                            child: Text(
-                              widget.userProfile['display_name'],
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            DefaultTextStyle(
+                              style: TextStyle(decoration: TextDecoration.none),
+                              child:Text(
+                                widget.userProfile['display_name'],
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            child: DefaultTextStyle(
-                              overflow: TextOverflow.fade,
-                              style: TextStyle(),
-                              child: RichText(
-                                text: TextSpan(
-                                  children: getTextSpans(widget.content["content"], false, textColor),
-                                  style:
-                                      TextStyle(color: textColor[1], fontSize: 16.0),
-                                ),
-                              )
+                            RichText(
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              text: TextSpan(
+                                children: getTextSpans(widget.content["content"], false, textColor),
+                                style:
+                                    TextStyle(color: textColor[1], fontSize: 16.0),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ]
                   )
