@@ -74,6 +74,8 @@ dependencies:
   flutter_callkit_incoming: ^2.5.2
   flutter_webrtc: ^0.14.1
   flutter_local_notifications: ^17.2.1+2
+  flutter_app_badger: ^1.5.0
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1

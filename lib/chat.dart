@@ -14,6 +14,132 @@ import 'package:uuid/uuid.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:xero_talk/services/notification_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:xero_talk/services/friend_service.dart';
+
+// 最適化されたグループメンバーリスト
+class OptimizedGroupMembersList extends StatefulWidget {
+  final List<dynamic> members;
+  final String currentUserId;
+  final List<Color> textColor;
+
+  const OptimizedGroupMembersList({
+    Key? key,
+    required this.members,
+    required this.currentUserId,
+    required this.textColor,
+  }) : super(key: key);
+
+  @override
+  State<OptimizedGroupMembersList> createState() => _OptimizedGroupMembersListState();
+}
+
+class _OptimizedGroupMembersListState extends State<OptimizedGroupMembersList> with AutomaticKeepAliveClientMixin {
+  Map<String, String> _memberDisplayNames = {};
+  bool _isLoading = true;
+  static final Map<String, String> _globalMemberCache = {};
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    // グローバルキャッシュから初期表示名を設定
+    for (final userId in widget.members) {
+      _memberDisplayNames[userId] = _globalMemberCache[userId] ?? userId;
+    }
+    _loadMemberData();
+  }
+
+  Future<void> _loadMemberData() async {
+    try {
+      // バックグラウンドでデータを取得し、取得できたものから順次更新
+      for (final userId in widget.members) {
+        try {
+          // FriendServiceのキャッシュ機能を活用
+          final userInfo = await FriendService().getUserInfo(userId);
+          final displayName = userInfo['display_name'] ?? userId;
+          
+          if (mounted && displayName != _memberDisplayNames[userId]) {
+            setState(() {
+              _memberDisplayNames[userId] = displayName;
+              _globalMemberCache[userId] = displayName;
+            });
+          } else if (!_globalMemberCache.containsKey(userId)) {
+            // キャッシュに保存
+            _globalMemberCache[userId] = displayName;
+          }
+        } catch (e) {
+          // エラーの場合はキャッシュがあればそれを使用、なければデフォルト名
+          print('Failed to load user info for $userId: $e');
+          if (!_globalMemberCache.containsKey(userId)) {
+            _globalMemberCache[userId] = userId;
+          }
+        }
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Text(
+              'メンバー',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: widget.textColor[0],
+              ),
+            ),
+            if (_isLoading) ...[
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(widget.textColor[0]),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 10),
+        Column(
+          children: widget.members.map<Widget>((userId) {
+            final displayName = _memberDisplayNames[userId] ?? userId;
+            return ChatListWidget(
+              key: ValueKey(userId),
+              userId: userId,
+              displayName: displayName,
+              currentUserId: widget.currentUserId,
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
 
 Uint8List base64ToUint8List(String base64String) {
   return base64Decode(base64String);
@@ -598,24 +724,10 @@ class _chat extends State<chat> {
 
                                       // --- ここからグループメンバー一覧 ---
                                       if (channelInfo['type'] == 'group' && channelInfo['members'] != null)
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            const SizedBox(height: 20),
-                                            Text(
-                                              'メンバー',
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 18,
-                                                color: textColor[0],
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            ...List<Widget>.from(
-                                              (channelInfo['members'] as List)
-                                                .map((userId) => ChatListWidget(userId: userId))
-                                            ),
-                                          ],
+                                        OptimizedGroupMembersList(
+                                          members: channelInfo['members'] as List,
+                                          currentUserId: instance.id,
+                                          textColor: textColor,
                                         ),
                                       // --- ここまでグループメンバー一覧 ---
                                     ]

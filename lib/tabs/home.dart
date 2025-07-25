@@ -7,8 +7,461 @@ import 'package:xero_talk/services/friend_service.dart';
 import 'package:xero_talk/models/friend.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
+import 'dart:async';
 
 String lastMessageId = "";
+
+// 最適化されたグループリストアイテム
+class OptimizedGroupListItem extends StatelessWidget {
+  final QueryDocumentSnapshot doc;
+  final Map<String, dynamic> data;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  const OptimizedGroupListItem({
+    Key? key,
+    required this.doc,
+    required this.data,
+    required this.onTap,
+    required this.onLongPress,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: ListTile(
+        leading: const CircleAvatar(
+          backgroundColor: Colors.white,
+          child: Icon(Icons.group, color: Colors.blue),
+        ),
+        title: Text(
+          data['name'] ?? 'グループ',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      ),
+    );
+  }
+}
+
+// 最適化されたフレンドリスト
+class OptimizedFriendsList extends StatefulWidget {
+  final List<Friend> friends;
+  final String currentUserId;
+  final TabsProvider tabsProvider;
+
+  const OptimizedFriendsList({
+    Key? key,
+    required this.friends,
+    required this.currentUserId,
+    required this.tabsProvider,
+  }) : super(key: key);
+
+  @override
+  State<OptimizedFriendsList> createState() => _OptimizedFriendsListState();
+}
+
+class _OptimizedFriendsListState extends State<OptimizedFriendsList> with AutomaticKeepAliveClientMixin {
+  Map<String, Map<String, dynamic>> _chatData = {};
+  bool _isLoading = false;
+  static final Map<String, Map<String, dynamic>> _globalChatCache = {};
+  Map<String, StreamSubscription> _chatSubscriptions = {};
+
+  // キャッシュクリア機能
+  // static void clearChatCache() {
+  //   _globalChatCache.clear();
+  // }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    // グローバルキャッシュから初期データを読み込み
+    _loadFromCache();
+    _loadChatData();
+    _setupChatStreams();
+  }
+
+  @override
+  void dispose() {
+    // Streamの購読を全て解除
+    for (final subscription in _chatSubscriptions.values) {
+      subscription.cancel();
+    }
+    _chatSubscriptions.clear();
+    super.dispose();
+  }
+
+  void _setupChatStreams() {
+    // 各フレンドのチャット履歴に対してStreamを設定
+    for (final friend in widget.friends) {
+      final friendId = friend.senderId == widget.currentUserId
+          ? friend.receiverId
+          : friend.senderId;
+      
+      final ids = [widget.currentUserId, friendId]..sort();
+      final chatId = "${ids[0]}_${ids[1]}";
+      
+      // 既にStreamが設定されている場合はスキップ
+      if (_chatSubscriptions.containsKey(friendId)) {
+        continue;
+      }
+      
+      // チャット履歴のStreamを監視
+      final subscription = FirebaseFirestore.instance
+          .collection('chat_history')
+          .doc(chatId)
+          .snapshots()
+          .listen((doc) {
+        if (!mounted) return;
+        
+        _updateChatDataFromSnapshot(friendId, friend, doc);
+      });
+      
+      _chatSubscriptions[friendId] = subscription;
+    }
+  }
+
+  void _updateChatDataFromSnapshot(String friendId, Friend friend, DocumentSnapshot doc) async {
+    try {
+      final lastUpdated = doc.data() != null ? (doc.data() as Map<String, dynamic>)['lastUpdated'] ?? 0 : 0;
+      String latestMessageText = '';
+      String authorId = '';
+      
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data() as Map<String, dynamic>;
+        final messages = data['messages'];
+        
+        if (messages != null && messages is List && messages.isNotEmpty) {
+          final sortedMessages = List<Map<String, dynamic>>.from(messages)
+            ..sort((a, b) => (b['timeStamp'] ?? 0).compareTo(a['timeStamp'] ?? 0));
+          final latestMessage = sortedMessages.first;
+          authorId = latestMessage['author']?.toString() ?? '';
+          latestMessageText = latestMessage['content']?.toString() ?? '';
+        }
+      }
+
+      // 著者名を取得
+      if (authorId.isNotEmpty && latestMessageText.isNotEmpty) {
+        if (authorId == widget.currentUserId) {
+          latestMessageText = 'あなた: $latestMessageText';
+        } else {
+          try {
+            final userInfo = await FriendService().getUserInfo(authorId);
+            final authorName = userInfo['display_name'] ?? authorId;
+            latestMessageText = '$authorName: $latestMessageText';
+          } catch (e) {
+            latestMessageText = '$authorId: $latestMessageText';
+          }
+        }
+      }
+
+      final newData = {
+        'friend': friend,
+        'friendId': friendId,
+        'lastUpdated': lastUpdated,
+        'latestMessageText': latestMessageText,
+        'cachedAt': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      if (mounted) {
+        setState(() {
+          _chatData[friendId] = newData;
+          _globalChatCache[friendId] = Map<String, dynamic>.from(newData);
+        });
+      }
+    } catch (e) {
+      // エラーハンドリング
+      print('Error updating chat data for $friendId: $e');
+    }
+  }
+
+  void _loadFromCache() {
+    for (final friend in widget.friends) {
+      final friendId = friend.senderId == widget.currentUserId
+          ? friend.receiverId
+          : friend.senderId;
+      
+      if (_globalChatCache.containsKey(friendId)) {
+        _chatData[friendId] = Map<String, dynamic>.from(_globalChatCache[friendId]!);
+      }
+    }
+    
+    if (_chatData.isNotEmpty && mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void didUpdateWidget(OptimizedFriendsList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.friends.length != widget.friends.length) {
+      // フレンドリストが変更された場合、古いStreamを停止して新しいStreamを設定
+      for (final subscription in _chatSubscriptions.values) {
+        subscription.cancel();
+      }
+      _chatSubscriptions.clear();
+      
+      _loadFromCache();
+      _loadChatData();
+      _setupChatStreams();
+    }
+  }
+
+  Future<void> _loadChatData() async {
+    if (_isLoading) return;
+    setState(() => _isLoading = true);
+
+    try {
+      // 各フレンドのチャット履歴を段階的に取得
+      for (final friend in widget.friends) {
+        final friendId = friend.senderId == widget.currentUserId
+            ? friend.receiverId
+            : friend.senderId;
+
+        // 既に最新データがある場合は、lastUpdatedを確認してスキップするか判断
+        if (_chatData.containsKey(friendId)) {
+          final existingData = _chatData[friendId]!;
+          // 10秒以内のデータでも、lastUpdatedが変わっている可能性があるので軽くチェック
+          final cachedTime = existingData['cachedAt'] as int? ?? 0;
+          
+          // 5秒以内の場合は必ずスキップ（頻繁すぎるアクセスを防ぐ）
+          if (DateTime.now().millisecondsSinceEpoch - cachedTime < 5000) {
+            continue;
+          }
+          
+          // 5秒〜10秒の場合は、lastUpdatedだけチェックして更新の必要性を判断
+          if (DateTime.now().millisecondsSinceEpoch - cachedTime < 10000) {
+            try {
+              final ids = [widget.currentUserId, friendId]..sort();
+              final chatId = "${ids[0]}_${ids[1]}";
+              final doc = await FirebaseFirestore.instance
+                  .collection('chat_history')
+                  .doc(chatId)
+                  .get();
+              
+              final currentLastUpdated = doc.data()?['lastUpdated'] ?? 0;
+              final cachedLastUpdated = existingData['lastUpdated'] ?? 0;
+              
+              // lastUpdatedが変わっていなければスキップ
+              if (currentLastUpdated <= cachedLastUpdated) {
+                continue;
+              }
+            } catch (e) {
+              // エラーの場合はスキップ
+              continue;
+            }
+          }
+        }
+
+        try {
+          final ids = [widget.currentUserId, friendId]..sort();
+          final chatId = "${ids[0]}_${ids[1]}";
+          final doc = await FirebaseFirestore.instance
+              .collection('chat_history')
+              .doc(chatId)
+              .get();
+
+          final lastUpdated = doc.data()?['lastUpdated'] ?? 0;
+          String latestMessageText = '';
+          String authorId = '';
+          final messages = doc.data()?['messages'];
+          
+          if (messages != null && messages is List && messages.isNotEmpty) {
+            final sortedMessages = List<Map<String, dynamic>>.from(messages)
+              ..sort((a, b) => (b['timeStamp'] ?? 0).compareTo(a['timeStamp'] ?? 0));
+            final latestMessage = sortedMessages.first;
+            authorId = latestMessage['author']?.toString() ?? '';
+            latestMessageText = latestMessage['content']?.toString() ?? '';
+          }
+
+          // 著者名を取得
+          if (authorId.isNotEmpty && latestMessageText.isNotEmpty) {
+            if (authorId == widget.currentUserId) {
+              latestMessageText = 'あなた: $latestMessageText';
+            } else {
+              try {
+                final userInfo = await FriendService().getUserInfo(authorId);
+                final authorName = userInfo['display_name'] ?? authorId;
+                latestMessageText = '$authorName: $latestMessageText';
+              } catch (e) {
+                latestMessageText = '$authorId: $latestMessageText';
+              }
+            }
+          }
+
+          final newData = {
+            'friend': friend,
+            'friendId': friendId,
+            'lastUpdated': lastUpdated,
+            'latestMessageText': latestMessageText,
+            'cachedAt': DateTime.now().millisecondsSinceEpoch,
+          };
+
+          if (mounted) {
+            setState(() {
+              _chatData[friendId] = newData;
+              _globalChatCache[friendId] = Map<String, dynamic>.from(newData);
+            });
+          }
+        } catch (e) {
+          // エラーの場合、既存のキャッシュがあればそれを使用
+          if (!_chatData.containsKey(friendId)) {
+            final fallbackData = {
+              'friend': friend,
+              'friendId': friendId,
+              'lastUpdated': 0,
+              'latestMessageText': '',
+              'cachedAt': DateTime.now().millisecondsSinceEpoch,
+            };
+            
+            if (mounted) {
+              setState(() {
+                _chatData[friendId] = fallbackData;
+              });
+            }
+          }
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    // 即座にフレンドリストを表示（チャットデータがなくても）
+    final sortedFriends = widget.friends.map((friend) {
+      final friendId = friend.senderId == widget.currentUserId
+          ? friend.receiverId
+          : friend.senderId;
+      return _chatData[friendId] ?? {
+        'friend': friend,
+        'friendId': friendId,
+        'lastUpdated': 0,
+        'latestMessageText': '',
+      };
+    }).toList();
+
+    sortedFriends.sort((a, b) => 
+        (b['lastUpdated'] as int).compareTo(a['lastUpdated'] as int));
+
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: sortedFriends.length,
+      itemBuilder: (context, index) {
+        final data = sortedFriends[index];
+        final friendId = data['friendId'];
+        final friend = data['friend'] as Friend;
+        return OptimizedChatListItem(
+          key: ValueKey(friendId),
+          friendId: friendId,
+          friend: friend,
+          latestMessageText: data['latestMessageText'] ?? '',
+          lastUpdated: data['lastUpdated'] as int?,
+          currentUserId: widget.currentUserId,
+          onTap: () {
+            final chatId = friendId;
+            widget.tabsProvider.showChatScreen(id: chatId);
+          },
+        );
+      },
+    );
+  }
+}
+
+// 最適化されたチャットリストアイテム
+class OptimizedChatListItem extends StatefulWidget {
+  final String friendId;
+  final Friend friend;
+  final String latestMessageText;
+  final int? lastUpdated;
+  final String currentUserId;
+  final VoidCallback onTap;
+
+  const OptimizedChatListItem({
+    Key? key,
+    required this.friendId,
+    required this.friend,
+    required this.latestMessageText,
+    required this.lastUpdated,
+    required this.currentUserId,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  State<OptimizedChatListItem> createState() => _OptimizedChatListItemState();
+}
+
+class _OptimizedChatListItemState extends State<OptimizedChatListItem> with AutomaticKeepAliveClientMixin {
+  String? _displayName;
+  static final Map<String, String> _userDisplayNameCache = {};
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    // キャッシュから初期表示名を取得
+    _displayName = _userDisplayNameCache[widget.friendId] ?? widget.friendId;
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    try {
+      // FriendServiceのキャッシュを活用
+      final userInfo = await FriendService().getUserInfo(widget.friendId);
+      final displayName = userInfo['display_name'] ?? widget.friendId;
+      
+      if (mounted && displayName != _displayName) {
+        setState(() {
+          _displayName = displayName;
+          _userDisplayNameCache[widget.friendId] = displayName;
+        });
+      } else if (mounted && !_userDisplayNameCache.containsKey(widget.friendId)) {
+        // キャッシュに保存
+        _userDisplayNameCache[widget.friendId] = displayName;
+      }
+    } catch (e) {
+      if (mounted && _displayName == widget.friendId) {
+        // エラーの場合でもキャッシュがあれば使用しない
+        setState(() {
+          _displayName = widget.friendId;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    
+    // キャッシュされた情報またはデフォルト情報を表示
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: ChatListWidget(
+        userId: widget.friendId,
+        displayName: _displayName ?? widget.friendId,
+        currentUserId: widget.currentUserId,
+        latestMessageText: widget.latestMessageText,
+        lastUpdated: widget.lastUpdated,
+      ),
+    );
+  }
+}
 
 class chatHome extends StatefulWidget {
   final AsyncSnapshot snapshot;
@@ -144,10 +597,10 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                       if (groupSnapshot.hasError) {
                                         return Center(child: Text('グループ取得エラー: ${groupSnapshot.error}'));
                                       }
-                                      if (!groupSnapshot.hasData) {
-                                        return const Center(child: CircularProgressIndicator());
-                                      }
-                                      final groups = groupSnapshot.data!.docs;
+                                      
+                                      // データがない場合も空のコンテナを表示（ローディングは表示しない）
+                                      final groups = groupSnapshot.hasData ? groupSnapshot.data!.docs : <QueryDocumentSnapshot>[];
+                                      
                                       if (groups.isEmpty) {
                                         return Container(); // グループがなければ何も表示しない
                                       }
@@ -157,7 +610,10 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                         children: [
                                           ...groups.map((doc) {
                                             final data = doc.data() as Map<String, dynamic>;
-                                            return GestureDetector(
+                                            return OptimizedGroupListItem(
+                                              key: ValueKey(doc.id),
+                                              doc: doc,
+                                              data: data,
                                               onTap: () {
                                                 final channelInfo = {
                                                   'type': 'group',
@@ -255,20 +711,6 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                                   },
                                                 );
                                               },
-                                              child: ListTile(
-                                                leading: CircleAvatar(
-                                                  backgroundColor: Colors.white,
-                                                  child: Icon(Icons.group, color: Colors.blue),
-                                                ),
-                                                title: Text(
-                                                  data['name'] ?? 'グループ',
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                                              ),
                                             );
                                           }),
                                         ],
@@ -280,15 +722,13 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                     stream: _friendService.getFriends(instance.id),
                                     builder: (context, snapshot) {
                                       if (snapshot.hasError) {
-                                        return Center(child: Text('エラーが発生しました:  {snapshot.error}'));
+                                        return Center(child: Text('エラーが発生しました: ${snapshot.error}'));
                                       }
 
-                                      if (!snapshot.hasData) {
-                                        return const Center(child: CircularProgressIndicator());
-                                      }
-
-                                      final friends = snapshot.data!;
-                                      if (friends.isEmpty) {
+                                      // データがない場合は空リストとして扱う（ローディングは表示しない）
+                                      final friends = snapshot.hasData ? snapshot.data! : <Friend>[];
+                                      
+                                      if (friends.isEmpty && snapshot.hasData) {
                                         return const Center(
                                           child: Text(
                                             'フレンドがいません',
@@ -297,107 +737,11 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                         );
                                       }
 
-                                      return FutureBuilder<List<Map<String, dynamic>>>(
-                                        future: () async {
-                                          // 1. 各チャットの最新メッセージ情報を取得
-                                          final chatData = await Future.wait(friends.map((friend) async {
-                                            final friendId = friend.senderId == instance.id
-                                                ? friend.receiverId
-                                                : friend.senderId;
-                                            final ids = [instance.id, friendId]..sort();
-                                            final chatId = "${ids[0]}_${ids[1]}";
-                                            final doc = await FirebaseFirestore.instance
-                                                .collection('chat_history')
-                                                .doc(chatId)
-                                                .get();
-                                            final lastUpdated = doc.data()?['lastUpdated'] ?? 0;
-                                            String latestMessageText = '';
-                                            String authorId = '';
-                                            final messages = doc.data()?['messages'];
-                                            if (messages != null && messages is List && messages.isNotEmpty) {
-                                              final sortedMessages = List<Map<String, dynamic>>.from(messages)
-                                                ..sort((a, b) => (b['timeStamp'] ?? 0).compareTo(a['timeStamp'] ?? 0));
-                                              final latestMessage = sortedMessages.first;
-                                              authorId = latestMessage['author']?.toString() ?? '';
-                                              latestMessageText = latestMessage['content']?.toString() ?? '';
-                                            }
-                                            return {
-                                              'friend': friend,
-                                              'friendId': friendId,
-                                              'lastUpdated': lastUpdated,
-                                              'latestMessageText': latestMessageText,
-                                              'authorId': authorId,
-                                            };
-                                          }).toList());
-
-                                          // 2. 全authorIdをユニークに集める
-                                          final authorIds = chatData.map((d) => d['authorId']).where((id) => id != '').toSet().toList();
-                                          // 自分自身のIDは除外
-                                          final otherAuthorIds = authorIds.where((id) => id != instance.id).toList();
-
-                                          // 3. Firestoreで一括取得
-                                          Map<String, String> authorIdToName = {};
-                                          if (otherAuthorIds.isNotEmpty) {
-                                            // FirestoreのwhereInは最大10件までなので分割
-                                            for (var i = 0; i < otherAuthorIds.length; i += 10) {
-                                              final batchIds = otherAuthorIds.skip(i).take(10).toList();
-                                              final userDocs = await FirebaseFirestore.instance
-                                                  .collection('user_account')
-                                                  .where(FieldPath.documentId, whereIn: batchIds)
-                                                  .get();
-                                              for (var doc in userDocs.docs) {
-                                                authorIdToName[doc.id] = doc.data()['display_name']?.toString() ?? doc.id;
-                                              }
-                                            }
-                                          }
-                                          // 自分自身
-                                          authorIdToName[instance.id] = 'あなた';
-
-                                          // 4. 各チャットに表示名を割り当て
-                                          for (var d in chatData) {
-                                            final authorId = d['authorId'];
-                                            final authorName = authorIdToName[authorId] ?? '';
-                                            if (authorName.isNotEmpty && d['latestMessageText'] != '') {
-                                              d['latestMessageText'] = '$authorName: ${d['latestMessageText']}';
-                                            }
-                                          }
-                                          return chatData;
-                                        }(),
-                                        builder: (context, chatSnapshot) {
-                                          if (chatSnapshot.hasError) {
-                                            return Center(
-                                              child: Text(
-                                                'An error occurred: ${chatSnapshot.error}',
-                                                style: TextStyle(color: Colors.red),
-                                              ),
-                                            );
-                                          }
-                                          if (!chatSnapshot.hasData) {
-                                            return const Center(child: CircularProgressIndicator());
-                                          }
-                                          final friendData = chatSnapshot.data!;
-                                          friendData.sort((a, b) => (b['lastUpdated'] as int).compareTo(a['lastUpdated'] as int));
-                                          return Column(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            children: friendData.map((data) {
-                                              final friendId = data['friendId'];
-                                              return GestureDetector(
-                                                onTap: () {
-                                                  // final instance = Provider.of<AuthContext>(context, listen: false);
-                                                  // final myId = instance.id;
-                                                  // final ids = [myId, friendId]..sort();
-                                                  final chatId = friendId;
-                                                  tabsProvider.showChatScreen(id: chatId);
-                                                },
-                                                child: ChatListWidget(
-                                                  userId: friendId,
-                                                  latestMessageText: data['latestMessageText'] ?? '',
-                                                  lastUpdated: data['lastUpdated'] as int?,
-                                                ),
-                                              );
-                                            }).toList(),
-                                          );
-                                        },
+                                      // 空のフレンドリストでもウィジェットを表示
+                                      return OptimizedFriendsList(
+                                        friends: friends,
+                                        currentUserId: instance.id,
+                                        tabsProvider: tabsProvider,
                                       );
                                     },
                                   ),
