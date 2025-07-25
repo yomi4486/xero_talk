@@ -30,9 +30,14 @@ bool failed = false;
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Firebase初期化が必要な場合（Isolateの実行環境による）
+  // バックグラウンドでFirebaseを初期化
+  await Firebase.initializeApp();
+  
   if(message.data["type"] == "call"){
     showCallkitIncoming(message.data["room_id"],message.data["display_name"]);
+  } else {
+    // 通話以外の通知の場合はバッジを増加（バックグラウンド専用メソッド使用）
+    await NotificationService.incrementBadgeCountForBackground();
   }
   
   // ここでバックグラウンドでの処理（ローカル通知の表示など）
@@ -429,14 +434,16 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
-    print("これ");
-    print(state);
+    print("App lifecycle state changed: $state");
     if (state == AppLifecycleState.resumed) {
       //Check call when open app from background
       checkAndNavigationCallingPage();
       
-      // アプリがフォアグラウンドに復帰した時に通知を削除
+      // アプリがフォアグラウンドに復帰した時に通知とバッジをクリア
       await NotificationService.clearAllNotifications();
+    } else if (state == AppLifecycleState.paused) {
+      // アプリがバックグラウンドに移行する時の処理
+      debugPrint('App moved to background');
     }
   }
 
@@ -454,6 +461,10 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       print('Message title: ${message.notification?.title}, body: ${message.notification?.body}, data: ${message.data}');
       if(message.data["type"] == "call"){      
         showCallkitIncoming(message.data["room_id"],message.data["display_name"]);
+      } else {
+        // アプリがフォアグラウンドにある場合は通常バッジを増加させない
+        // ただし、ユーザーが他の画面にいる可能性もあるので、必要に応じて増加
+        debugPrint('Received foreground notification, not updating badge');
       }
 
     });

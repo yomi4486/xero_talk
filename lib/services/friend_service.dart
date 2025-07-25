@@ -4,20 +4,48 @@ import 'package:xero_talk/models/friend.dart';
 class FriendService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'friends';
+  
+  // ユーザー情報のキャッシュ
+  static final Map<String, Map<String, dynamic>> _userInfoCache = {};
+  static final Map<String, DateTime> _cacheTimestamps = {};
+  static const Duration _cacheExpiry = Duration(minutes: 5);
 
-  // ユーザー情報を取得
+  // ユーザー情報を取得（キャッシュ付き）
   Future<Map<String, dynamic>> getUserInfo(String userId) async {
+    // キャッシュをチェック
+    if (_userInfoCache.containsKey(userId)) {
+      final timestamp = _cacheTimestamps[userId];
+      if (timestamp != null && DateTime.now().difference(timestamp) < _cacheExpiry) {
+        return _userInfoCache[userId]!;
+      }
+    }
+
+    // キャッシュにないか期限切れの場合、Firestoreから取得
     final doc = await _firestore.collection('user_account').doc(userId).get();
+    Map<String, dynamic> userInfo;
     if (!doc.exists) {
-      return {
+      userInfo = {
+        'name': 'Unknown User',
+        'display_name': 'Unknown User',
+      };
+    } else {
+      userInfo = doc.data() ?? {
         'name': 'Unknown User',
         'display_name': 'Unknown User',
       };
     }
-    return doc.data() ?? {
-      'name': 'Unknown User',
-      'display_name': 'Unknown User',
-    };
+
+    // キャッシュに保存
+    _userInfoCache[userId] = userInfo;
+    _cacheTimestamps[userId] = DateTime.now();
+
+    return userInfo;
+  }
+
+  // キャッシュをクリア（必要に応じて）
+  static void clearUserInfoCache() {
+    _userInfoCache.clear();
+    _cacheTimestamps.clear();
   }
 
   // ユーザー名からユーザーIDを検索
