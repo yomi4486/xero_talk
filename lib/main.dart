@@ -21,7 +21,7 @@ import 'package:flutter_callkit_incoming/flutter_callkit_incoming.dart';
 import 'package:flutter_callkit_incoming/entities/entities.dart';
 import 'package:xero_talk/voice_chat.dart';
 import 'utils/voice_chat.dart';
-// import 'services/navigation_service.dart';
+import 'services/notification_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -122,6 +122,13 @@ void main() async {
   await initializeFirebase();
   await _initializeAndroidAudioSettings();
   await dotenv.load();
+  
+  // 通知サービスを初期化
+  await NotificationService.initialize();
+  
+  // アプリ起動時に自分のアプリの通知を全て削除
+  await NotificationService.clearAllNotifications();
+  
   final messaging = FirebaseMessaging.instance;
   await messaging.requestPermission(
     alert: true,
@@ -373,6 +380,9 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
     WidgetsBinding.instance.addObserver(this);
     FlutterCallkitIncoming.requestFullIntentPermission();
 
+    // アプリが開かれた時に通知を削除
+    NotificationService.clearAllNotifications();
+
     FlutterCallkitIncoming.onEvent.listen((event) async {
       if (event != null && event.event == Event.actionCallAccept) {
         final roomId = event.body["id"];
@@ -424,6 +434,9 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
     if (state == AppLifecycleState.resumed) {
       //Check call when open app from background
       checkAndNavigationCallingPage();
+      
+      // アプリがフォアグラウンドに復帰した時に通知を削除
+      await NotificationService.clearAllNotifications();
     }
   }
 
