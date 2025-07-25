@@ -7,6 +7,7 @@ import 'package:xero_talk/services/friend_service.dart';
 import 'package:xero_talk/models/friend.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
+import 'dart:async';
 
 String lastMessageId = "";
 
@@ -69,11 +70,12 @@ class _OptimizedFriendsListState extends State<OptimizedFriendsList> with Automa
   Map<String, Map<String, dynamic>> _chatData = {};
   bool _isLoading = false;
   static final Map<String, Map<String, dynamic>> _globalChatCache = {};
+  Map<String, StreamSubscription> _chatSubscriptions = {};
 
   // キャッシュクリア機能
-  static void clearChatCache() {
-    _globalChatCache.clear();
-  }
+  // static void clearChatCache() {
+  //   _globalChatCache.clear();
+  // }
 
   @override
   bool get wantKeepAlive => true;
@@ -84,6 +86,101 @@ class _OptimizedFriendsListState extends State<OptimizedFriendsList> with Automa
     // グローバルキャッシュから初期データを読み込み
     _loadFromCache();
     _loadChatData();
+    _setupChatStreams();
+  }
+
+  @override
+  void dispose() {
+    // Streamの購読を全て解除
+    for (final subscription in _chatSubscriptions.values) {
+      subscription.cancel();
+    }
+    _chatSubscriptions.clear();
+    super.dispose();
+  }
+
+  void _setupChatStreams() {
+    // 各フレンドのチャット履歴に対してStreamを設定
+    for (final friend in widget.friends) {
+      final friendId = friend.senderId == widget.currentUserId
+          ? friend.receiverId
+          : friend.senderId;
+      
+      final ids = [widget.currentUserId, friendId]..sort();
+      final chatId = "${ids[0]}_${ids[1]}";
+      
+      // 既にStreamが設定されている場合はスキップ
+      if (_chatSubscriptions.containsKey(friendId)) {
+        continue;
+      }
+      
+      // チャット履歴のStreamを監視
+      final subscription = FirebaseFirestore.instance
+          .collection('chat_history')
+          .doc(chatId)
+          .snapshots()
+          .listen((doc) {
+        if (!mounted) return;
+        
+        _updateChatDataFromSnapshot(friendId, friend, doc);
+      });
+      
+      _chatSubscriptions[friendId] = subscription;
+    }
+  }
+
+  void _updateChatDataFromSnapshot(String friendId, Friend friend, DocumentSnapshot doc) async {
+    try {
+      final lastUpdated = doc.data() != null ? (doc.data() as Map<String, dynamic>)['lastUpdated'] ?? 0 : 0;
+      String latestMessageText = '';
+      String authorId = '';
+      
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data() as Map<String, dynamic>;
+        final messages = data['messages'];
+        
+        if (messages != null && messages is List && messages.isNotEmpty) {
+          final sortedMessages = List<Map<String, dynamic>>.from(messages)
+            ..sort((a, b) => (b['timeStamp'] ?? 0).compareTo(a['timeStamp'] ?? 0));
+          final latestMessage = sortedMessages.first;
+          authorId = latestMessage['author']?.toString() ?? '';
+          latestMessageText = latestMessage['content']?.toString() ?? '';
+        }
+      }
+
+      // 著者名を取得
+      if (authorId.isNotEmpty && latestMessageText.isNotEmpty) {
+        if (authorId == widget.currentUserId) {
+          latestMessageText = 'あなた: $latestMessageText';
+        } else {
+          try {
+            final userInfo = await FriendService().getUserInfo(authorId);
+            final authorName = userInfo['display_name'] ?? authorId;
+            latestMessageText = '$authorName: $latestMessageText';
+          } catch (e) {
+            latestMessageText = '$authorId: $latestMessageText';
+          }
+        }
+      }
+
+      final newData = {
+        'friend': friend,
+        'friendId': friendId,
+        'lastUpdated': lastUpdated,
+        'latestMessageText': latestMessageText,
+        'cachedAt': DateTime.now().millisecondsSinceEpoch,
+      };
+
+      if (mounted) {
+        setState(() {
+          _chatData[friendId] = newData;
+          _globalChatCache[friendId] = Map<String, dynamic>.from(newData);
+        });
+      }
+    } catch (e) {
+      // エラーハンドリング
+      print('Error updating chat data for $friendId: $e');
+    }
   }
 
   void _loadFromCache() {
@@ -106,8 +203,15 @@ class _OptimizedFriendsListState extends State<OptimizedFriendsList> with Automa
   void didUpdateWidget(OptimizedFriendsList oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.friends.length != widget.friends.length) {
+      // フレンドリストが変更された場合、古いStreamを停止して新しいStreamを設定
+      for (final subscription in _chatSubscriptions.values) {
+        subscription.cancel();
+      }
+      _chatSubscriptions.clear();
+      
       _loadFromCache();
       _loadChatData();
+      _setupChatStreams();
     }
   }
 
@@ -122,13 +226,38 @@ class _OptimizedFriendsListState extends State<OptimizedFriendsList> with Automa
             ? friend.receiverId
             : friend.senderId;
 
-        // 既に最新データがある場合はスキップ
+        // 既に最新データがある場合は、lastUpdatedを確認してスキップするか判断
         if (_chatData.containsKey(friendId)) {
           final existingData = _chatData[friendId]!;
-          // 1分以内のデータは再取得しない
+          // 10秒以内のデータでも、lastUpdatedが変わっている可能性があるので軽くチェック
           final cachedTime = existingData['cachedAt'] as int? ?? 0;
-          if (DateTime.now().millisecondsSinceEpoch - cachedTime < 60000) {
+          
+          // 5秒以内の場合は必ずスキップ（頻繁すぎるアクセスを防ぐ）
+          if (DateTime.now().millisecondsSinceEpoch - cachedTime < 5000) {
             continue;
+          }
+          
+          // 5秒〜10秒の場合は、lastUpdatedだけチェックして更新の必要性を判断
+          if (DateTime.now().millisecondsSinceEpoch - cachedTime < 10000) {
+            try {
+              final ids = [widget.currentUserId, friendId]..sort();
+              final chatId = "${ids[0]}_${ids[1]}";
+              final doc = await FirebaseFirestore.instance
+                  .collection('chat_history')
+                  .doc(chatId)
+                  .get();
+              
+              final currentLastUpdated = doc.data()?['lastUpdated'] ?? 0;
+              final cachedLastUpdated = existingData['lastUpdated'] ?? 0;
+              
+              // lastUpdatedが変わっていなければスキップ
+              if (currentLastUpdated <= cachedLastUpdated) {
+                continue;
+              }
+            } catch (e) {
+              // エラーの場合はスキップ
+              continue;
+            }
           }
         }
 
@@ -279,11 +408,6 @@ class OptimizedChatListItem extends StatefulWidget {
 class _OptimizedChatListItemState extends State<OptimizedChatListItem> with AutomaticKeepAliveClientMixin {
   String? _displayName;
   static final Map<String, String> _userDisplayNameCache = {};
-
-  // キャッシュクリア機能
-  static void clearUserDisplayNameCache() {
-    _userDisplayNameCache.clear();
-  }
 
   @override
   bool get wantKeepAlive => true;
