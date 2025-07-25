@@ -14,7 +14,7 @@ import 'package:uuid/uuid.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:xero_talk/services/notification_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/services/friend_service.dart';
 
 // 最適化されたグループメンバーリスト
