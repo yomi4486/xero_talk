@@ -13,6 +13,7 @@ import 'package:xero_talk/widgets/user_icon.dart';
 import 'package:uuid/uuid.dart';
 import 'package:xero_talk/widgets/chat_list_widget.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:xero_talk/services/notification_service.dart';
 
 Uint8List base64ToUint8List(String base64String) {
   return base64Decode(base64String);
@@ -84,6 +85,9 @@ class _chat extends State<chat> {
   void initState(){
     super.initState();
     _initializeHiveAndLoadDraft();
+    
+    // チャット画面を開いた時に通知を削除
+    NotificationService.clearAllNotifications();
   }
 
   Future<void> _initializeHiveAndLoadDraft() async {
