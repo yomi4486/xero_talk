@@ -291,17 +291,92 @@ class ChatFileManager {
     }
   }
 
-  Future<Map<String, dynamic>?> loadChatHistory() async {
+  Future<int> getTotalMessageCount() async {
     await _initializeStorageType();
     
     if (storageType == "Google Drive") {
-      return await _loadFromGoogleDrive();
+      return await _getTotalMessageCountFromGoogleDrive();
     } else {
-      return await _loadFromFirestore();
+      return await _getTotalMessageCountFromFirestore();
     }
   }
 
-  Future<Map<String, dynamic>?> _loadFromGoogleDrive() async {
+  Future<int> _getTotalMessageCountFromGoogleDrive() async {
+    try {
+      if (chatFileId == null) return 0;
+
+      final file = await authContext.googleDriveApi.files.get(
+        chatFileId!,
+        downloadOptions: drive.DownloadOptions.fullMedia,
+      ) as drive.Media;
+
+      final bytes = await file.stream.toList();
+      final content = utf8.decode(bytes.expand((x) => x).toList());
+      final data = convert.jsonDecode(content);
+      
+      if (data['messages'] != null) {
+        return (data['messages'] as List).length;
+      }
+      return 0;
+    } catch (e) {
+      debugPrint('Error getting total message count from Google Drive: $e');
+      return 0;
+    }
+  }
+
+  Future<int> _getTotalMessageCountFromFirestore() async {
+    try {
+      if (_chatId.isEmpty) return 0;
+
+      final doc = await FirebaseFirestore.instance
+          .collection('chat_history')
+          .doc(_chatId)
+          .get();
+      
+      if (doc.exists) {
+        final data = doc.data();
+        if (data?['messages'] != null) {
+          return (data!['messages'] as List).length;
+        }
+      }
+      return 0;
+    } catch (e) {
+      debugPrint('Error getting total message count from Firestore: $e');
+      return 0;
+    }
+  }
+
+  Future<Map<String, dynamic>?> loadChatHistory({
+    int limit = 50, 
+    int offset = 0, 
+    Set<String>? excludeIds,
+    int? beforeTimestamp, // この時間より前のメッセージを取得
+  }) async {
+    await _initializeStorageType();
+    
+    if (storageType == "Google Drive") {
+      return await _loadFromGoogleDrive(
+        limit: limit, 
+        offset: offset, 
+        excludeIds: excludeIds,
+        beforeTimestamp: beforeTimestamp,
+      );
+    } else {
+      return await _loadFromFirestore(
+        limit: limit, 
+        offset: offset, 
+        excludeIds: excludeIds,
+        beforeTimestamp: beforeTimestamp,
+      );
+    }
+  }
+
+  Future<Map<String, dynamic>?> _loadFromGoogleDrive({
+    int limit = 50, 
+    int offset = 0, 
+    Set<String>? excludeIds,
+    int? beforeTimestamp,
+  }) async {
     try {
       if (chatFileId == null) return null;
 
@@ -315,7 +390,51 @@ class ChatFileManager {
       final data = convert.jsonDecode(content);
       
       if (data['messages'] != null) {
-        return Map<String, dynamic>.from(data['messages']);
+        final List<dynamic> messagesList = data['messages'];
+        
+        // メッセージをタイムスタンプで降順にソート（新しいものから古いもの）
+        messagesList.sort((a, b) {
+          final aTime = (a is Map && a['timeStamp'] != null) ? a['timeStamp'] as int : 0;
+          final bTime = (b is Map && b['timeStamp'] != null) ? b['timeStamp'] as int : 0;
+          return bTime.compareTo(aTime);
+        });
+        
+        // beforeTimestampより前のメッセージをフィルタリング
+        List<dynamic> filteredMessages = messagesList;
+        if (beforeTimestamp != null) {
+          filteredMessages = messagesList.where((message) {
+            if (message is Map<String, dynamic> && message['timeStamp'] != null) {
+              return (message['timeStamp'] as int) < beforeTimestamp;
+            }
+            return false;
+          }).toList();
+        }
+        
+        // 除外IDがある場合はフィルタリング
+        if (excludeIds != null && excludeIds.isNotEmpty) {
+          filteredMessages = filteredMessages.where((message) {
+            if (message is Map<String, dynamic> && message['id'] != null) {
+              return !excludeIds.contains(message['id']);
+            }
+            return true;
+          }).toList();
+        }
+        
+        // オフセットと制限を適用
+        final limitedMessages = filteredMessages.skip(offset).take(limit).toList();
+        
+        // Map形式に変換
+        final Map<String, dynamic> messagesMap = {};
+        for (var message in limitedMessages) {
+          if (message is Map<String, dynamic> && message['id'] != null) {
+            final String id = message['id'];
+            final Map<String, dynamic> messageData = Map<String, dynamic>.from(message);
+            messageData.remove('id');
+            messagesMap[id] = messageData;
+          }
+        }
+        
+        return messagesMap;
       }
       return null;
     } catch (e) {
@@ -324,7 +443,12 @@ class ChatFileManager {
     }
   }
 
-  Future<Map<String, dynamic>?> _loadFromFirestore() async {
+  Future<Map<String, dynamic>?> _loadFromFirestore({
+    int limit = 50, 
+    int offset = 0, 
+    Set<String>? excludeIds,
+    int? beforeTimestamp,
+  }) async {
     try {
       print("チャットID: ${_chatId}");
       if (_chatId.isEmpty) return null;
@@ -340,8 +464,40 @@ class ChatFileManager {
         if (data?['messages'] != null) {
           // List<dynamic> を Map<String, dynamic> に変換
           final List<dynamic> messagesList = data!['messages'];
+          
+          // メッセージをタイムスタンプで降順にソート（新しいものから古いもの）
+          messagesList.sort((a, b) {
+            final aTime = (a is Map && a['timeStamp'] != null) ? a['timeStamp'] as int : 0;
+            final bTime = (b is Map && b['timeStamp'] != null) ? b['timeStamp'] as int : 0;
+            return bTime.compareTo(aTime);
+          });
+          
+          // beforeTimestampより前のメッセージをフィルタリング
+          List<dynamic> filteredMessages = messagesList;
+          if (beforeTimestamp != null) {
+            filteredMessages = messagesList.where((message) {
+              if (message is Map<String, dynamic> && message['timeStamp'] != null) {
+                return (message['timeStamp'] as int) < beforeTimestamp;
+              }
+              return false;
+            }).toList();
+          }
+          
+          // 除外IDがある場合はフィルタリング
+          if (excludeIds != null && excludeIds.isNotEmpty) {
+            filteredMessages = filteredMessages.where((message) {
+              if (message is Map<String, dynamic> && message['id'] != null) {
+                return !excludeIds.contains(message['id']);
+              }
+              return true;
+            }).toList();
+          }
+          
+          // オフセットと制限を適用
+          final limitedMessages = filteredMessages.skip(offset).take(limit).toList();
+          
           final Map<String, dynamic> messagesMap = {};
-          for (var message in messagesList) {
+          for (var message in limitedMessages) {
             if (message is Map<String, dynamic> && message['id'] != null) {
               final String id = message['id'];
               final Map<String, dynamic> messageData = Map<String, dynamic>.from(message);

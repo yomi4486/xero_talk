@@ -43,11 +43,27 @@ class _MessageScreenState extends State<MessageScreen> {
   Map chatHistory = {};
   late ChatFileManager chatFileManager;
   String? chatFileId;
+  int _currentOffset = 0;
+  final int _messagesPerPage = 50;
+  bool _isLoadingMore = false;
+  bool _hasMoreMessages = true;
+  int _totalMessageCount = 0;
+  int? _lastLoadedTimestamp; // 最後に読み込んだメッセージのタイムスタンプ
+  bool _isInitializing = false; // 初期化中フラグ
 
   @override
   void initState() {
     super.initState();
     _initializeChatFileManager();
+    // スクロールリスナーを追加
+    widget.scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    // スクロールが上端に近づいた時に古いメッセージを読み込み
+    if (widget.scrollController.position.pixels <= 100 && _hasMoreMessages && !_isLoadingMore) {
+      _loadMoreMessages();
+    }
   }
 
   Future<void> _initializeChatFileManager() async {
@@ -72,18 +88,187 @@ class _MessageScreenState extends State<MessageScreen> {
     await _loadChatHistory();
   }
 
-  Future<void> _loadChatHistory() async {
+  Future<void> _loadMoreMessages() async {
+    if (_isLoadingMore || !_hasMoreMessages || _isInitializing) return;
+    
+    setState(() {
+      _isLoadingMore = true;
+    });
+
     try {
-      final history = await chatFileManager.loadChatHistory();
+      final moreHistory = await chatFileManager.loadChatHistory(
+        limit: _messagesPerPage, 
+        offset: 0, 
+        beforeTimestamp: _lastLoadedTimestamp, // 最後に読み込んだタイムスタンプより前のメッセージを取得
+      );
+      
+      if (moreHistory != null && moreHistory.isNotEmpty) {
+        // 既存のメッセージIDと重複していないかチェック
+        final newMessages = <String, dynamic>{};
+        for (var entry in moreHistory.entries) {
+          if (!chatHistory.containsKey(entry.key)) {
+            newMessages[entry.key] = entry.value;
+          }
+        }
+        
+        if (newMessages.isNotEmpty) {
+          setState(() {
+            chatHistory.addAll(newMessages);
+            // 追加で読み込んだメッセージ数だけオフセットを増加
+            _currentOffset += newMessages.length;
+            _hasMoreMessages = chatHistory.length < _totalMessageCount;
+            
+            // 新しく読み込んだメッセージの中で最も古いタイムスタンプを更新
+            final timestamps = newMessages.values
+                .map((msg) => msg['timeStamp'] as int?)
+                .where((ts) => ts != null)
+                .cast<int>();
+            if (timestamps.isNotEmpty) {
+              _lastLoadedTimestamp = timestamps.reduce((a, b) => a < b ? a : b);
+            }
+            
+            // 古いメッセージを時系列順に挿入
+            final sortedNewMessages = newMessages.entries.toList()
+              ..sort((a, b) => (a.value['timeStamp'] as int).compareTo(b.value['timeStamp'] as int));
+            
+            for (var entry in sortedNewMessages) {
+              // 重複チェック：既にreturnWidgetに同じキーのウィジェットが存在しないか確認
+              final exists = returnWidget.any((widget) =>
+                widget.key is ValueKey && (widget.key as ValueKey).value == entry.key
+              );
+              if (exists) continue;
+              
+              final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(entry.value['timeStamp']);
+              final String displayTime = getTimeStringFormat(dateTime);
+              
+              if (entry.value['voice'] == true) {
+                try {
+                  final voiceWidget = getVoiceWidget(
+                    context,
+                    entry.key,
+                    {
+                      'author': entry.value['author'],
+                      'room_id': entry.key,
+                      'timestamp': entry.value['timeStamp'],
+                    },
+                    instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
+                  );
+                  // 古いメッセージは先頭に追加
+                  returnWidget.insert(0, voiceWidget);
+                } catch(e) {
+                  debugPrint(e.toString());
+                }
+              } else {
+                final Widget chatWidget = FutureBuilder<DocumentSnapshot>(
+                  key: ValueKey(entry.key),
+                  future: FirebaseFirestore.instance
+                      .collection('user_account')
+                      .doc(entry.value['author'])
+                      .get(),
+                  builder: (context, snapshot) {
+                    String displayName = "Unknown";
+                    if (snapshot.hasData && snapshot.data != null) {
+                      final data = snapshot.data!.data() as Map<String, dynamic>?;
+                      displayName = data?['display_name'] ?? "Unknown";
+                    }
+                    if(entry.value['attachments'] == null && entry.value['message'] == null){
+                      return Container();
+                    }
+                    return getMessageCard(
+                      context,
+                      widget,
+                      instance.getTextColor(Color.lerp(instance.theme[0], instance.theme[1], .5)!),
+                      displayName,
+                      displayTime,
+                      entry.value['author'] ?? "",
+                      entry.value['content'] ?? "",
+                      entry.value['edited'] ?? false,
+                      entry.value['attachments'] ?? [],
+                      entry.key,
+                      showImage: widget.ImageControler,
+                    );
+                  },
+                );
+                // 古いメッセージは先頭に追加
+                returnWidget.insert(0, chatWidget);
+              }
+            }
+          });
+        } else {
+          // 新しいメッセージがない場合は、もう読み込むものがないと判断
+          setState(() {
+            _hasMoreMessages = false;
+          });
+        }
+      } else {
+        setState(() {
+          _hasMoreMessages = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading more messages: $e');
+    } finally {
+      setState(() {
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  Future<void> _loadChatHistory() async {
+    if (_isInitializing) return; // 既に初期化中の場合は処理をスキップ
+    
+    setState(() {
+      _isInitializing = true;
+    });
+    
+    try {
+      // 総メッセージ数を取得
+      _totalMessageCount = await chatFileManager.getTotalMessageCount();
+      
+      // 最初の50件を読み込み
+      final history = await chatFileManager.loadChatHistory(
+        limit: _messagesPerPage, 
+        offset: 0,
+        excludeIds: <String>{}, // 最初の読み込みでは除外IDは空
+      );
       if (history != null) {
         setState(() {
-          chatHistory = history;
+          // 既存のchatHistoryと重複しないように確認
+          final newMessages = <String, dynamic>{};
+          for (var entry in history.entries) {
+            if (!chatHistory.containsKey(entry.key)) {
+              newMessages[entry.key] = entry.value;
+            }
+          }
+          
+          chatHistory.addAll(newMessages);
+          _currentOffset = chatHistory.length;
+          _hasMoreMessages = _currentOffset < _totalMessageCount;
+          
+          // 最後に読み込んだメッセージのタイムスタンプを記録
+          if (newMessages.isNotEmpty) {
+            final timestamps = newMessages.values
+                .map((msg) => msg['timeStamp'] as int?)
+                .where((ts) => ts != null)
+                .cast<int>();
+            if (timestamps.isNotEmpty) {
+              _lastLoadedTimestamp = timestamps.reduce((a, b) => a < b ? a : b); // 最も古いタイムスタンプ
+            }
+          }
+          
           // 履歴を時系列順に並び替えて表示
           final sortedMessages = chatHistory.entries.toList()
             ..sort((a, b) => (a.value['timeStamp'] as int).compareTo(b.value['timeStamp'] as int));
           
-          returnWidget = [];
+          // returnWidgetをクリアして重複を防ぐ
+          returnWidget.clear();
           for (var entry in sortedMessages) {
+            // 重複チェック：既にreturnWidgetに同じキーのウィジェットが存在しないか確認
+            final exists = returnWidget.any((widget) =>
+              widget.key is ValueKey && (widget.key as ValueKey).value == entry.key
+            );
+            if (exists) continue;
+            
             final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(entry.value['timeStamp']);
             final String displayTime = getTimeStringFormat(dateTime);
             
@@ -141,6 +326,10 @@ class _MessageScreenState extends State<MessageScreen> {
       }
     } catch (e) {
       debugPrint('Error loading chat history: $e');
+    } finally {
+      setState(() {
+        _isInitializing = false;
+      });
     }
   }
 
@@ -262,6 +451,8 @@ class _MessageScreenState extends State<MessageScreen> {
 
   @override
   void dispose() {
+    // スクロールリスナーを削除
+    widget.scrollController.removeListener(_scrollListener);
     // チャット入力欄のフォーカスを無視する
     widget.focusNode.dispose();
     super.dispose();
@@ -322,9 +513,29 @@ class _MessageScreenState extends State<MessageScreen> {
 
   // 送信直後にローカルでメッセージを即時追加するためのpublicメソッド
   void addLocalMessage(Map message) {
+    final String messageId = message['id'];
+    
+    // 既に存在するメッセージの場合は追加しない
+    if (chatHistory.containsKey(messageId)) {
+      debugPrint('Message $messageId already exists, skipping add');
+      return;
+    }
+    
+    // 既に同じキーのウィジェットが存在する場合も追加しない
+    final exists = returnWidget.any((widget) =>
+      widget.key is ValueKey && (widget.key as ValueKey).value == messageId
+    );
+    if (exists) {
+      debugPrint('Widget with key $messageId already exists, skipping add');
+      return;
+    }
+    
     setState(() {
-      final String messageId = message['id'];
       chatHistory[messageId] = message;
+      // 新しいメッセージが追加されたので、オフセットを調整
+      _currentOffset++;
+      _totalMessageCount++;
+      
       final DateTime dateTime = DateTime.fromMillisecondsSinceEpoch(message['timeStamp']);
       final String displayTime = getTimeStringFormat(dateTime);
       final instance = Provider.of<AuthContext>(context, listen: false);
@@ -388,7 +599,15 @@ class _MessageScreenState extends State<MessageScreen> {
     if(widget.snapshot.data == null) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: returnWidget
+        children: [
+          // 追加読み込み中のインジケーター
+          if (_isLoadingMore && _hasMoreMessages)
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              child: const CircularProgressIndicator(),
+            ),
+          ...returnWidget,
+        ]
       );
     }
     final content = convert.json.decode(widget.snapshot.data);
@@ -402,12 +621,28 @@ class _MessageScreenState extends State<MessageScreen> {
             if (docSnapshot.connectionState == ConnectionState.waiting) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: returnWidget
+                children: [
+                  // 追加読み込み中のインジケーター
+                  if (_isLoadingMore && _hasMoreMessages)
+                    Container(
+                      padding: const EdgeInsets.all(16.0),
+                      child: const CircularProgressIndicator(),
+                    ),
+                  ...returnWidget,
+                ]
               );
             } else if (docSnapshot.hasError) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: returnWidget
+                children: [
+                  // 追加読み込み中のインジケーター
+                  if (_isLoadingMore && _hasMoreMessages)
+                    Container(
+                      padding: const EdgeInsets.all(16.0),
+                      child: const CircularProgressIndicator(),
+                    ),
+                  ...returnWidget,
+                ]
               );
             } else if (docSnapshot.hasData) {
               final String type = content["type"];
@@ -422,7 +657,15 @@ class _MessageScreenState extends State<MessageScreen> {
               if (content["author"] != instance.id && content["author"]  != widget.channelInfo['id'] && widget.channelInfo["id"] != content['channel']){ 
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: returnWidget,
+                  children: [
+                    // 追加読み込み中のインジケーター
+                    if (_isLoadingMore && _hasMoreMessages)
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: const CircularProgressIndicator(),
+                      ),
+                    ...returnWidget,
+                  ],
                 );
               }
               
@@ -439,7 +682,15 @@ class _MessageScreenState extends State<MessageScreen> {
                 removeWidget(messageId, isLocalDelete: isLocalDelete);
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: returnWidget
+                  children: [
+                    // 追加読み込み中のインジケーター
+                    if (_isLoadingMore && _hasMoreMessages)
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: const CircularProgressIndicator(),
+                      ),
+                    ...returnWidget,
+                  ]
                 );
               }
               if (type == "edit_message") {
@@ -450,20 +701,62 @@ class _MessageScreenState extends State<MessageScreen> {
                 });
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: returnWidget
+                  children: [
+                    // 追加読み込み中のインジケーター
+                    if (_isLoadingMore && _hasMoreMessages)
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: const CircularProgressIndicator(),
+                      ),
+                    ...returnWidget,
+                  ]
                 );
               }
 
               if ((type == "send_message" || type == "call") && lastMessageId == messageId) { //　同じストリームが流れてきた時は無視
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: returnWidget,
+                  children: [
+                    // 追加読み込み中のインジケーター
+                    if (_isLoadingMore && _hasMoreMessages)
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: const CircularProgressIndicator(),
+                      ),
+                    ...returnWidget,
+                  ],
                 );
               }  
               lastMessageId = messageId; // 最終受信を上書き
               if (type == "edit_message") {
-                return Column(children: returnWidget);
+                return Column(
+                  children: [
+                    // 追加読み込み中のインジケーター
+                    if (_isLoadingMore && _hasMoreMessages)
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: const CircularProgressIndicator(),
+                      ),
+                    ...returnWidget,
+                  ]
+                );
               } else if(type == "call"){
+                // 既に存在するメッセージの場合は追加しない
+                if (chatHistory.containsKey(messageId)) {
+                  debugPrint('Call message $messageId already exists, skipping add');
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (_isLoadingMore && _hasMoreMessages)
+                        Container(
+                          padding: const EdgeInsets.all(16.0),
+                          child: const CircularProgressIndicator(),
+                        ),
+                      ...returnWidget,
+                    ]
+                  );
+                }
+                
                 chatHistory[messageId] = {
                   "author": content["author"],
                   "timeStamp": timestamp,
@@ -498,6 +791,22 @@ class _MessageScreenState extends State<MessageScreen> {
                 }
                 rootChange();
               } else {
+                // 既に存在するメッセージの場合は追加しない
+                if (chatHistory.containsKey(messageId)) {
+                  debugPrint('Message $messageId already exists, skipping add');
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (_isLoadingMore && _hasMoreMessages)
+                        Container(
+                          padding: const EdgeInsets.all(16.0),
+                          child: const CircularProgressIndicator(),
+                        ),
+                      ...returnWidget,
+                    ]
+                  );
+                }
+                
                 chatHistory[messageId] = {
                   "author": content["author"],
                   "content": messageContent,
@@ -544,7 +853,15 @@ class _MessageScreenState extends State<MessageScreen> {
             }
             return Column(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: returnWidget
+              children: [
+                // 追加読み込み中のインジケーター
+                if (_isLoadingMore && _hasMoreMessages)
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    child: const CircularProgressIndicator(),
+                  ),
+                ...returnWidget,
+              ]
             );
           },
         );
