@@ -13,6 +13,40 @@ import 'package:flutter/foundation.dart'; // Ensure flutter/foundation.dart is i
 import 'package:provider/provider.dart'; // Ensure provider/provider.dart is imported for AuthContext
 import 'package:xero_talk/utils/auth_context.dart'; // Correct import for AuthContext
 import 'package:flutter/services.dart'; // クリップボード用
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+// YouTube動画のIDを抽出する関数
+String? extractYouTubeVideoId(String url) {
+  final RegExp regExp = RegExp(
+    r'(?:youtube\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/\s]{11})',
+    caseSensitive: false,
+  );
+  final match = regExp.firstMatch(url);
+  return match?.group(1);
+}
+
+// YouTube動画のサムネイルURLを取得する関数（フォールバック付き）
+String getYouTubeThumbnailUrl(String videoId) {
+  return 'https://img.youtube.com/vi/$videoId/maxresdefault.jpg';
+}
+
+// サムネイル読み込みに失敗した場合のフォールバック画像URL
+List<String> getYouTubeThumbnailFallbacks(String videoId) {
+  return [
+    'https://img.youtube.com/vi/$videoId/maxresdefault.jpg',
+    'https://img.youtube.com/vi/$videoId/hqdefault.jpg',
+    'https://img.youtube.com/vi/$videoId/mqdefault.jpg',
+    'https://img.youtube.com/vi/$videoId/default.jpg',
+  ];
+}
+
+// URLからYouTube動画を検出する関数
+bool isYouTubeUrl(String url) {
+  return url.contains('youtube.com/watch') || 
+         url.contains('youtu.be/') || 
+         url.contains('youtube.com/embed/');
+}
 
 Uint8List decodeBase64(String base64String) {
   return convert.base64Decode(base64String);
@@ -69,6 +103,151 @@ List<TextSpan> getTextSpans(String text, bool edited, List<Color> textColor) {
     );
   }
   return spans;
+}
+
+// YouTube動画プレビューウィジェットを作成する関数
+Widget buildYouTubePreview(String url, BuildContext context) {
+  final videoId = extractYouTubeVideoId(url);
+  if (videoId == null) return Container();
+  
+  final thumbnailUrls = getYouTubeThumbnailFallbacks(videoId);
+  
+  return Container(
+    margin: const EdgeInsets.only(top: 8),
+    width: MediaQuery.of(context).size.width * 0.7,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: GestureDetector(
+        onTap: () async {
+          if (await canLaunch(url)) {
+            await launch(url);
+          }
+        },
+        child: Stack(
+          children: [
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: _buildThumbnailImage(thumbnailUrls, 0),
+            ),
+            // 半透明オーバーレイ
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.center,
+                    end: Alignment.center,
+                    colors: [
+                      Colors.black.withOpacity(0.2),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // 再生ボタン
+            const Positioned.fill(
+              child: Center(
+                child: Icon(
+                  Icons.play_circle_filled,
+                  size: 64,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      blurRadius: 8,
+                      color: Colors.black54,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // YouTubeロゴ
+            Positioned(
+              bottom: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  'YouTube',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+// サムネイル画像を順次フォールバックして読み込むウィジェット
+Widget _buildThumbnailImage(List<String> thumbnailUrls, int index) {
+  if (index >= thumbnailUrls.length) {
+    // すべてのURLが失敗した場合のフォールバック
+    return Container(
+      color: Colors.grey[300],
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.play_circle_outline, size: 50, color: Colors.grey),
+            SizedBox(height: 8),
+            Text(
+              'YouTube Video',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  return Image.network(
+    thumbnailUrls[index],
+    fit: BoxFit.cover,
+    errorBuilder: (context, error, stackTrace) {
+      // 次のURLを試す
+      return _buildThumbnailImage(thumbnailUrls, index + 1);
+    },
+  );
+}
+
+// メッセージ内のYouTube URLsを検出して取得する関数
+List<String> extractYouTubeUrls(String text) {
+  final RegExp urlRegExp = RegExp(
+    r'(http|https):\/\/([\w.]+\/?)\S*',
+    caseSensitive: false,
+  );
+  
+  final matches = urlRegExp.allMatches(text);
+  final youtubeUrls = <String>[];
+  
+  for (final match in matches) {
+    final url = match.group(0);
+    if (url != null && isYouTubeUrl(url)) {
+      youtubeUrls.add(url);
+    }
+  }
+  
+  return youtubeUrls;
 }
 
 Widget getMessageCard(
@@ -144,6 +323,14 @@ Widget getMessageCard(
                         )
                       : Container(),
                 ),
+                // YouTube動画プレビューを表示
+                ...(() {
+                  if (content.isNotEmpty) {
+                    final youtubeUrls = extractYouTubeUrls(content);
+                    return youtubeUrls.map((url) => buildYouTubePreview(url, context)).toList();
+                  }
+                  return <Widget>[];
+                })(),
                 if (attachments.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
