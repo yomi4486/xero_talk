@@ -16,6 +16,43 @@ import 'package:flutter/services.dart'; // クリップボード用
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+// YouTube動画情報を格納するクラス
+class YouTubeVideoInfo {
+  final String title;
+  final String channelTitle;
+  final String? description;
+  final int? duration;
+
+  YouTubeVideoInfo({
+    required this.title,
+    required this.channelTitle,
+    this.description,
+    this.duration,
+  });
+}
+
+// YouTube Data API v3を使用して動画情報を取得
+Future<YouTubeVideoInfo?> getYouTubeVideoInfo(String videoId) async {
+  // 本来はAPIキーが必要ですが、今回は簡易的な方法でタイトルを取得
+  try {
+    final response = await http.get(
+      Uri.parse('https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=$videoId&format=json'),
+    );
+    
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return YouTubeVideoInfo(
+        title: data['title'] ?? 'YouTube Video',
+        channelTitle: data['author_name'] ?? 'Unknown Channel',
+      );
+    }
+  } catch (e) {
+    print('Error fetching YouTube video info: $e');
+  }
+  
+  return null;
+}
+
 // YouTube動画のIDを抽出する関数
 String? extractYouTubeVideoId(String url) {
   final RegExp regExp = RegExp(
@@ -133,62 +170,129 @@ Widget buildYouTubePreview(String url, BuildContext context) {
             await launch(url);
           }
         },
-        child: Stack(
+        child: Column(
           children: [
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: _buildThumbnailImage(thumbnailUrls, 0),
-            ),
-            // 半透明オーバーレイ
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.center,
-                    end: Alignment.center,
-                    colors: [
-                      Colors.black.withOpacity(0.2),
-                      Colors.transparent,
-                    ],
-                  ),
+            // サムネイル部分
+            Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: _buildThumbnailImage(thumbnailUrls, 0),
                 ),
-              ),
-            ),
-            // 再生ボタン
-            const Positioned.fill(
-              child: Center(
-                child: Icon(
-                  Icons.play_circle_filled,
-                  size: 64,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 8,
-                      color: Colors.black54,
-                      offset: Offset(0, 2),
+                // 半透明オーバーレイ
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.center,
+                        end: Alignment.center,
+                        colors: [
+                          Colors.black.withOpacity(0.2),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            // YouTubeロゴ
-            Positioned(
-              bottom: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text(
-                  'YouTube',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
+                // 再生ボタン
+                const Positioned.fill(
+                  child: Center(
+                    child: Icon(
+                      Icons.play_circle_filled,
+                      size: 64,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 8,
+                          color: Colors.black54,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // YouTubeロゴ
+                Positioned(
+                  bottom: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Text(
+                      'YouTube',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // 動画情報部分
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              color: Colors.grey[50],
+              child: FutureBuilder<YouTubeVideoInfo?>(
+                future: getYouTubeVideoInfo(videoId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: 12,
+                          width: 200,
+                          child: LinearProgressIndicator(
+                            backgroundColor: Colors.grey,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        SizedBox(
+                          height: 12,
+                          width: 120,
+                          child: LinearProgressIndicator(
+                            backgroundColor: Colors.grey,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  
+                  final videoInfo = snapshot.data;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        videoInfo?.title ?? 'YouTube Video',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        videoInfo?.channelTitle ?? 'Unknown Channel',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ],
