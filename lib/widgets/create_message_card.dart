@@ -31,9 +31,8 @@ class YouTubeVideoInfo {
   });
 }
 
-// YouTube Data API v3を使用して動画情報を取得
+/// YouTube動画の情報を取得する関数
 Future<YouTubeVideoInfo?> getYouTubeVideoInfo(String videoId) async {
-  // 本来はAPIキーが必要ですが、今回は簡易的な方法でタイトルを取得
   try {
     final response = await http.get(
       Uri.parse('https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=$videoId&format=json'),
