@@ -413,6 +413,7 @@ class _chat extends State<chat> {
                       ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.7,
