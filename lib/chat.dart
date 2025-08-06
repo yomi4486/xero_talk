@@ -418,8 +418,9 @@ class _chat extends State<chat> {
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.7,
                           child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              maxHeight: 120, // 最大高さを120pxに制限（約5行分）
+                            constraints: BoxConstraints(
+                              // 最大高さを約5行分に制限
+                              maxHeight: (16.0 * (const TextStyle(fontSize: 16).height ?? 1.0) * 5),
                             ),
                             child: TextField(
                               focusNode: focusNode,
