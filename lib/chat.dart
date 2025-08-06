@@ -417,48 +417,54 @@ class _chat extends State<chat> {
                       children: [
                         SizedBox(
                           width: MediaQuery.of(context).size.width * 0.7,
-                          child: TextField(
-                            focusNode: focusNode,
-                            cursorColor:
-                                const Color.fromARGB(55, 255, 255, 255),
-                            controller: fieldText,
-                            onTapOutside: (_) => unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            style: const TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              fontSize: 16,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              maxHeight: 120, // 最大高さを120pxに制限（約5行分）
                             ),
-                            decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.transparent),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide:
-                                    const BorderSide(color: Colors.transparent),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              hintText: isGroup ? '${displayName}にメッセージを送信' : '$displayNameにメッセージを送信',
-                              labelStyle: const TextStyle(
+                            child: TextField(
+                              focusNode: focusNode,
+                              cursorColor:
+                                  const Color.fromARGB(55, 255, 255, 255),
+                              controller: fieldText,
+                              onTapOutside: (_) => unfocus(), // テキスト入力欄以外をタップしたらフォーカスを外す
+                              keyboardType: TextInputType.multiline,
+                              maxLines: null,
+                              minLines: 1,
+                              style: const TextStyle(
                                 color: Color.fromARGB(255, 255, 255, 255),
                                 fontSize: 16,
                               ),
-                              hintStyle: const TextStyle(
-                                color: Color.fromARGB(255, 255, 255, 255),
-                                fontSize: 12,
-                                overflow: TextOverflow.ellipsis,
+                              decoration: InputDecoration(
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide:
+                                      const BorderSide(color: Colors.transparent),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide:
+                                      const BorderSide(color: Colors.transparent),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                hintText: isGroup ? '${displayName}にメッセージを送信' : '$displayNameにメッセージを送信',
+                                labelStyle: const TextStyle(
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                                  fontSize: 16,
+                                ),
+                                hintStyle: const TextStyle(
+                                  color: Color.fromARGB(255, 255, 255, 255),
+                                  fontSize: 12,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                filled: true,
+                                fillColor: const Color.fromARGB(55, 0, 0, 0),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 12, horizontal: 16.0),
                               ),
-                              filled: true,
-                              fillColor: const Color.fromARGB(55, 0, 0, 0),
-                              contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 0, horizontal: 16.0),
+                              onChanged: (text) {
+                                chatText = text;
+                                _saveDraft(); // テキスト変更時にドラフトを保存
+                              },
                             ),
-                            onChanged: (text) {
-                              chatText = text;
-                              _saveDraft(); // テキスト変更時にドラフトを保存
-                            },
                           ),
                         ),
                         TextFieldTapRegion(
