@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/main.dart';
+import 'package:xero_talk/screens/account_deletion_screen.dart';
+import 'package:xero_talk/screens/account_suspension_screen.dart';
 import 'package:xero_talk/screens/blocked_users_screen.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/setting_item.dart';
@@ -415,7 +417,33 @@ class _SettingPage extends State<SettingPage> {
                             );
                           },
                         );
-                      })
+                      }),
+                  const SizedBox(height: 20),
+                  CenterButton(
+                    name: "アカウント一時停止",
+                    fontColor: Colors.orange,
+                    function: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AccountSuspensionScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  CenterButton(
+                    name: "アカウント削除",
+                    fontColor: Colors.red,
+                    function: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AccountDeletionScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 ] //childlen 画面全体
                     )),
           ),
