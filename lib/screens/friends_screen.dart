@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/models/friend.dart';
 import 'package:xero_talk/screens/add_friend_screen.dart';
+import 'package:xero_talk/screens/blocked_users_screen.dart';
+import 'package:xero_talk/services/block_service.dart';
 import 'package:xero_talk/services/friend_service.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
 
 class FriendsScreen extends StatelessWidget {
   final FriendService _friendService = FriendService();
+  final BlockService _blockService = BlockService();
 
   FriendsScreen({Key? key}) : super(key: key);
 
@@ -18,6 +21,46 @@ class FriendsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 22, 22, 22),
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+        title: const Text(
+          'フレンド',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            color: const Color.fromARGB(255, 60, 60, 60),
+            onSelected: (String value) {
+              switch (value) {
+                case 'blocked_users':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BlockedUsersScreen(),
+                    ),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'blocked_users',
+                child: Row(
+                  children: [
+                    Icon(Icons.block, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(
+                      'ブロック済みユーザー',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -137,37 +180,47 @@ class FriendsScreen extends StatelessWidget {
                                 '@${userInfo['name']}',
                                 style: const TextStyle(color: Colors.grey),
                               ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.white),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-                                      title: const Text(
-                                        'フレンド解除',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                      content: const Text(
-                                        'フレンドを解除しますか？',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context),
-                                          child: const Text('キャンセル'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () {
-                                            _friendService.removeFriend(friend.id);
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text('解除'),
+                              trailing: PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert, color: Colors.white),
+                                color: const Color.fromARGB(255, 60, 60, 60),
+                                onSelected: (String value) async {
+                                  switch (value) {
+                                    case 'remove':
+                                      _showRemoveFriendDialog(context, friend, userInfo);
+                                      break;
+                                    case 'block':
+                                      _showBlockUserDialog(context, userId, friendId, userInfo);
+                                      break;
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) => [
+                                  const PopupMenuItem<String>(
+                                    value: 'remove',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.person_remove, color: Colors.white),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'フレンド解除',
+                                          style: TextStyle(color: Colors.white),
                                         ),
                                       ],
                                     ),
-                                  );
-                                },
+                                  ),
+                                  const PopupMenuItem<String>(
+                                    value: 'block',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.block, color: Colors.red),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'ブロック',
+                                          style: TextStyle(color: Colors.red),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             );
                           },
@@ -248,6 +301,35 @@ class FriendsScreen extends StatelessWidget {
                                       _friendService.rejectFriendRequest(request.id);
                                     },
                                   ),
+                                  PopupMenuButton<String>(
+                                    icon: const Icon(Icons.more_vert, color: Colors.white),
+                                    color: const Color.fromARGB(255, 60, 60, 60),
+                                    onSelected: (String value) {
+                                      if (value == 'block') {
+                                        _showBlockUserDialog(
+                                          context,
+                                          context.read<AuthContext>().id,
+                                          request.senderId,
+                                          userInfo,
+                                        );
+                                      }
+                                    },
+                                    itemBuilder: (BuildContext context) => [
+                                      const PopupMenuItem<String>(
+                                        value: 'block',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.block, color: Colors.red),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              'ブロック',
+                                              style: TextStyle(color: Colors.red),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             );
@@ -263,5 +345,125 @@ class FriendsScreen extends StatelessWidget {
         ],
       ),
     ));
+  }
+
+  void _showRemoveFriendDialog(
+    BuildContext context,
+    Friend friend,
+    Map<String, dynamic> userInfo,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+        title: const Text(
+          'フレンド解除',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          '${userInfo['display_name']} とのフレンド関係を解除しますか？',
+          style: const TextStyle(color: Colors.white),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              _friendService.removeFriend(friend.id);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${userInfo['display_name']} とのフレンド関係を解除しました'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            },
+            child: const Text(
+              '解除',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBlockUserDialog(
+    BuildContext context,
+    String blockerId,
+    String blockedId,
+    Map<String, dynamic> userInfo,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+        title: const Text(
+          'ユーザーをブロック',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          '${userInfo['display_name']} をブロックしますか？\n\nブロックすると以下の制限が適用されます：\n• このユーザーからのフレンド申請を受け取りません\n• このユーザーとはチャットができません\n• フレンド関係がある場合は解除されます',
+          style: const TextStyle(color: Colors.grey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                await _blockService.blockUser(blockerId, blockedId);
+                
+                // フレンド関係がある場合は解除
+                final friends = await _friendService.getFriends(blockerId).first;
+                for (final friend in friends) {
+                  final friendId = friend.senderId == blockerId 
+                      ? friend.receiverId 
+                      : friend.senderId;
+                  if (friendId == blockedId) {
+                    await _friendService.removeFriend(friend.id);
+                    break;
+                  }
+                }
+                
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${userInfo['display_name']} をブロックしました'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('エラー: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text(
+              'ブロック',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 } 

@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/models/friend.dart';
+import 'package:xero_talk/services/block_service.dart';
 
 class FriendService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collection = 'friends';
+  final BlockService _blockService = BlockService();
   
   // ユーザー情報のキャッシュ
   static final Map<String, Map<String, dynamic>> _userInfoCache = {};
@@ -75,6 +77,12 @@ class FriendService {
       throw Exception('自分自身にフレンド申請を送ることはできません');
     }
 
+    // ブロック関係をチェック
+    final isBlocked = await _blockService.isBlockedByEither(senderId, receiverId);
+    if (isBlocked) {
+      throw Exception('このユーザーとはフレンド申請を送受信できません');
+    }
+
     // 既存の申請がないか確認
     final existingRequest = await _firestore
         .collection(_collection)
@@ -111,7 +119,7 @@ class FriendService {
     });
   }
 
-  // フレンド一覧を取得
+  // フレンド一覧を取得（ブロックされていないユーザーのみ）
   Stream<List<Friend>> getFriends(String userId) {
     return _firestore
         .collection(_collection)
@@ -121,20 +129,41 @@ class FriendService {
           Filter('receiverId', isEqualTo: userId),
         ))
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) => Friend.fromFirestore(doc)).toList();
+        .asyncMap((snapshot) async {
+      List<Friend> friends = [];
+      for (var doc in snapshot.docs) {
+        final friend = Friend.fromFirestore(doc);
+        final otherUserId = friend.senderId == userId ? friend.receiverId : friend.senderId;
+        
+        // ブロック関係をチェック
+        final isBlocked = await _blockService.isBlockedByEither(userId, otherUserId);
+        if (!isBlocked) {
+          friends.add(friend);
+        }
+      }
+      return friends;
     });
   }
 
-  // 保留中のフレンド申請を取得
+  // 保留中のフレンド申請を取得（ブロックされていないユーザーのみ）
   Stream<List<Friend>> getPendingRequests(String userId) {
     return _firestore
         .collection(_collection)
         .where('receiverId', isEqualTo: userId)
         .where('status', isEqualTo: FriendStatus.pending.toString().split('.').last)
         .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) => Friend.fromFirestore(doc)).toList();
+        .asyncMap((snapshot) async {
+      List<Friend> requests = [];
+      for (var doc in snapshot.docs) {
+        final request = Friend.fromFirestore(doc);
+        
+        // ブロック関係をチェック
+        final isBlocked = await _blockService.isBlockedByEither(userId, request.senderId);
+        if (!isBlocked) {
+          requests.add(request);
+        }
+      }
+      return requests;
     });
   }
 

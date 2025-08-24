@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/main.dart';
+import 'package:xero_talk/screens/blocked_users_screen.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/setting_item.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -275,6 +276,59 @@ class _SettingPage extends State<SettingPage> {
                           }).toList(),
                         );
                       },
+                    ),
+                  ),
+                  SettingItem(
+                    name: "ブロック済みユーザー",
+                    defaultValue: "",
+                    widget: GestureDetector(
+                      onTap: () {
+                        print('SettingPage: ブロック済みユーザーボタンがタップされました');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => BlockedUsersScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0,
+                          vertical: 8.0,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 40, 40, 40),
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(
+                            color: const Color.fromARGB(255, 100, 100, 100),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.block,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              '管理',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            Icon(
+                              Icons.arrow_forward_ios,
+                              color: Colors.grey,
+                              size: 12,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   CenterButton(
