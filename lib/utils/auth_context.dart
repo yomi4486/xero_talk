@@ -39,6 +39,7 @@ class AuthContext extends ChangeNotifier {
   late String editingMessageId;
   late Room room;
   bool inHomeScreen = false;
+  bool isSuspended = false; // アカウント停止状態
   late String showChatId;
   bool showBottomBar = true;
   List<Color> theme = const [
@@ -199,5 +200,39 @@ class AuthContext extends ChangeNotifier {
     await googleSignIn.signInSilently();
     await FirebaseAuth.instance.currentUser?.getIdToken(true);
     // 必要ならgoogleDriveApiも再生成
+  }
+
+  /// アカウント削除時のクリーンアップ処理
+  Future<void> cleanupForAccountDeletion() async {
+    try {
+      // MQTT接続を切断
+      if (mqttClient.connectionState == MqttConnectionState.connected) {
+        mqttClient.disconnect();
+      }
+      
+      // StreamControllerをクリーンアップ
+      if (!mqttStreamController.isClosed) {
+        await mqttStreamController.close();
+      }
+      
+      // 接続監視をキャンセル
+      await _connectivitySubscription?.cancel();
+      
+      // 各種状態をリセット
+      inHomeScreen = false;
+      editing = false;
+      showBottomBar = true;
+      
+      // ローカルキャッシュをクリア
+      await deleteImageCache();
+      
+      // Hiveボックスをクリア
+      var userInfoBox = await Hive.openBox('userInfo');
+      await userInfoBox.clear();
+      
+      print('AuthContext: Cleanup completed for account deletion');
+    } catch (e) {
+      print('AuthContext: Error during cleanup: $e');
+    }
   }
 }

@@ -22,6 +22,7 @@ import 'package:flutter_callkit_incoming/entities/entities.dart';
 import 'package:xero_talk/voice_chat.dart';
 import 'utils/voice_chat.dart';
 import 'services/notification_service.dart';
+import 'services/account_suspension_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -190,6 +191,7 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
   void signInWithGoogle(bool isExistUser) async {
     try {
       final authContext = AuthContext();
+      final suspensionService = AccountSuspensionService();
       DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
       String deviceData;
 
@@ -309,6 +311,22 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
 
       debugPrint("ログインしたID: ${authContext.id}");
 
+      // アカウント停止状態をチェック
+      try {
+        await suspensionService.checkSuspensionOnLogin(authContext.id);
+      } catch (e) {
+        if (e is AccountSuspendedException) {
+          // 停止されている場合、ユーザーに復旧の選択肢を提供
+          if (mounted) {
+            _showSuspensionDialog(authContext.id, e.message, e.suspensionInfo);
+          }
+          return;
+        } else {
+          // その他のエラーは継続
+          debugPrint("Suspension check error: $e");
+        }
+      }
+
       if (userCredential.additionalUserInfo!.isNewUser || !userDoc.exists) {
         // 新規ユーザーの場合
         bool connected = await authContext.startSession();
@@ -370,6 +388,98 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       setState(() {
         failed = true;
       });
+    }
+  }
+
+  void _showSuspensionDialog(String userId, String message, Map<String, dynamic>? suspensionInfo) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color.fromARGB(255, 40, 40, 40),
+          title: const Row(
+            children: [
+              Icon(Icons.pause_circle, color: Colors.orange),
+              SizedBox(width: 8),
+              Text(
+                'アカウント停止中',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                message,
+                style: const TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'アカウントを復旧しますか？',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // サインアウトしてログイン画面に戻る
+                FirebaseAuth.instance.signOut();
+                GoogleSignIn().signOut();
+              },
+              child: const Text(
+                'キャンセル',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await _reactivateAccount(userId);
+              },
+              child: const Text(
+                '復旧する',
+                style: TextStyle(color: Colors.orange),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _reactivateAccount(String userId) async {
+    try {
+      final suspensionService = AccountSuspensionService();
+      await suspensionService.reactivateAccount(userId);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('アカウントが復旧されました。ログインを続行します。'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // ログインを再試行
+        signInWithGoogle(true);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('復旧に失敗しました: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
