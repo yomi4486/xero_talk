@@ -100,9 +100,9 @@ class ChatFileManager {
 
   Future<void> _updateGoogleDriveMessage(String messageId, Map<String, dynamic> messageData) async {
     try {
-      if (chatFileId == null) return;
+      if (chatFileId == null || authContext.googleDriveApi == null) return;
 
-      final file = await authContext.googleDriveApi.files.get(
+      final file = await authContext.googleDriveApi!.files.get(
         chatFileId!,
         downloadOptions: drive.DownloadOptions.fullMedia,
       ) as drive.Media;
@@ -131,7 +131,7 @@ class ChatFileManager {
             updatedBytes.length,
           );
 
-          await authContext.googleDriveApi.files.update(
+          await authContext.googleDriveApi!.files.update(
             drive.File()
               ..name = 'chat_history.json'
               ..mimeType = 'application/json; charset=utf-8',
@@ -147,7 +147,7 @@ class ChatFileManager {
 
   Future<void> _saveToGoogleDrive(Map<String, dynamic> data) async {
     try {
-      if (chatFileId == null) return;
+      if (chatFileId == null || authContext.googleDriveApi == null) return;
 
       final content = convert.jsonEncode(data);
       final bytes = utf8.encode(content);
@@ -156,7 +156,7 @@ class ChatFileManager {
         bytes.length,
       );
 
-      await authContext.googleDriveApi.files.update(
+      await authContext.googleDriveApi!.files.update(
         drive.File()
           ..name = 'chat_history.json'
           ..mimeType = 'application/json; charset=utf-8',
@@ -227,11 +227,11 @@ class ChatFileManager {
 
   Future<String?> _loadOrCreateGoogleDriveFile() async {
     try {
-      if (_chatId.isEmpty) return null;
+      if (_chatId.isEmpty || authContext.googleDriveApi == null) return null;
 
       // ユーザー固有のフォルダを作成
       final folderName = 'chat_history_$_userId';
-      final folderQuery = await authContext.googleDriveApi.files.list(
+      final folderQuery = await authContext.googleDriveApi!.files.list(
         spaces: 'appDataFolder',
         q: "name='$folderName' and mimeType='application/vnd.google-apps.folder'",
       );
@@ -244,13 +244,13 @@ class ChatFileManager {
           ..name = folderName
           ..parents = ['appDataFolder']
           ..mimeType = 'application/vnd.google-apps.folder';
-        final createdFolder = await authContext.googleDriveApi.files.create(folder);
+        final createdFolder = await authContext.googleDriveApi!.files.create(folder);
         folderId = createdFolder.id!;
       }
 
       // フレンドとのチャット用のファイル名で検索
       final fileName = 'chat_history_$_chatId.json';
-      final result = await authContext.googleDriveApi.files.list(
+      final result = await authContext.googleDriveApi!.files.list(
         spaces: 'appDataFolder',
         q: "name='$fileName' and '$folderId' in parents",
       );
@@ -263,7 +263,7 @@ class ChatFileManager {
           ..parents = [folderId]
           ..mimeType = 'application/json';
 
-        final createdFile = await authContext.googleDriveApi.files.create(file);
+        final createdFile = await authContext.googleDriveApi!.files.create(file);
         
         // 初期データを保存
         final initialData = {
@@ -303,9 +303,9 @@ class ChatFileManager {
 
   Future<int> _getTotalMessageCountFromGoogleDrive() async {
     try {
-      if (chatFileId == null) return 0;
+      if (chatFileId == null || authContext.googleDriveApi == null) return 0;
 
-      final file = await authContext.googleDriveApi.files.get(
+      final file = await authContext.googleDriveApi!.files.get(
         chatFileId!,
         downloadOptions: drive.DownloadOptions.fullMedia,
       ) as drive.Media;
@@ -378,9 +378,9 @@ class ChatFileManager {
     int? beforeTimestamp,
   }) async {
     try {
-      if (chatFileId == null) return null;
+      if (chatFileId == null || authContext.googleDriveApi == null) return null;
 
-      final file = await authContext.googleDriveApi.files.get(
+      final file = await authContext.googleDriveApi!.files.get(
         chatFileId!,
         downloadOptions: drive.DownloadOptions.fullMedia,
       ) as drive.Media;
@@ -554,9 +554,9 @@ class ChatFileManager {
 
   Future<void> _deleteFromGoogleDrive(String messageId) async {
     try {
-      if (chatFileId == null) return;
+      if (chatFileId == null || authContext.googleDriveApi == null) return;
 
-      final file = await authContext.googleDriveApi.files.get(
+      final file = await authContext.googleDriveApi!.files.get(
         chatFileId!,
         downloadOptions: drive.DownloadOptions.fullMedia,
       ) as drive.Media;
@@ -582,7 +582,7 @@ class ChatFileManager {
             updatedBytes.length,
           );
 
-          await authContext.googleDriveApi.files.update(
+          await authContext.googleDriveApi!.files.update(
             drive.File()
               ..name = 'chat_history.json'
               ..mimeType = 'application/json; charset=utf-8',

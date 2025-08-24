@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:xero_talk/models/friend.dart';
 import 'package:xero_talk/screens/add_friend_screen.dart';
-import 'package:xero_talk/screens/blocked_users_screen.dart';
 import 'package:xero_talk/services/block_service.dart';
 import 'package:xero_talk/services/friend_service.dart';
 import 'package:xero_talk/utils/auth_context.dart';
@@ -21,46 +20,6 @@ class FriendsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 22, 22, 22),
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-        title: const Text(
-          'フレンド',
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            color: const Color.fromARGB(255, 60, 60, 60),
-            onSelected: (String value) {
-              switch (value) {
-                case 'blocked_users':
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BlockedUsersScreen(),
-                    ),
-                  );
-                  break;
-              }
-            },
-            itemBuilder: (BuildContext context) => [
-              const PopupMenuItem<String>(
-                value: 'blocked_users',
-                child: Row(
-                  children: [
-                    Icon(Icons.block, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text(
-                      'ブロック済みユーザー',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(

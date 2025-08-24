@@ -4,6 +4,7 @@ import 'package:xero_talk/main.dart';
 import 'package:xero_talk/screens/account_deletion_screen.dart';
 import 'package:xero_talk/screens/account_suspension_screen.dart';
 import 'package:xero_talk/screens/blocked_users_screen.dart';
+import 'package:xero_talk/services/google_drive_permission_service.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/setting_item.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -254,11 +255,36 @@ class _SettingPage extends State<SettingPage> {
                             height: 2,
                             color: Colors.white,
                           ),
-                          onChanged: (String? newValue) {
+                          onChanged: (String? newValue) async {
                             if (newValue != null) {
+                              // Google Driveが選択された場合、権限を要求
+                              if (newValue == "Google Drive") {
+                                final hasPermission = await GoogleDrivePermissionService.requestDrivePermissionAndInitialize();
+                                if (!hasPermission) {
+                                  // 権限が拒否された場合、選択を元に戻す
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Google Driveの権限が必要です。設定は変更されませんでした。'),
+                                      backgroundColor: Colors.orange,
+                                    ),
+                                  );
+                                  return;
+                                }
+                                
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Google Driveの権限が付与されました。メッセージはGoogle Driveに保存されます。'),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              } else {
+                                // サーバーが選択された場合、Google Driveの権限を無効化
+                                GoogleDrivePermissionService.revokeDrivePermission();
+                              }
+                              
                               // 表示用の値を内部値に変換
                               final internalValue = newValue == "サーバー" ? "Firestore" : newValue;
-                              FirebaseFirestore.instance
+                              await FirebaseFirestore.instance
                                   .collection('user_account')
                                   .doc(instance.id)
                                   .update({
