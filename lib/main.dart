@@ -235,7 +235,6 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       //Google認証フローを起動する
       final googleSignIn = GoogleSignIn(
         scopes: [
-          drive.DriveApi.driveAppdataScope,
           'email',
           'profile',
         ],
@@ -267,8 +266,10 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       //作成したcredentialを元にfirebaseAuthで認証を行う
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
-      final httpClient = (await googleSignIn.authenticatedClient())!;
-      googleDriveApi = drive.DriveApi(httpClient);
+      
+      // GoogleDrive APIは後で必要に応じて初期化する
+      // final httpClient = (await googleSignIn.authenticatedClient())!;
+      // googleDriveApi = drive.DriveApi(httpClient);
 
       // idが取得できなかった場合はHiveから取得
       if (userCredential.additionalUserInfo?.profile?['sub'] == null) {
@@ -281,7 +282,7 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
         authContext.id = await userCredential.additionalUserInfo?.profile?['sub'];
       }
       
-      authContext.googleDriveApi = googleDriveApi;
+      authContext.googleDriveApi = null; // 初期化時はnull
       authContext.userCredential = userCredential;
       await authContext.getTheme();
 
