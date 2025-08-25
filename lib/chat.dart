@@ -59,7 +59,7 @@ class _OptimizedGroupMembersListState extends State<OptimizedGroupMembersList> w
         try {
           // FriendServiceのキャッシュ機能を活用
           final userInfo = await FriendService().getUserInfo(userId);
-          final displayName = userInfo['display_name'] ?? userId;
+          final displayName = (userInfo["display_name"]).toString().isNotEmpty ? userInfo["display_name"] : userInfo["name"];
           
           if (mounted && displayName != _memberDisplayNames[userId]) {
             setState(() {
@@ -332,7 +332,7 @@ class _chat extends State<chat> {
     final String chatId = channelInfo['id'];
     final String displayName = isGroup
         ? (channelInfo['name'] ?? 'グループ')
-        : (channelInfo['display_name'] ?? '-');
+        : (channelInfo['display_name']).toString().isNotEmpty ? channelInfo['display_name'] : channelInfo['name'];
     final double baseBottomBarHeight = MediaQuery.of(context).size.height * 0.1799;
     final double imagePreviewHeight = images.isNotEmpty ? 116.0 : 0.0; // 100px + 16px margin
     final double bottomBarHeight = baseBottomBarHeight + imagePreviewHeight;
@@ -660,7 +660,7 @@ class _chat extends State<chat> {
                                       Padding(
                                         padding: const EdgeInsets.all(10),
                                         child: Text(
-                                          isGroup ? channelInfo["name"] : channelInfo["display_name"],
+                                          isGroup ? channelInfo["name"] : (channelInfo["display_name"]).toString().isNotEmpty ? channelInfo["display_name"] : channelInfo["name"],
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 24,
