@@ -110,7 +110,7 @@ class AuthContext extends ChangeNotifier {
     return Color(int.parse(hexColor, radix: 16));
   }
 
-  ///背景色に応じてダーク、ホワイトを切り替えてカラーセットを返却します
+  ///背景色に応じてダーク、ホワイトを切り替えてカラーセットを返却
   List<Color> getTextColor(Color backgroundColor) {
     double brightness = (backgroundColor.red * 0.299 +
             backgroundColor.green * 0.587 +
