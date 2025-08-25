@@ -299,7 +299,8 @@ class _MessageScreenState extends State<MessageScreen> {
                   String displayName = "Unknown";
                   if (snapshot.hasData && snapshot.data != null) {
                     final data = snapshot.data!.data() as Map<String, dynamic>?;
-                    displayName = data?['display_name'] ?? "Unknown";
+                    displayName = (data?['display_name']).toString().isNotEmpty ? (data?['display_name']) : (data?['name']);
+                    
                   }
                   if(entry.value['attachments'] == null && entry.value['message'] == null){
                     return Container();
