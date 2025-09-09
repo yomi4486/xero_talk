@@ -1,4 +1,5 @@
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/material.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 import 'package:xero_talk/utils/auth_context.dart';
@@ -7,33 +8,54 @@ class GoogleDrivePermissionService {
   static const String driveScope = 'https://www.googleapis.com/auth/drive.appdata';
 
   /// GoogleDriveのスコープを要求し、DriveAPIを初期化する
-  static Future<bool> requestDrivePermissionAndInitialize() async {
+  static Future<bool> requestDrivePermissionAndInitialize(BuildContext context) async {
     try {
-      final googleSignIn = GoogleSignIn();
-      final currentUser = googleSignIn.currentUser;
-      
+      final googleSignIn = GoogleSignIn(scopes: [driveScope]);
+      GoogleSignInAccount? currentUser = googleSignIn.currentUser;
+
+      // 未ログインなら確認ダイアログを表示
       if (currentUser == null) {
-        throw Exception('ユーザーがログインしていません');
+        final result = await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Google Drive権限の追加'),
+            content: const Text('Google Driveに保存するには、Googleアカウントへの追加の権限が必要です。続行しますか？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('キャンセル'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        if (result != true) {
+          return false;
+        }
+        currentUser = await googleSignIn.signIn();
+        if (currentUser == null) {
+          // ユーザーがログインしなかった場合
+          return false;
+        }
       }
 
-      // 現在のスコープを確認
+      // 既に権限があるか確認
       if (await _hasRequiredScope(currentUser)) {
-        // 既に権限がある場合は、DriveAPIを初期化して終了
         await _initializeDriveApi(googleSignIn);
         return true;
       }
 
       // 追加のスコープを要求
       final bool hasPermission = await googleSignIn.requestScopes([driveScope]);
-      
       if (!hasPermission) {
         return false; // ユーザーが権限を拒否
       }
 
-      // DriveAPIを初期化
       await _initializeDriveApi(googleSignIn);
       return true;
-
     } catch (e) {
       print('GoogleDrivePermissionService: Error requesting permission: $e');
       return false;

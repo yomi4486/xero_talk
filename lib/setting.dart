@@ -259,7 +259,7 @@ class _SettingPage extends State<SettingPage> {
                             if (newValue != null) {
                               // Google Driveが選択された場合、権限を要求
                               if (newValue == "Google Drive") {
-                                final hasPermission = await GoogleDrivePermissionService.requestDrivePermissionAndInitialize();
+                                final hasPermission = await GoogleDrivePermissionService.requestDrivePermissionAndInitialize(context);
                                 if (!hasPermission) {
                                   // 権限が拒否された場合、選択を元に戻す
                                   ScaffoldMessenger.of(context).showSnackBar(
