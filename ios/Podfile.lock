@@ -1545,7 +1545,7 @@ PODS:
   - newrelic_mobile (1.1.12):
     - Flutter
     - NewRelicAgent (~> 7.5.6)
-  - NewRelicAgent (7.5.6)
+  - NewRelicAgent (7.5.9)
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -1735,7 +1735,7 @@ SPEC CHECKSUMS:
   livekit_client: 3f79d79233a5bd13d5b541732624ef959d7c538e
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   newrelic_mobile: 040c012295a3ca2d4af8493095d81a7f54cbcd19
-  NewRelicAgent: d5628f58fa2928b1377fe866c6f52750d21c1a4b
+  NewRelicAgent: 4606c1eb2402142dafa402bb50aa35f1e64c5cbc
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
