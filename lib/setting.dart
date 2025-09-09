@@ -4,6 +4,8 @@ import 'package:xero_talk/main.dart';
 import 'package:xero_talk/screens/account_deletion_screen.dart';
 import 'package:xero_talk/screens/account_suspension_screen.dart';
 import 'package:xero_talk/screens/blocked_users_screen.dart';
+import 'package:xero_talk/screens/privacy_policy_screen.dart';
+import 'package:xero_talk/screens/privacy_policy_screen.dart';
 import 'package:xero_talk/services/google_drive_permission_service.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/setting_item.dart';
@@ -470,6 +472,20 @@ class _SettingPage extends State<SettingPage> {
                       );
                     },
                   ),
+                  const SizedBox(height: 10),
+                  CenterButton(
+                    name: "プライバシーポリシー",
+                    fontColor: Colors.white,
+                    function: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PrivacyPolicyScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
                 ] //childlen 画面全体
                     )),
           ),
