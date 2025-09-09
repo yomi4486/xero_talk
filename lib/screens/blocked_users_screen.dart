@@ -28,36 +28,7 @@ class BlockedUsersScreen extends StatelessWidget {
         ),
         backgroundColor: const Color.fromARGB(255, 40, 40, 40),
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          // デバッグ用：テストブロックを追加
-          if (true) // デバッグモード
-            IconButton(
-              icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-              onPressed: () async {
-                try {
-                  // テスト用のユーザーをブロック（存在しないユーザーIDでもOK）
-                  await _blockService.blockUser(userId, 'test_user_${DateTime.now().millisecondsSinceEpoch}');
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('テストブロックを追加しました'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('エラー: ${e.toString()}'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                }
-              },
-            ),
-        ],
+        actions: [],
       ),
       body: StreamBuilder<List<BlockedUser>>(
         stream: _blockService.getBlockedUsers(userId),
