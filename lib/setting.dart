@@ -5,7 +5,6 @@ import 'package:xero_talk/screens/account_deletion_screen.dart';
 import 'package:xero_talk/screens/account_suspension_screen.dart';
 import 'package:xero_talk/screens/blocked_users_screen.dart';
 import 'package:xero_talk/screens/privacy_policy_screen.dart';
-import 'package:xero_talk/screens/privacy_policy_screen.dart';
 import 'package:xero_talk/services/google_drive_permission_service.dart';
 import 'package:xero_talk/utils/auth_context.dart';
 import 'package:xero_talk/widgets/setting_item.dart';
