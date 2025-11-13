@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:xero_talk/account_startup.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,7 +24,6 @@ import 'package:xero_talk/voice_chat.dart';
 import 'utils/voice_chat.dart';
 import 'services/notification_service.dart';
 import 'services/account_suspension_service.dart';
-
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 late drive.DriveApi googleDriveApi;
@@ -187,98 +188,18 @@ class MyHomePage extends StatefulWidget {
 class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
   bool failed = false;
 
-  void signInWithGoogle(bool isExistUser) async {
+  // サインイン成功後の共通処理（Google/Apple 共通）
+  Future<void> _handlePostSignIn(UserCredential userCredential, AuthContext authContext, AccountSuspensionService suspensionService) async {
     try {
-      final authContext = AuthContext();
-      final suspensionService = AccountSuspensionService();
-      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      String deviceData;
-
-      if (Theme.of(context).platform == TargetPlatform.android) {
-        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        deviceData =
-            'Android ${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt}), ${androidInfo.model}';
-      } else if (Theme.of(context).platform == TargetPlatform.iOS) {
-        /// iPhoneの内部名を表示される機種名に変換
-        String getIosDeviceName(String machine) {
-          Map<String, String> iosDeviceNames = {
-            'iPhone13,4': 'iPhone 12 Pro Max',
-            'iPhone14,2': 'iPhone 13 Pro',
-            'iPhone14,3': 'iPhone 13 Pro Max',
-            'iPhone14,4': 'iPhone 13 mini',
-            'iPhone14,5': 'iPhone 13',
-            'iPhone15,2': 'iPhone 14 Pro',
-            'iPhone15,3': 'iPhone 14 Pro Max',
-            'iPhone15,4': 'iPhone 14',
-            'iPhone15,5': 'iPhone 14 Plus',
-            'iPhone16,1': 'iPhone 15 Pro',
-            'iPhone16,2': 'iPhone 15 Pro Max',
-            'iPhone16,3': 'iPhone 15',
-            'iPhone16,4': 'iPhone 15 Plus',
-            'iPhone17,1': 'iPhone 16 Pro',
-            'iPhone17,2': 'iPhone 16 Pro Max',
-            'iPhone17,3': 'iPhone 16',
-            'iPhone17,4': 'iPhone 16 Plus',
-          };
-          return iosDeviceNames[machine] ?? machine;
-        }
-
-        IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-        deviceData =
-            '${getIosDeviceName(iosInfo.utsname.machine)}, ${iosInfo.systemName} ${iosInfo.systemVersion}';
-      } else {
-        deviceData = 'Unsupported platform';
-      }
-      authContext.deviceName = deviceData;
-
-      //Google認証フローを起動する
-      final googleSignIn = GoogleSignIn(
-        scopes: [
-          'email',
-          'profile',
-        ],
-      );
-
-      late GoogleSignInAccount? googleUser = googleSignIn.currentUser;
-      if (!isExistUser && googleUser == null) {
-        googleUser = await googleSignIn.signIn();
-      } else {
-        googleUser = await googleSignIn.signInSilently();
-      }
-
-      if (googleUser == null) {
-        throw Exception('Google Sign-In failed');
-      }
-
-      //リクエストから認証情報を取得する
-      final googleAuth = await googleUser.authentication;
-      
-      if (googleAuth.accessToken == null && googleAuth.idToken == null) {
-        throw Exception('Failed to get authentication tokens');
-      }
-
-      //firebaseAuthで認証を行う為、credentialを作成
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      //作成したcredentialを元にfirebaseAuthで認証を行う
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-      
-      // GoogleDrive APIは後で必要に応じて初期化する
-      // final httpClient = (await googleSignIn.authenticatedClient())!;
-      // googleDriveApi = drive.DriveApi(httpClient);
-
       // idが取得できなかった場合はHiveから取得
       if (userCredential.additionalUserInfo?.profile?['sub'] == null) {
         var userInfoBox = await Hive.openBox('userInfo');
-        authContext.id = userInfoBox.get('userId', defaultValue: userCredential.additionalUserInfo?.profile?['sub']);
+        authContext.id = userInfoBox.get('userId', defaultValue: userCredential.additionalUserInfo?.profile?['sub'] ?? userCredential.user?.uid);
       } else {
         // idが取得できた場合はHiveに保存
         var userInfoBox = await Hive.openBox('userInfo');
         await userInfoBox.put('userId', userCredential.additionalUserInfo?.profile?['sub']);
-        authContext.id = await userCredential.additionalUserInfo?.profile?['sub'];
+        authContext.id = userCredential.additionalUserInfo?.profile?['sub'];
       }
       
       authContext.googleDriveApi = null; // 初期化時はnull
@@ -383,11 +304,153 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       }
       authContext.inHomeScreen = true;
       authContext.userCredential = userCredential;
+    } catch(e){
+      debugPrint("Post sign-in processing error: $e");
+      rethrow;
+    }
+  }
+
+  void signInWithGoogle(bool isExistUser) async {
+    try {
+      final authContext = AuthContext();
+      final suspensionService = AccountSuspensionService();
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      String deviceData;
+
+      if (Theme.of(context).platform == TargetPlatform.android) {
+        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        deviceData =
+            'Android ${androidInfo.version.release} (SDK ${androidInfo.version.sdkInt}), ${androidInfo.model}';
+      } else if (Theme.of(context).platform == TargetPlatform.iOS) {
+        /// iPhoneの内部名を表示される機種名に変換
+        String getIosDeviceName(String machine) {
+          Map<String, String> iosDeviceNames = {
+            'iPhone13,4': 'iPhone 12 Pro Max',
+            'iPhone14,2': 'iPhone 13 Pro',
+            'iPhone14,3': 'iPhone 13 Pro Max',
+            'iPhone14,4': 'iPhone 13 mini',
+            'iPhone14,5': 'iPhone 13',
+            'iPhone15,2': 'iPhone 14 Pro',
+            'iPhone15,3': 'iPhone 14 Pro Max',
+            'iPhone15,4': 'iPhone 14',
+            'iPhone15,5': 'iPhone 14 Plus',
+            'iPhone16,1': 'iPhone 15 Pro',
+            'iPhone16,2': 'iPhone 15 Pro Max',
+            'iPhone16,3': 'iPhone 15',
+            'iPhone16,4': 'iPhone 15 Plus',
+            'iPhone17,1': 'iPhone 16 Pro',
+            'iPhone17,2': 'iPhone 16 Pro Max',
+            'iPhone17,3': 'iPhone 16',
+            'iPhone17,4': 'iPhone 16 Plus',
+          };
+          return iosDeviceNames[machine] ?? machine;
+        }
+
+        IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+        deviceData =
+            '${getIosDeviceName(iosInfo.utsname.machine)}, ${iosInfo.systemName} ${iosInfo.systemVersion}';
+      } else {
+        deviceData = 'Unsupported platform';
+      }
+      authContext.deviceName = deviceData;
+
+      //Google認証フローを起動する
+      final googleSignIn = GoogleSignIn(
+        scopes: [
+          'email',
+          'profile',
+        ],
+      );
+
+      late GoogleSignInAccount? googleUser = googleSignIn.currentUser;
+      if (!isExistUser && googleUser == null) {
+        googleUser = await googleSignIn.signIn();
+      } else {
+        googleUser = await googleSignIn.signInSilently();
+      }
+
+      if (googleUser == null) {
+        throw Exception('Google Sign-In failed');
+      }
+
+      //リクエストから認証情報を取得する
+      final googleAuth = await googleUser.authentication;
+      
+      if (googleAuth.accessToken == null && googleAuth.idToken == null) {
+        throw Exception('Failed to get authentication tokens');
+      }
+
+      //firebaseAuthで認証を行う為、credentialを作成
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      //作成したcredentialを元にfirebaseAuthで認証を行う
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      // 共通のサインイン後処理に委譲
+      await _handlePostSignIn(userCredential, authContext, suspensionService);
     } catch (e) {
       debugPrint("SignIn Error: $e");
       setState(() {
         failed = true;
       });
+    }
+  }
+
+  // Apple サインインハンドラ
+  void signInWithApple(bool isExistUser) async {
+    try {
+      final available = await SignInWithApple.isAvailable();
+      if (!available) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('Appleサインイン不可'),
+              content: const Text('この環境ではAppleサインインが利用できません。'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+
+      final authContext = AuthContext();
+      final suspensionService = AccountSuspensionService();
+
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      if (appleCredential.identityToken == null) {
+        throw Exception('Apple identity token is null');
+      }
+
+      final oauthCredential = OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(oauthCredential);
+
+      await _handlePostSignIn(userCredential, authContext, suspensionService);
+    } catch (e) {
+      debugPrint('Apple SignIn Error: $e');
+      if (mounted) {
+        setState(() {
+          failed = true;
+        });
+      }
     }
   }
 
@@ -642,8 +705,35 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
                                     fontSize: 16))),
                           ),
                         ),
+                        // Show Apple Sign In button only on native Apple platforms (iOS/macOS) and not on web
+                        if (!kIsWeb && (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS))
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color.fromARGB(255, 231, 231, 231),
+                                foregroundColor: Colors.black,
+                                shape: const StadiumBorder(),
+                                elevation: 0,
+                                shadowColor: const Color.fromARGB(255, 255, 255, 255),
+                              ),
+                              onPressed: () {
+                                signInWithApple(false);
+                              },
+                              icon: const ImageIcon(
+                                AssetImage("assets/images/apple_logo.png"),
+                                color: Color.fromARGB(255, 22, 22, 22),
+                              ),
+                              label: const Text('Appleでログイン',
+                                  style: (TextStyle(
+                                      color: Color.fromARGB(255, 22, 22, 22),
+                                      fontSize: 16))),
+                            ),
+                          ),
                       ])
-                    : Container())
+                    : Container()
+                )
               ],
             ),
           )),
