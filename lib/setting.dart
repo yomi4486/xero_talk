@@ -68,6 +68,23 @@ class _SettingPage extends State<SettingPage> {
             }
           } else {}
         }
+        // Determine if the current user signed in via Apple.
+        bool isAppleSignIn = false;
+        try {
+          final uc = instance.userCredential;
+          final user = uc.user;
+          if (user != null) {
+            isAppleSignIn = user.providerData
+                .any((p) => p.providerId == 'apple.com');
+          }
+          if (!isAppleSignIn) {
+            final providerId = uc.additionalUserInfo?.providerId;
+            if (providerId != null && providerId.contains('apple')) {
+              isAppleSignIn = true;
+            }
+          }
+        } catch (_) {}
+
         return Scaffold(
           appBar: AppBar(
             centerTitle: false,
@@ -234,7 +251,7 @@ class _SettingPage extends State<SettingPage> {
                       ),
                     ),
                   ),
-                  SettingItem(
+                  if (!isAppleSignIn) SettingItem(
                     name: "メッセージの保存先",
                     defaultValue: "",
                     widget: FutureBuilder<DocumentSnapshot>(
