@@ -191,17 +191,11 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
   // サインイン成功後の共通処理（Google/Apple 共通）
   Future<void> _handlePostSignIn(UserCredential userCredential, AuthContext authContext, AccountSuspensionService suspensionService) async {
     try {
-      // idが取得できなかった場合はHiveから取得
-      if (userCredential.additionalUserInfo?.profile?['sub'] == null) {
-        var userInfoBox = await Hive.openBox('userInfo');
-        authContext.id = userInfoBox.get('userId', defaultValue: userCredential.additionalUserInfo?.profile?['sub'] ?? userCredential.user?.uid);
-      } else {
-        // idが取得できた場合はHiveに保存
-        var userInfoBox = await Hive.openBox('userInfo');
-        await userInfoBox.put('userId', userCredential.additionalUserInfo?.profile?['sub']);
-        authContext.id = userCredential.additionalUserInfo?.profile?['sub'];
-      }
-      
+      print("Called");
+      print(userCredential.user?.uid);
+
+      authContext.id = userCredential.user?.uid ?? '';
+    
       authContext.googleDriveApi = null; // 初期化時はnull
       authContext.userCredential = userCredential;
       await authContext.getTheme();

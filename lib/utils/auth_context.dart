@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -53,15 +54,26 @@ class AuthContext extends ChangeNotifier {
     try{
       if (
           (mqttClient.connectionState == MqttConnectionState.connected ||
-          mqttClient.connectionState == MqttConnectionState.connecting)
+          mqttClient.connectionState == MqttConnectionState.connecting )
       ) {
         debugPrint('MQTT is already connecting or connected. Skipping startSession.');
         return mqttClient.connectionState == MqttConnectionState.connected;
       }
     }catch(_){}
       String? token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      // print('MQTT connecting with token: $token');
       final baseUrl = dotenv.env['BASE_URL']!.replaceAll('wss://', '').replaceAll('https://', '');
-      mqttClient = MqttServerClient.withPort("wss://$baseUrl", id,443);
+      // Build a safe, broker-friendly client identifier:
+      // - allow only letters, digits, '_' and '-'
+      // - add a short random suffix to avoid duplicates
+      // - enforce a reasonable length (<= 23 for many MQTT v3 brokers)
+      final safeBase = id.replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
+      final rnd = Random().nextInt(9000) + 1000; // 1000..9999
+      String clientId = '${safeBase}_$rnd';
+      if (clientId.length > 23) {
+        clientId = clientId.substring(0, 23);
+      }
+      mqttClient = MqttServerClient.withPort("wss://$baseUrl", clientId,443);
       mqttClient.useWebSocket = true;
       mqttClient.logging(on: false);
       mqttClient.keepAlivePeriod = 20;
@@ -74,9 +86,11 @@ class AuthContext extends ChangeNotifier {
       mqttClient.onSubscribed = (String topic) {
         debugPrint('Subscribed to: ' + topic);
       };
-      mqttClient.connectionMessage = MqttConnectMessage()
-          .withClientIdentifier(id)
-          .authenticateAs(token, '')
+        final authToken = token ?? '';
+        debugPrint("MQTT connecting with clientId: $clientId tokenPresent: ${authToken.isNotEmpty}");
+        mqttClient.connectionMessage = MqttConnectMessage()
+          .withClientIdentifier(clientId)
+          .authenticateAs(authToken, '')
           .startClean();
       mqttStreamController = StreamController<String>.broadcast();
     try {
