@@ -7,6 +7,7 @@ import 'package:xero_talk/screens/blocked_users_screen.dart';
 import 'package:xero_talk/screens/privacy_policy_screen.dart';
 import 'package:xero_talk/services/google_drive_permission_service.dart';
 import 'package:xero_talk/utils/auth_context.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:xero_talk/widgets/setting_item.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
@@ -71,16 +72,25 @@ class _SettingPage extends State<SettingPage> {
         // Determine if the current user signed in via Apple.
         bool isAppleSignIn = false;
         try {
-          final uc = instance.userCredential;
-          final user = uc.user;
-          if (user != null) {
-            isAppleSignIn = user.providerData
-                .any((p) => p.providerId == 'apple.com');
+          // Prefer stored UserCredential in AuthContext if available
+          if (instance.userCredential != null) {
+            final ucUser = instance.userCredential!.user;
+            if (ucUser != null) {
+              isAppleSignIn = ucUser.providerData.any((p) => p.providerId == 'apple.com');
+            }
+            if (!isAppleSignIn) {
+              final providerId = instance.userCredential!.additionalUserInfo?.providerId;
+              if (providerId != null && providerId.contains('apple')) {
+                isAppleSignIn = true;
+              }
+            }
           }
+
+          // Fallback: inspect FirebaseAuth currentUser
           if (!isAppleSignIn) {
-            final providerId = uc.additionalUserInfo?.providerId;
-            if (providerId != null && providerId.contains('apple')) {
-              isAppleSignIn = true;
+            final currentUser = FirebaseAuth.instance.currentUser;
+            if (currentUser != null) {
+              isAppleSignIn = currentUser.providerData.any((p) => p.providerId == 'apple.com');
             }
           }
         } catch (_) {}

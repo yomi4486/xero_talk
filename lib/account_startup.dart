@@ -38,7 +38,7 @@ class _AccountStartupState extends State<AccountStartup> {
   void initState() {
     super.initState();
     name = generateRandomAlphaNumeric(Random().nextInt(12) > 10000 ? 12 : Random().nextInt(12));
-    displayName = "${instance.userCredential.user!.displayName}";
+    displayName = FirebaseAuth.instance.currentUser?.displayName ?? (instance.userCredential?.user?.displayName ?? "");
     _nameController.text = name;
     _displayNameController.text = displayName;
   }
