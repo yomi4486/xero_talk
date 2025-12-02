@@ -644,8 +644,23 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
   Widget build(BuildContext context) {
     final instance = AuthContext();
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user != null&&!failed && !instance.inHomeScreen) {
-        signInWithGoogle(true);
+      if (user != null && !failed && !instance.inHomeScreen) {
+        // Decide restoration method based on provider
+        try {
+          final providerIds = user.providerData.map((p) => p.providerId).toList();
+          if (providerIds.contains('google.com')) {
+            signInWithGoogle(true);
+          } else if (providerIds.contains('apple.com')) {
+            // For Apple sign-in, Firebase already has a session. Restore without showing UI.
+            _restoreFirebaseUserSession(user);
+          } else {
+            // Fallback to Google silent flow for other providers
+            signInWithGoogle(true);
+          }
+        } catch (_) {
+          // If anything goes wrong, try Google silent flow as fallback
+          signInWithGoogle(true);
+        }
       }
     });
     return Scaffold(
@@ -732,5 +747,60 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
             ),
           )),
     );
+  }
+
+  // Restore a session for an already-signed-in Firebase `User` (used for Apple sign-in restorations)
+  Future<void> _restoreFirebaseUserSession(User user) async {
+    final authContext = AuthContext();
+    final suspensionService = AccountSuspensionService();
+    try {
+      authContext.id = user.uid;
+      authContext.userCredential = null;
+      await authContext.getTheme();
+
+      try {
+        await suspensionService.checkSuspensionOnLogin(authContext.id);
+      } catch (e) {
+        if (e is AccountSuspendedException) {
+          if (mounted) {
+            _showSuspensionDialog(authContext.id, e.message, e.suspensionInfo);
+          }
+          return;
+        } else {
+          debugPrint("Suspension check error: $e");
+        }
+      }
+
+      bool connected = await authContext.startSession();
+      if (connected) {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => PageViewTabsScreen()),
+          );
+        }
+      } else {
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('接続エラー'),
+              content: Text('サーバーに接続できませんでした。ネットワークやサーバー設定を確認してください。'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+
+      authContext.inHomeScreen = true;
+    } catch (e) {
+      debugPrint('Restore session error: $e');
+    }
   }
 }

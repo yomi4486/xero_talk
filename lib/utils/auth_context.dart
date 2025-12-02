@@ -32,7 +32,7 @@ class AuthContext extends ChangeNotifier {
   late MqttServerClient mqttClient; // MQTTクライアント
   late StreamController<String> mqttStreamController;
   Stream<String> get mqttStream => mqttStreamController.stream;
-  late UserCredential userCredential;
+  UserCredential? userCredential;
   drive.DriveApi? googleDriveApi; // GoogleDriveにデータを書き込むためのインスタンス（オプショナル）
   late String deviceName; // アプリが動作しているデバイスの機種名を保管
   late Widget lastOpenedChat; // スワイプでチャット画面を行き来した際の状態管理を行う
