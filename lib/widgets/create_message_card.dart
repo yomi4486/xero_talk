@@ -12,6 +12,9 @@ import 'dart:io'; // Ensure dart:io is imported for HttpClient
 import 'package:flutter/foundation.dart'; // Ensure flutter/foundation.dart is imported for consolidateHttpClientResponseBytes
 import 'package:provider/provider.dart'; // Ensure provider/provider.dart is imported for AuthContext
 import 'package:xero_talk/utils/auth_context.dart'; // Correct import for AuthContext
+import 'package:xero_talk/main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:xero_talk/services/block_service.dart';
 import 'package:flutter/services.dart'; // クリップボード用
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -629,9 +632,12 @@ Widget getMessageCard(
                           onPressed: () async {
                             await Clipboard.setData(ClipboardData(text: content));
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('コピーしました')),
-                            );
+                            final _rootCtx = navigatorKey.currentState?.context;
+                            if (_rootCtx != null) {
+                              ScaffoldMessenger.of(_rootCtx).showSnackBar(
+                                const SnackBar(content: Text('コピーしました')),
+                              );
+                            }
                           },
                         ),
                         if (isMyMessage) ...[
@@ -769,6 +775,119 @@ Widget getMessageCard(
                                 await saveImageToGallery(attachments[0]);
                                 Navigator.pop(context);
                               }),
+                          // 通報オプション（自分のメッセージには表示しない）
+                          if (!isMyMessage)
+                            SimpleDialogOption(
+                                padding: const EdgeInsets.all(15),
+                                child: const Row(children: [
+                                  Icon(Icons.flag),
+                                  Padding(
+                                      padding: EdgeInsets.only(left: 5),
+                                      child: Text('通報する',
+                                          style: TextStyle(fontSize: 16)))
+                                ]),
+                                onPressed: () async {
+                                  Navigator.pop(context);
+                                  // 理由入力ダイアログを表示
+                                  final TextEditingController _reasonController = TextEditingController();
+                                  final reported = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('メッセージを通報'),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('問題のある内容を通報できます。理由を入力してください（任意）。'),
+                                          const SizedBox(height: 8),
+                                          TextField(
+                                            controller: _reasonController,
+                                            maxLines: 3,
+                                            decoration: const InputDecoration(
+                                              hintText: '通報理由（例：誹謗中傷、わいせつ、スパム）',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.of(context).pop(false),
+                                          child: const Text('キャンセル'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () async {
+                                            Navigator.of(context).pop(true);
+                                          },
+                                          child: const Text('送信'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (reported == true) {
+                                    final reason = _reasonController.text.trim();
+                                  try {
+                                    print('Reporting message $messageId from $author for reason: $reason');
+                                    await FirebaseFirestore.instance.collection('report_messages').add({
+                                      'message_id': messageId,
+                                      'channel_id': widget.channelInfo["id"],
+                                      'reported_user_id': author,
+                                      'reporter_user_id': instance.id,
+                                      'content': content,
+                                      'attachments': attachments,
+                                      'reason': reason,
+                                      'status': 'open',
+                                      'created_at': FieldValue.serverTimestamp(),
+                                    });
+                                    final _rootCtx = navigatorKey.currentState?.context;
+                                    if (_rootCtx != null) {
+
+                                    // 通報後、ブロック確認ダイアログを表示
+                                    final shouldBlock = await showDialog<bool>(
+                                      context: _rootCtx,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('通報完了'),
+                                        content: const Text('このユーザーをブロックしますか？ブロックすると相手からのメッセージが届かなくなります。'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.of(context).pop(false),
+                                            child: const Text('いいえ'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () => Navigator.of(context).pop(true),
+                                            child: const Text('はい'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+
+                                    if (shouldBlock == true) {
+                                      try {
+                                        final instance = Provider.of<AuthContext>(context, listen: false);
+                                        final blockService = BlockService();
+                                        await blockService.blockUser(instance.id, author);
+                                        final _rootCtx = navigatorKey.currentState?.context;
+                                        if (_rootCtx != null) {
+                                          ScaffoldMessenger.of(_rootCtx).showSnackBar(const SnackBar(content: Text('ユーザーをブロックしました。')));
+                                        }
+                                      } catch (e) {
+                                        debugPrint('Block failed: $e');
+                                        final _rootCtx = navigatorKey.currentState?.context;
+                                        if (_rootCtx != null) {
+                                          ScaffoldMessenger.of(_rootCtx).showSnackBar(const SnackBar(content: Text('ブロックに失敗しました。')));
+                                        }
+                                      }
+                                    }
+                                    }
+                                  } catch (e) {
+                                    debugPrint('Report failed: $e');
+                                    final _rootCtx = navigatorKey.currentState?.context;
+                                    if (_rootCtx != null) {
+                                      ScaffoldMessenger.of(_rootCtx).showSnackBar(const SnackBar(content: Text('通報に失敗しました。後でもう一度お試しください。')));
+                                    }
+                                  }
+                                  
+                                  }
+                                }),
                       ],
                     )));
           },
