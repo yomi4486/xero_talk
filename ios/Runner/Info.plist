@@ -49,6 +49,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Apple Music のメディアライブラリへのアクセスを許可してください。</string>
 	<key>NSCameraUsageDescription</key>
 	<string>カメラへのアクセスを許可してください。プロフィール画像の撮影や写真の送信に使用します。</string>
 	<key>NSMicrophoneUsageDescription</key>
