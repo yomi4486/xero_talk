@@ -49,18 +49,14 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>Access to pick a photo</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Access to take a photo by camera</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>This app needs access to local network for voice calls</string>
+	<string>カメラへのアクセスを許可してください。プロフィール画像の撮影や写真の送信に使用します。</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>XeroTalk uses your microphone</string>
+	<string>マイクへのアクセスを許可してください。音声通話に使用します。</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Access to save a photo</string>
+	<string>写真ライブラリへ画像を保存するために使用します。</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Access to pick a photo</string>
+	<string>写真ライブラリへのアクセスを許可してください。プロフィール画像の選択や画像の送信に使用します。</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
