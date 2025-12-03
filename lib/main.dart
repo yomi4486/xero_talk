@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:xero_talk/account_startup.dart';
+import 'package:xero_talk/screens/eula_screen.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:xero_talk/chat.dart';
@@ -201,10 +202,31 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       await authContext.getTheme();
 
       // Check if user exists in Firestore
-      final userDoc = await FirebaseFirestore.instance
+      final userDocRef = FirebaseFirestore.instance
           .collection('user_account')
-          .doc(authContext.id)
-          .get();
+          .doc(authContext.id);
+      final userDoc = await userDocRef.get();
+
+      // EULA確認: Firestoreに `eula_agreed` が true でなければ同意を求める
+      final eulaAgreed = userDoc.exists ? (userDoc.data()?['eula_agreed'] == true) : false;
+      if (!eulaAgreed) {
+        if (mounted) {
+          final agreed = await Navigator.push<bool?>(
+            context,
+            MaterialPageRoute(builder: (context) => const EulaScreen()),
+          );
+          if (agreed == true) {
+            await userDocRef.set({'eula_agreed': true}, SetOptions(merge: true));
+          } else {
+            // 同意しない場合はサインアウトして処理を中断
+            await FirebaseAuth.instance.signOut();
+            await GoogleSignIn().signOut();
+            return;
+          }
+        } else {
+          return;
+        }
+      }
 
       final messaging = FirebaseMessaging.instance;
       
@@ -757,6 +779,30 @@ class _LoginPageState extends State<MyHomePage> with WidgetsBindingObserver  {
       authContext.id = user.uid;
       authContext.userCredential = null;
       await authContext.getTheme();
+
+      // Check EULA on restore as well
+      try {
+        final userDocRef = FirebaseFirestore.instance.collection('user_account').doc(authContext.id);
+        final userDoc = await userDocRef.get();
+        final eulaAgreed = userDoc.exists ? (userDoc.data()?['eula_agreed'] == true) : false;
+        if (!eulaAgreed) {
+          if (navigatorKey.currentState != null) {
+            final agreed = await navigatorKey.currentState!.push<bool?>(
+              MaterialPageRoute(builder: (_) => const EulaScreen()),
+            );
+            if (agreed == true) {
+              await userDocRef.set({'eula_agreed': true}, SetOptions(merge: true));
+            } else {
+              await FirebaseAuth.instance.signOut();
+              return;
+            }
+          } else {
+            return;
+          }
+        }
+      } catch (e) {
+        debugPrint('EULA check error: $e');
+      }
 
       try {
         await suspensionService.checkSuspensionOnLogin(authContext.id);

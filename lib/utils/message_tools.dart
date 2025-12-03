@@ -11,7 +11,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart' show MqttQos, MqttConnectionState;
 import 'package:typed_data/typed_buffers.dart';
-import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
 const Uuid uuid = Uuid();
