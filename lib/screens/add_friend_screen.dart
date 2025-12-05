@@ -62,7 +62,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
       backgroundColor: const Color.fromARGB(255, 22, 22, 22),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-        title: const Text('フレンド追加'),
+        title: const Text('フレンド追加',style:TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
