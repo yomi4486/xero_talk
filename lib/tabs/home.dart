@@ -8,6 +8,8 @@ import 'package:xero_talk/models/friend.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:xero_talk/widgets/user_icon.dart';
 import 'dart:async';
+import 'package:xero_talk/screens/friends_screen.dart';
+import 'package:xero_talk/screens/add_friend_screen.dart';
 
 String lastMessageId = "";
 
@@ -729,10 +731,49 @@ class _chatHomeState extends State<chatHome> with AutomaticKeepAliveClientMixin<
                                       final friends = snapshot.hasData ? snapshot.data! : <Friend>[];
                                       
                                       if (friends.isEmpty && snapshot.hasData) {
-                                        return const Center(
-                                          child: Text(
-                                            'フレンドがいません',
-                                            style: TextStyle(color: Colors.white),
+                                        return SizedBox(
+                                          height: MediaQuery.of(context).size.height * 0.6,
+                                          child: Center(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Text(
+                                                  'フレンドがいません',
+                                                  style: TextStyle(color: Colors.white),
+                                                ),
+                                                const SizedBox(height: 12),
+                                                ElevatedButton.icon(
+                                                  onPressed: () async {
+                                                    await showModalBottomSheet(
+                                                      context: context,
+                                                      isScrollControlled: true,
+                                                      backgroundColor: Colors.transparent,
+                                                      builder: (ctx) {
+                                                        return Container(
+                                                          height: MediaQuery.of(ctx).size.height * 0.95,
+                                                          decoration: const BoxDecoration(
+                                                            color: Color.fromARGB(255, 22, 22, 22),
+                                                            borderRadius: BorderRadius.only(
+                                                              topLeft: Radius.circular(20.0),
+                                                              topRight: Radius.circular(20.0),
+                                                            ),
+                                                          ),
+                                                          child: SafeArea(
+                                                            child: FriendsScreen(),
+                                                          ),
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                  icon: const Icon(Icons.person_add, color: Colors.white),
+                                                  label: const Text('フレンドを追加',style: TextStyle(color: Colors.white)),
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: instance.theme[1],
+                                                    textStyle: const TextStyle(color: Colors.white),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         );
                                       }
@@ -867,22 +908,82 @@ class _GroupSelectBottomSheetState extends State<GroupSelectBottomSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'グループに追加するフレンドを選択',
-                  style: TextStyle(color: textColor[0], fontWeight: FontWeight.bold),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child:Text(
+                    'グループに追加するフレンドを選択',
+                    style: TextStyle(color: textColor[0], fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                 ),
                 const SizedBox(height: 12),
-                Expanded(
-                  child: ListView(
-                    children: friends.map((friend) {
-                      final friendId = friend.senderId == widget.userId ? friend.receiverId : friend.senderId;
-                      return FutureBuilder<Map<String, dynamic>>(
-                        future: widget.friendService.getUserInfo(friendId),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
+                if (friends.isEmpty)
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('フレンドがいません', style: TextStyle(color: Colors.white)),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const AddFriendScreen()),
+                              );
+                            },
+                            icon: const Icon(Icons.person_add, color: Colors.white),
+                            label: const Text('フレンドを追加', style: TextStyle(color: Colors.white)),
+                            style: ElevatedButton.styleFrom(backgroundColor: textColor[0],textStyle: TextStyle(color: Colors.white),),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView(
+                      children: friends.map((friend) {
+                        final friendId = friend.senderId == widget.userId ? friend.receiverId : friend.senderId;
+                        return FutureBuilder<Map<String, dynamic>>(
+                          future: widget.friendService.getUserInfo(friendId),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return CheckboxListTile(
+                                value: selected.contains(friend),
+                                title: Text(friendId, style: TextStyle(color: textColor[0])),
+                                onChanged: (v) {
+                                  setState(() {
+                                    if (v == true) {
+                                      selected.add(friend);
+                                    } else {
+                                      selected.remove(friend);
+                                    }
+                                  });
+                                },
+                                activeColor: textColor[0],
+                                checkColor: backgroundColor,
+                              );
+                            }
+                            final userInfo = snapshot.data!;
                             return CheckboxListTile(
                               value: selected.contains(friend),
-                              title: Text(friendId, style: TextStyle(color: textColor[0])),
+                              title: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(1000),
+                                    child: UserIcon(userId: friendId, size: 32)
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    (userInfo['display_name'] ?? friendId).length > 14
+                                      ? (userInfo['display_name'] ?? friendId).substring(0, 12) + '...'
+                                      : (userInfo['display_name'] ?? friendId),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: TextStyle(color: textColor[0]),
+                                  ),
+                                ],
+                              ),
                               onChanged: (v) {
                                 setState(() {
                                   if (v == true) {
@@ -895,44 +996,11 @@ class _GroupSelectBottomSheetState extends State<GroupSelectBottomSheet> {
                               activeColor: textColor[0],
                               checkColor: backgroundColor,
                             );
-                          }
-                          final userInfo = snapshot.data!;
-                          return CheckboxListTile(
-                            value: selected.contains(friend),
-                            title: Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(1000),
-                                  child: UserIcon(userId: friendId, size: 32)
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  (userInfo['display_name'] ?? friendId).length > 14
-                                    ? (userInfo['display_name'] ?? friendId).substring(0, 12) + '...'
-                                    : (userInfo['display_name'] ?? friendId),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: TextStyle(color: textColor[0]),
-                                ),
-                              ],
-                            ),
-                            onChanged: (v) {
-                              setState(() {
-                                if (v == true) {
-                                  selected.add(friend);
-                                } else {
-                                  selected.remove(friend);
-                                }
-                              });
-                            },
-                            activeColor: textColor[0],
-                            checkColor: backgroundColor,
-                          );
-                        },
-                      );
-                    }).toList(),
+                          },
+                        );
+                      }).toList(),
+                    ),
                   ),
-                ),
               ],
             ),
           ),
