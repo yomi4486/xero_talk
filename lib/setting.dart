@@ -254,7 +254,7 @@ class _SettingPage extends State<SettingPage> {
                     name: "デバイス情報",
                     defaultValue: "",
                     widget: Text(
-                      instance.deviceName,
+                      instance.deviceName ?? "不明なデバイス",
                       style: const TextStyle(
                         color: Colors.white,
                         overflow: TextOverflow.ellipsis,
