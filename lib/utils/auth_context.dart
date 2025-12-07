@@ -34,7 +34,7 @@ class AuthContext extends ChangeNotifier {
   Stream<String> get mqttStream => mqttStreamController.stream;
   UserCredential? userCredential;
   drive.DriveApi? googleDriveApi; // GoogleDriveにデータを書き込むためのインスタンス（オプショナル）
-  late String deviceName; // アプリが動作しているデバイスの機種名を保管
+  String? deviceName; // アプリが動作しているデバイスの機種名を保管
   late Widget lastOpenedChat; // スワイプでチャット画面を行き来した際の状態管理を行う
   bool editing = false; // メッセージが編集中かどうかの状態管理を行う
   late String editingMessageId;
